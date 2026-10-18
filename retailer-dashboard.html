@@ -1,0 +1,1348 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Quick2Print | Retailer Dashboard</title>
+<!-- Quick2Print login guard: direct dashboard access requires a valid login session. -->
+<style>html.q2p-auth-pending body{visibility:hidden}#q2pLogout{position:fixed;right:18px;top:18px;z-index:99999;border:0;border-radius:10px;padding:10px 14px;background:#e11d48;color:#fff;font-weight:800;box-shadow:0 6px 18px #0b104633;cursor:pointer}#q2pAuthExpired{position:fixed;inset:0;z-index:100000;background:#070a2e;color:#fff;display:grid;place-items:center;padding:24px;font:700 16px system-ui}</style>
+<script>
+(function(){document.documentElement.classList.add('q2p-auth-pending');let a=null;try{a=JSON.parse(sessionStorage.getItem('q2p_partner_auth')||'null')}catch{}const expected='retailer';const age=a&&Date.now()-Number(a.at||0);if(!a||a.role!==expected||!a.id||!Number.isFinite(age)||age<0||age>8*60*60*1000){try{sessionStorage.removeItem('q2p_partner_auth')}catch{}location.replace('index.html');return}window.q2pLoggedIn=a;document.addEventListener('DOMContentLoaded',()=>{document.documentElement.classList.remove('q2p-auth-pending');const b=document.createElement('button');b.id='q2pLogout';b.type='button';b.textContent='Logout';b.title='Log out of Quick2Print';b.addEventListener('click',()=>{sessionStorage.removeItem('q2p_partner_auth');location.replace('index.html')});document.body.appendChild(b);const id=a.id;const role=a.role;const name=a.name||id;const nameEl=document.getElementById('profileName');const codeEl=document.getElementById('profileCode');if(nameEl)nameEl.textContent=name;if(codeEl)codeEl.textContent=id;});window.addEventListener('pageshow',()=>{let current=null;try{current=JSON.parse(sessionStorage.getItem('q2p_partner_auth')||'null')}catch{}if(!current||current.role!==expected||current.id!==a.id)location.replace('index.html')})})();
+</script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      :root {
+        --navy: #0b1046;
+        --navy2: #070a2e;
+        --indigo: #4f46e5;
+        --bg: #f4f7fc;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background: var(--bg);
+        color: #17203c;
+      }
+      .side {
+        background: linear-gradient(165deg, var(--navy), var(--navy2));
+        box-shadow: 8px 0 32px #0b10462b;
+      }
+      .field {
+        width: 100%;
+        border: 1px solid #d7def0;
+        background: #fbfcff;
+        border-radius: 12px;
+        padding: 12px 14px;
+        outline: none;
+        color: #111a3e;
+        min-height: 46px;
+      }
+      .field:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px #6366f120;
+      }
+      .btn {
+        border: 0;
+        border-radius: 12px;
+        padding: 11px 16px;
+        font-weight: 800;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .primary {
+        background: #4f46e5;
+        color: white;
+      }
+      .primary:hover {
+        background: #4338ca;
+      }
+      .light {
+        background: #eef2ff;
+        color: #3730a3;
+      }
+      .card {
+        background: white;
+        border: 1px solid #e7ebf5;
+        border-radius: 18px;
+        box-shadow: 0 8px 28px #0b104608;
+      }
+      .nav {
+        width: 100%;
+        text-align: left;
+        padding: 12px;
+        border-radius: 12px;
+        color: #dce4ff;
+        font-weight: 700;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .nav:hover,
+      .nav.active {
+        background: #ffffff18;
+        color: white;
+      }
+      .muted {
+        color: #7180a4;
+      }
+      .tablewrap {
+        overflow: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 620px;
+      }
+      th {
+        font-size: 11px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: #7180a4;
+        background: #f8faff;
+        text-align: left;
+      }
+      th,
+      td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #edf0f7;
+      }
+      td {
+        font-size: 13px;
+      }
+      .badge {
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+        background: #ecfdf5;
+        color: #047857;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .cmyk {
+        height: 4px;
+        background: linear-gradient(90deg, #00aeef, #0072ff, #ec008c, #ffb800);
+      }
+      .spin {
+        display: inline-block;
+        width: 15px;
+        height: 15px;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: rot 0.7s linear infinite;
+      }
+      @keyframes rot {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (max-width: 800px) {
+        .layout {
+          display: block;
+        }
+        .side {
+          width: 100%;
+        }
+        .navs {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .main {
+          padding: 16px !important;
+        }
+        .stats {
+          grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="cmyk"></div>
+    <div class="layout min-h-screen md:flex">
+      <aside class="side text-white md:w-64 p-5 shrink-0">
+        <div class="bg-white rounded-2xl p-3 flex items-center gap-3 mb-7">
+          <div
+            class="w-12 h-12 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold"
+          >
+            Q2P
+          </div>
+          <div>
+            <div class="font-extrabold text-lg text-[#0b1046]">
+              Quick<span class="text-amber-500">2</span>Print
+            </div>
+            <div class="text-xs text-slate-500">Retailer portal</div>
+          </div>
+        </div>
+        <div
+          class="text-xs uppercase tracking-widest text-slate-400 font-bold mb-3"
+        >
+          Workspace
+        </div>
+        <nav class="navs space-y-2">
+          <button class="nav active" data-page="overview">
+            <i data-lucide="layout-dashboard"></i>Overview</button
+          ><button class="nav" data-page="work">
+            <i data-lucide="clipboard-list"></i>Today’s work</button
+          ><button class="nav" data-page="commission">
+            <i data-lucide="wallet"></i>Commission</button
+          ><button class="nav" data-page="shops">
+            <i data-lucide="store"></i>My shops
+          </button>
+        </nav>
+        <div class="mt-8 p-4 rounded-2xl bg-white/10">
+          <div class="text-xs text-slate-300">Retailer account</div>
+          <div id="profileName" class="font-extrabold mt-1">Choose account</div>
+          <div id="profileCode" class="text-xs text-slate-300 mt-1">—</div>
+          <button id="changeAccount" class="btn light w-full mt-4">
+            Change account
+          </button>
+        </div>
+        <p class="text-xs text-slate-400 mt-8">Quick2Print partner network</p>
+      </aside>
+      <main class="main flex-1 p-7 lg:p-9 min-w-0">
+        <header class="flex flex-wrap items-center justify-between gap-4 mb-7">
+          <div>
+            <div
+              class="text-xs uppercase tracking-widest text-indigo-600 font-extrabold"
+            >
+              Retailer workspace
+            </div>
+            <h1
+              id="pageTitle"
+              class="text-3xl font-extrabold text-[#0b1046] mt-1"
+            >
+              Retailer overview
+            </h1>
+            <p class="muted mt-2">
+              Track today's work, shops, subscriptions and recorded commissions.
+            </p>
+          </div>
+          <button id="refreshBtn" class="btn light">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>Refresh data
+          </button>
+        </header>
+        <div
+          id="notice"
+          class="hidden mb-5 rounded-xl p-4 text-sm font-semibold"
+        ></div>
+        <section id="page-overview" class="page">
+          <div
+            class="grid stats grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6"
+          >
+            <div class="card p-5">
+              <div class="flex justify-between">
+                <span class="muted text-sm font-semibold">My shops</span
+                ><i data-lucide="store" class="text-indigo-600"></i>
+              </div>
+              <div id="kShops" class="text-3xl font-extrabold mt-4">—</div>
+              <div class="text-xs muted mt-2">
+                Shop records linked to this retailer
+              </div>
+            </div>
+            <div class="card p-5">
+              <div class="flex justify-between">
+                <span class="muted text-sm font-semibold">Today's work</span
+                ><i data-lucide="calendar-check" class="text-emerald-600"></i>
+              </div>
+              <div id="kToday" class="text-3xl font-extrabold mt-4">—</div>
+              <div class="text-xs muted mt-2">
+                Today's recorded subscriptions
+              </div>
+            </div>
+            <div class="card p-5">
+              <div class="flex justify-between">
+                <span class="muted text-sm font-semibold">Paid sales</span
+                ><i data-lucide="indian-rupee" class="text-sky-600"></i>
+              </div>
+              <div id="kRevenue" class="text-3xl font-extrabold mt-4">
+                ₹0.00
+              </div>
+              <div class="text-xs muted mt-2">Paid subscription amount</div>
+            </div>
+            <div class="card p-5">
+              <div class="flex justify-between">
+                <span class="muted text-sm font-semibold"
+                  >Recorded commission</span
+                ><i data-lucide="wallet" class="text-amber-600"></i>
+              </div>
+              <div id="kCommission" class="text-3xl font-extrabold mt-4">
+                ₹0.00
+              </div>
+              <div class="text-xs muted mt-2">From commission ledger</div>
+            </div>
+          </div>
+          <div class="card p-6 mb-6">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div>
+                <h2 class="text-lg font-extrabold text-[#0b1046]">
+                  Date range
+                </h2>
+                <p class="text-sm muted">Filter work and commission by date.</p>
+              </div>
+              <div class="flex flex-wrap gap-3">
+                <label class="text-xs font-bold text-slate-600"
+                  >FROM<input
+                    id="dateFrom"
+                    type="date"
+                    class="field mt-1" /></label
+                ><label class="text-xs font-bold text-slate-600"
+                  >TO<input id="dateTo" type="date" class="field mt-1" /></label
+                ><button id="applyDates" class="btn primary self-end">
+                  Apply dates
+                </button>
+              </div>
+            </div>
+            <p class="text-xs muted">
+              Commission shown here is read from
+              <code>commission_ledger</code> / <code>payout_commissions</code>.
+              This dashboard does not display an estimated amount as a paid
+              commission.
+            </p>
+          </div>
+          <div class="card">
+            <div class="p-5">
+              <h2 class="font-extrabold text-[#0b1046]">
+                Today's work activity
+              </h2>
+              <p class="text-sm muted mt-1">
+                Recent subscription activity attached to your retailer account.
+              </p>
+            </div>
+            <div class="tablewrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Shop / reference</th>
+                    <th>Plan</th>
+                    <th>Payment status</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="todayRows">
+                  <tr>
+                    <td colspan="5" class="muted">
+                      Choose a retailer account to load data.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+        <section id="page-work" class="page hidden">
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="card p-6 xl:col-span-1">
+              <h2 class="text-xl font-extrabold text-[#0b1046]">
+                Record work / onboarding
+              </h2>
+              <p class="text-sm muted mt-1 mb-5">
+                Add a shop or record a subscription only when it actually exists
+                in your workflow. Saved records are used for activity and
+                commission reporting.
+              </p>
+              <form id="workForm" class="space-y-4">
+                <label class="block text-sm font-bold"
+                  >Work type *<select
+                    class="field mt-2"
+                    name="work_type"
+                    required
+                  >
+                    <option value="shop">New shop / QR onboarding</option>
+                    <option value="subscription">Subscription sale</option>
+                  </select></label
+                ><label
+                  id="paymentIdWrap"
+                  class="block text-sm font-bold hidden"
+                  >Cashfree payment ID *<input
+                    class="field mt-2"
+                    name="cashfree_payment_id"
+                    id="cashfreePaymentId"
+                    placeholder="Enter Cashfree payment ID"
+                    autocomplete="off"
+                  /><span class="block text-xs muted mt-2"
+                    >Required for both onboarding and subscription sale. The
+                    payment ID is checked against the separate Supabase
+                    project’s shop_subscriptions table; only confirmed paid
+                    records can be assigned to this retailer.</span
+                  ></label
+                >
+                <div
+                  id="paymentLookupInfo"
+                  class="hidden rounded-xl border border-indigo-100 bg-indigo-50 p-4 text-sm text-indigo-950"
+                ></div>
+                <label class="block text-sm font-bold"
+                  >Work date<input
+                    class="field mt-2"
+                    name="work_date"
+                    type="date"
+                    id="workDate"
+                    required /></label
+                ><button type="submit" class="btn primary w-full">
+                  <i data-lucide="save" class="w-4 h-4"></i>Save work
+                </button>
+                <p class="text-xs muted">
+                  Retailer/shop and subscription tables must permit inserts
+                  under your database policies. Duplicate mobile numbers are
+                  rejected by the database.
+                </p>
+              </form>
+            </div>
+            <div class="card p-6 xl:col-span-2">
+              <h2 class="text-xl font-extrabold text-[#0b1046]">
+                Work rules & commission
+              </h2>
+              <p class="text-sm muted mt-2">
+                The uploaded commission sheet contains QR-onboarding tiers for
+                the partner network. The dashboard will display commissions
+                already recorded in the database; commission rates/bonuses
+                should be posted to the ledger by a trusted backend or database
+                function using the official rules.
+              </p>
+              <div class="grid sm:grid-cols-2 gap-4 mt-5">
+                <div
+                  class="rounded-2xl border border-indigo-100 bg-indigo-50 p-5"
+                >
+                  <div class="font-extrabold text-indigo-900">
+                    Subscription plans
+                  </div>
+                  <div class="text-sm text-indigo-800 mt-2">
+                    ₹99 / 1 month<br />₹249 / 3 months<br />₹444 / 6 months<br />₹759
+                    / 12 months
+                  </div>
+                </div>
+                <div
+                  class="rounded-2xl border border-amber-100 bg-amber-50 p-5"
+                >
+                  <div class="font-extrabold text-amber-900">
+                    Commission safety
+                  </div>
+                  <div class="text-sm text-amber-800 mt-2">
+                    Commission is not treated as earned until the applicable
+                    rule and actual qualifying activity are saved in the
+                    commission ledger.
+                  </div>
+                </div>
+              </div>
+              <div
+                id="workNotice"
+                class="hidden mt-5 rounded-xl p-4 text-sm font-semibold"
+              ></div>
+            </div>
+          </div>
+        </section>
+        <section id="page-shops" class="page hidden">
+          <div class="card">
+            <div class="p-5 flex flex-wrap justify-between gap-3">
+              <div>
+                <h2 class="text-xl font-extrabold text-[#0b1046]">My shops</h2>
+                <p class="text-sm muted mt-1">
+                  Shops linked to the selected retailer account.
+                </p>
+              </div>
+              <input
+                id="shopSearch"
+                class="field"
+                style="max-width: 280px"
+                placeholder="Search shops"
+              />
+            </div>
+            <div class="tablewrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Shop ID</th>
+                    <th>Shop name</th>
+                    <th>Mobile</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody id="shopRows">
+                  <tr>
+                    <td colspan="5" class="muted">Choose account first.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+        <section id="page-commission" class="page hidden">
+          <div class="grid stats grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div class="card p-5">
+              <div class="muted text-sm font-semibold">Commission total</div>
+              <div id="commissionTotal" class="text-3xl font-extrabold mt-3">
+                ₹0.00
+              </div>
+            </div>
+            <div class="card p-5">
+              <div class="muted text-sm font-semibold">Pending / recorded</div>
+              <div id="commissionPending" class="text-3xl font-extrabold mt-3">
+                ₹0.00
+              </div>
+            </div>
+            <div class="card p-5">
+              <div class="muted text-sm font-semibold">Payouts recorded</div>
+              <div id="payoutTotal" class="text-3xl font-extrabold mt-3">
+                ₹0.00
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="p-5 flex flex-wrap justify-between gap-3">
+              <div>
+                <h2 class="text-xl font-extrabold text-[#0b1046]">
+                  Commission statement
+                </h2>
+                <p class="text-sm muted mt-1">
+                  Filtered by the date range above.
+                </p>
+              </div>
+              <button id="exportCommission" class="btn light">
+                Export CSV
+              </button>
+            </div>
+            <div class="tablewrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Reference</th>
+                    <th>Commission type</th>
+                    <th>Status</th>
+                    <th>Amount</th>
+                    <th>Bonus</th>
+                  </tr>
+                </thead>
+                <tbody id="commissionRows">
+                  <tr>
+                    <td colspan="6" class="muted">
+                      No commission records loaded.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div
+      id="accountModal"
+      class="fixed inset-0 z-50 bg-[#080d36]/60 backdrop-blur-sm flex items-center justify-center p-4"
+    >
+      <div class="bg-white rounded-3xl p-7 w-full max-w-xl shadow-2xl">
+        <div class="flex items-start justify-between">
+          <div>
+            <div
+              class="text-xs uppercase tracking-widest text-indigo-600 font-extrabold"
+            >
+              Quick2Print
+            </div>
+            <h2 class="text-2xl font-extrabold text-[#0b1046] mt-2">
+              Open retailer account
+            </h2>
+            <p class="muted text-sm mt-2">
+              Select the retailer account to view its shops, work and
+              commission.
+            </p>
+          </div>
+          <div
+            class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-700 grid place-items-center font-extrabold"
+          >
+            Q2P
+          </div>
+        </div>
+        <div class="mt-6 space-y-4">
+          <label class="block text-sm font-bold"
+            >Retailer account<select id="accountSelect" class="field mt-2">
+              <option value="">Load accounts first</option>
+            </select></label
+          >
+          <div id="accountError" class="text-sm text-rose-600"></div>
+          <div class="flex gap-3">
+            <button id="loadAccounts" class="btn light">
+              <i data-lucide="download" class="w-4 h-4"></i>Load accounts</button
+            ><button id="useAccount" class="btn primary">Open dashboard</button>
+          </div>
+        </div>
+        <p class="text-xs muted mt-5">
+          No login screen is used. Protect private data with restrictive
+          Supabase RLS policies; never expose a service-role key in browser
+          code.
+        </p>
+      </div>
+    </div>
+    <script>
+      (() => {
+        "use strict";
+        const $ = (id) => document.getElementById(id),
+          SB_URL = "https://cujyptlcmayipjekoqvq.supabase.co",
+          SB_KEY = "sb_publishable_Umq1hMXB-MWXf5IlTAHAmA_2tKS3V6v",
+          SUBS_URL = "https://gepkipszweqhftwaejbu.supabase.co",
+          SUBS_KEY = "sb_publishable_forPZqB40NrPCFGQsdqeZw_4QTxOgBH";
+        let sb = null,
+          subsSb = null,
+          retailer = null,
+          shops = [],
+          subs = [],
+          ledger = [],
+          payouts = [],
+          plans = [];
+        const currency = (v) =>
+            new Intl.NumberFormat("en-IN", {
+              style: "currency",
+              currency: "INR",
+              maximumFractionDigits: 2,
+            }).format(Number(v) || 0),
+          esc = (v) =>
+            String(v ?? "").replace(
+              /[&<>"']/g,
+              (c) =>
+                ({
+                  "&": "&amp;",
+                  "<": "&lt;",
+                  ">": "&gt;",
+                  '"': "&quot;",
+                  "'": "&#39;",
+                })[c],
+            ),
+          pick = (o, ks) => {
+            for (const k of ks)
+              if (o && o[k] !== undefined && o[k] !== null && o[k] !== "")
+                return o[k];
+            return null;
+          };
+        function init() {
+          if (!window.supabase?.createClient)
+            throw Error(
+              "Supabase library did not load. Check internet access.",
+            );
+          sb = window.supabase.createClient(SB_URL, SB_KEY, {
+            auth: {
+              persistSession: false,
+              autoRefreshToken: false,
+              detectSessionInUrl: false,
+            },
+          });
+          subsSb = window.supabase.createClient(SUBS_URL, SUBS_KEY, {
+            auth: {
+              persistSession: false,
+              autoRefreshToken: false,
+              detectSessionInUrl: false,
+            },
+          });
+        }
+        function notice(msg, ok = false) {
+          const n = $("notice");
+          n.textContent = msg;
+          n.className =
+            "mb-5 rounded-xl p-4 text-sm font-semibold " +
+            (ok
+              ? "bg-emerald-50 text-emerald-800"
+              : "bg-rose-50 text-rose-800");
+        }
+        function hideNotice() {
+          $("notice").classList.add("hidden");
+        }
+        async function withLoading(btn, label, fn) {
+          if (btn.disabled) return;
+          const old = btn.innerHTML;
+          btn.disabled = true;
+          btn.innerHTML = '<span class="spin"></span>' + label;
+          try {
+            return await fn();
+          } finally {
+            btn.disabled = false;
+            btn.innerHTML = old;
+            if (window.lucide) lucide.createIcons();
+          }
+        }
+        async function safeSelect(table) {
+          const { data, error } = await sb.from(table).select("*").limit(5000);
+          if (error) throw error;
+          return data || [];
+        }
+        async function safeSelectFrom(client, table) {
+          const { data, error } = await client
+            .from(table)
+            .select("*")
+            .limit(5000);
+          if (error) throw error;
+          return data || [];
+        }
+        function dateRange() {
+          return { from: $("dateFrom").value, to: $("dateTo").value };
+        }
+        function dateOf(
+          row,
+          keys = [
+            "created_at",
+            "paid_at",
+            "earned_at",
+            "commission_date",
+            "date",
+          ],
+        ) {
+          return String(pick(row, keys) || "").slice(0, 10);
+        }
+        function inRange(row, keys) {
+          const d = dateOf(row, keys),
+            r = dateRange();
+          return (!r.from || !d || d >= r.from) && (!r.to || !d || d <= r.to);
+        }
+        function belongs(row) {
+          const id = String(retailer?.retailer_id || "");
+          return [
+            "retailer_id",
+            "partner_id",
+            "account_id",
+            "beneficiary_id",
+            "recipient_id",
+            "owner_id",
+          ].some((k) => String(row[k] ?? "") === id);
+        }
+        function ownShop(row) {
+          const id = String(retailer?.retailer_id || "");
+          return (
+            String(
+              pick(row, [
+                "retailer_id",
+                "owner_retailer_id",
+                "created_by_retailer_id",
+              ]) || "",
+            ) === id ||
+            shops.some(
+              (s) =>
+                String(pick(s, ["shop_id", "id"]) || "") ===
+                String(pick(row, ["shop_id", "shopId"]) || ""),
+            )
+          );
+        }
+        async function loadAccounts() {
+          try {
+            if (!sb) init();
+            const { data, error } = await sb
+              .from("retailers")
+              .select("*")
+              .order("created_at", { ascending: false });
+            if (error) throw error;
+            const rows = data || [];
+            $("accountSelect").innerHTML =
+              '<option value="">Select retailer account</option>' +
+              rows
+                .map(
+                  (r) =>
+                    `<option value="${esc(r.retailer_id)}">${esc(r.owner_name || r.shop_name || r.retailer_id)} — ${esc(r.retailer_id)}</option>`,
+                )
+                .join("");
+            $("accountError").textContent = rows.length
+              ? ""
+              : "No retailer accounts found or table access denied.";
+          } catch (e) {
+            $("accountError").textContent = e.message || String(e);
+          }
+        }
+        async function openAccount() {
+          const id = $("accountSelect").value;
+          if (!id) throw Error("Select a retailer account.");
+          const { data, error } = await sb
+            .from("retailers")
+            .select("*")
+            .eq("retailer_id", id)
+            .single();
+          if (error) throw error;
+          retailer = data;
+          $("accountModal").classList.add("hidden");
+          $("profileName").textContent =
+            data.owner_name || data.shop_name || "Retailer";
+          $("profileCode").textContent = data.retailer_id || "";
+          await refreshAll();
+        }
+        async function optional(table) {
+          try {
+            return await safeSelect(table);
+          } catch (e) {
+            console.warn(table, e.message);
+            return [];
+          }
+        }
+        async function refreshAll() {
+          if (!sb || !retailer) return;
+          hideNotice();
+          try {
+            const allShops = await optional("shops");
+            shops = allShops.filter(
+              (s) =>
+                String(
+                  pick(s, [
+                    "retailer_id",
+                    "owner_retailer_id",
+                    "created_by_retailer_id",
+                  ]) || "",
+                ) === String(retailer.retailer_id) ||
+                String(pick(s, ["retailer_id"]) || "") ===
+                  String(retailer.retailer_id),
+            );
+            let s = await optional("subscriptions");
+            if (!s.length) {
+              try {
+                s = await safeSelectFrom(subsSb, "shop_subscriptions");
+              } catch (e) {
+                console.warn("External shop_subscriptions:", e.message);
+                s = [];
+              }
+            }
+            subs = s.filter((x) => ownShop(x));
+            ledger = (await optional("commission_ledger")).filter(belongs);
+            const p2 = await optional("payout_commissions");
+            payouts = (await optional("commission_payouts")).filter(belongs);
+            if (!payouts.length) payouts = p2.filter(belongs);
+            plans = await optional("plans");
+            render();
+          } catch (e) {
+            notice(e.message || String(e));
+          }
+        }
+        function paidSubs() {
+          return subs.filter(
+            (s) =>
+              String(
+                pick(s, ["payment_status", "status"]) || "",
+              ).toLowerCase() === "paid" &&
+              inRange(s, ["created_at", "paid_at", "started_at", "createdAt"]),
+          );
+        }
+        function rangedLedger() {
+          return ledger.filter((x) =>
+            inRange(x, ["created_at", "earned_at", "commission_date", "date"]),
+          );
+        }
+        function render() {
+          const paid = paidSubs(),
+            led = rangedLedger(),
+            revenue = paid.reduce(
+              (a, s) =>
+                a +
+                Number(
+                  pick(s, [
+                    "amount",
+                    "payment_amount",
+                    "amount_charged",
+                    "total_amount",
+                  ]) || 0,
+                ),
+              0,
+            ),
+            com = led
+              .filter(
+                (x) =>
+                  !["failed", "rejected", "cancelled", "canceled"].includes(
+                    String(
+                      pick(x, ["commission_status", "status"]) || "",
+                    ).toLowerCase(),
+                  ),
+              )
+              .reduce(
+                (a, x) =>
+                  a +
+                  Number(
+                    pick(x, [
+                      "commission_amount",
+                      "amount",
+                      "commission",
+                      "amount_inr",
+                    ]) || 0,
+                  ),
+                0,
+              ),
+            today = new Date().toISOString().slice(0, 10),
+            todays = subs.filter(
+              (s) =>
+                dateOf(s, ["created_at", "paid_at", "started_at"]) === today &&
+                ownShop(s),
+            );
+          $("kShops").textContent = shops.length;
+          $("kToday").textContent = todays.length;
+          $("kRevenue").textContent = currency(revenue);
+          $("kCommission").textContent = currency(com);
+          $("commissionTotal").textContent = currency(com);
+          $("commissionPending").textContent = currency(
+            led
+              .filter((x) =>
+                String(pick(x, ["commission_status", "status"]) || "pending")
+                  .toLowerCase()
+                  .includes("pending"),
+              )
+              .reduce(
+                (a, x) =>
+                  a +
+                  Number(
+                    pick(x, ["commission_amount", "amount", "commission"]) || 0,
+                  ),
+                0,
+              ),
+          );
+          $("payoutTotal").textContent = currency(
+            payouts
+              .filter((x) =>
+                inRange(x, ["created_at", "paid_at", "payout_date"]),
+              )
+              .reduce(
+                (a, x) =>
+                  a +
+                  Number(
+                    pick(x, ["amount", "payout_amount", "commission_amount"]) ||
+                      0,
+                  ),
+                0,
+              ),
+          );
+          const activity = subs
+            .filter(ownShop)
+            .filter((s) => inRange(s, ["created_at", "paid_at", "started_at"]))
+            .sort((a, b) =>
+              dateOf(b, ["created_at", "paid_at"]).localeCompare(
+                dateOf(a, ["created_at", "paid_at"]),
+              ),
+            )
+            .slice(0, 100);
+          $("todayRows").innerHTML = activity.length
+            ? activity
+                .map(
+                  (s) =>
+                    `<tr><td>${esc(dateOf(s, ["created_at", "paid_at", "started_at"]) || "—")}</td><td class="font-bold">${esc(pick(s, ["shop_id", "subscription_id", "order_id"]) || "—")}</td><td>${esc(pick(s, ["plan_name", "plan_id", "plan"]) || "—")}</td><td><span class="badge">${esc(pick(s, ["payment_status", "status"]) || "recorded")}</span></td><td class="font-extrabold">${currency(pick(s, ["amount", "payment_amount", "amount_charged", "total_amount"]))}</td></tr>`,
+                )
+                .join("")
+            : '<tr><td colspan="5" class="muted">No subscription work found for this retailer in the selected dates.</td></tr>';
+          $("shopRows").innerHTML = shops.length
+            ? shops
+                .filter((s) =>
+                  JSON.stringify(s)
+                    .toLowerCase()
+                    .includes(($("shopSearch").value || "").toLowerCase()),
+                )
+                .map(
+                  (s) =>
+                    `<tr><td class="font-bold">${esc(pick(s, ["shop_id", "id"]) || "—")}</td><td>${esc(pick(s, ["shop_name", "name"]) || "—")}</td><td>${esc(s.mobile || s.whatsapp_number || "—")}</td><td><span class="badge">${esc(s.status || s.account_status || "recorded")}</span></td><td>${esc(dateOf(s, ["created_at"]) || "—")}</td></tr>`,
+                )
+                .join("")
+            : '<tr><td colspan="5" class="muted">No shops are linked to this retailer or table access is restricted.</td></tr>';
+          $("commissionRows").innerHTML = led.length
+            ? led
+                .map(
+                  (x) =>
+                    `<tr><td>${esc(dateOf(x, ["created_at", "earned_at", "commission_date", "date"]) || "—")}</td><td>${esc(pick(x, ["reference_id", "subscription_id", "payment_id", "order_id", "commission_id"]) || "—")}</td><td>${esc(pick(x, ["commission_type", "type", "source"]) || "Commission")}</td><td>${esc(pick(x, ["commission_status", "status"]) || "recorded")}</td><td class="font-extrabold">${currency(pick(x, ["commission_amount", "amount", "commission", "amount_inr"]))}</td><td>${currency(pick(x, ["bonus_amount", "bonus"]))}</td></tr>`,
+                )
+                .join("")
+            : '<tr><td colspan="6" class="muted">₹0.00 — no matching commission ledger records. Commission is not estimated in the UI.</td></tr>';
+        }
+        function showPage(name) {
+          document
+            .querySelectorAll(".page")
+            .forEach((p) => p.classList.add("hidden"));
+          $("page-" + name).classList.remove("hidden");
+          document
+            .querySelectorAll("[data-page]")
+            .forEach((b) =>
+              b.classList.toggle("active", b.dataset.page === name),
+            );
+          $("pageTitle").textContent =
+            {
+              overview: "Retailer overview",
+              work: "Today’s work",
+              commission: "Commission statement",
+              shops: "My shops",
+            }[name] || "Retailer dashboard";
+        }
+        document
+          .querySelectorAll("[data-page]")
+          .forEach((b) => (b.onclick = () => showPage(b.dataset.page)));
+        $("changeAccount").onclick = () =>
+          $("accountModal").classList.remove("hidden");
+        $("loadAccounts").onclick = () =>
+          withLoading($("loadAccounts"), "Loading…", loadAccounts);
+        $("useAccount").onclick = () =>
+          withLoading($("useAccount"), "Opening…", async () => {
+            try {
+              if (!sb) init();
+              await openAccount();
+            } catch (e) {
+              $("accountError").textContent = e.message || String(e);
+            }
+          });
+        $("refreshBtn").onclick = () =>
+          withLoading($("refreshBtn"), "Refreshing…", refreshAll);
+        $("applyDates").onclick = () =>
+          withLoading($("applyDates"), "Applying…", async () => render());
+        $("shopSearch").addEventListener("input", render);
+        $("exportCommission").onclick = () => {
+          const rows = [
+            ["date", "reference", "type", "status", "amount", "bonus"],
+            ...rangedLedger().map((x) => [
+              dateOf(x),
+              pick(x, [
+                "reference_id",
+                "subscription_id",
+                "payment_id",
+                "order_id",
+              ]),
+              pick(x, ["commission_type", "type", "source"]),
+              pick(x, ["commission_status", "status"]),
+              pick(x, ["commission_amount", "amount", "commission"]),
+              pick(x, ["bonus_amount", "bonus"]),
+            ]),
+          ];
+          const csv = rows
+            .map((r) =>
+              r
+                .map((v) => '"' + String(v ?? "").replace(/"/g, '""') + '"')
+                .join(","),
+            )
+            .join("\r\n");
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+          a.download = "quick2print-retailer-commission.csv";
+          a.click();
+          URL.revokeObjectURL(a.href);
+        };
+        $("workDate").value = new Date().toISOString().slice(0, 10);
+        const workTypeSelect = document.querySelector(
+          '#workForm [name="work_type"]',
+        );
+        function syncWorkFields() {
+          $("paymentIdWrap").classList.remove("hidden");
+          $("cashfreePaymentId").required = true;
+          $("paymentLookupInfo").classList.add("hidden");
+          $("paymentLookupInfo").textContent = "";
+        }
+        workTypeSelect.addEventListener("change", syncWorkFields);
+        syncWorkFields();
+        async function lookupVerifiedCashfreePayment(paymentId) {
+          if (!paymentId) throw Error("Enter the Cashfree payment ID.");
+          const { data: matches, error } = await subsSb
+            .from("shop_subscriptions")
+            .select("*")
+            .eq("cashfree_payment_id", paymentId)
+            .limit(2);
+          if (error)
+            throw Error(
+              "Could not search the separate project shop_subscriptions table: " +
+                error.message,
+            );
+          if (!matches || !matches.length)
+            throw Error(
+              "No shop_subscriptions record matched this Cashfree payment ID. Check the ID and SELECT RLS policy.",
+            );
+          if (matches.length > 1)
+            throw Error(
+              "More than one shop_subscriptions row uses this Cashfree payment ID. Resolve the duplicate before continuing.",
+            );
+          const sub = matches[0],
+            retailerId = String(retailer?.retailer_id || "").trim();
+          const status = String(
+            pick(sub, ["payment_status", "status", "order_status"]) || "",
+          )
+            .trim()
+            .toLowerCase();
+          if (!["paid", "success", "successful", "completed"].includes(status))
+            throw Error(
+              "Payment ID was found, but payment status is " +
+                (status || "unknown") +
+                ". Only confirmed paid payments can be used.",
+            );
+          const source = String(pick(sub, ["source"]) || "direct").trim();
+          if (source && source !== "direct" && source !== retailerId)
+            throw Error(
+              "This payment is already assigned to source " +
+                source +
+                ". It cannot be assigned to this retailer.",
+            );
+          const shopId = String(pick(sub, ["shop_id", "shopId"]) || "").trim();
+          if (!shopId)
+            throw Error(
+              "The matched shop_subscriptions record has no shop_id.",
+            );
+          if (!retailerId)
+            throw Error("The selected retailer account has no retailer_id.");
+          return { sub, shopId, retailerId, status };
+        }
+        async function ensureLocalShop(sub, shopId, retailerId) {
+          let { data: shop, error } = await sb
+            .from("shops")
+            .select("*")
+            .eq("shop_id", shopId)
+            .maybeSingle();
+          if (error)
+            throw Error(
+              "Could not check main project public.shops for shop_id " +
+                shopId +
+                ": " +
+                error.message,
+            );
+          if (shop) {
+            const existingRetailer = String(
+              pick(shop, [
+                "retailer_id",
+                "owner_retailer_id",
+                "created_by_retailer_id",
+              ]) || "",
+            );
+            if (existingRetailer && existingRetailer !== retailerId)
+              throw Error(
+                "This shop is already linked to retailer " +
+                  existingRetailer +
+                  ".",
+              );
+            if (!existingRetailer) {
+              const upd = await sb
+                .from("shops")
+                .update({ retailer_id: retailerId })
+                .eq("shop_id", shopId)
+                .select("*")
+                .single();
+              if (upd.error)
+                throw Error(
+                  "Shop exists, but linking it to this retailer failed: " +
+                    upd.error.message,
+                );
+              shop = upd.data;
+            }
+            return shop;
+          }
+          const shopName = String(
+            pick(sub, ["shop_name", "name"]) || shopId,
+          ).trim();
+          // Match the exact public.shops schema: no owner, mobile, email, address, city, or pincode columns.
+          const distributorId = String(
+            pick(retailer, [
+              "assigned_distributor_id",
+              "distributor_id_at_sale",
+            ]) || "",
+          ).trim();
+          if (!distributorId)
+            throw Error(
+              "This retailer has no assigned_distributor_id. Assign a distributor before creating a shop.",
+            );
+          const payload = {
+            shop_id: shopId,
+            shop_name: shopName,
+            retailer_id: retailerId,
+            assigned_distributor_id: distributorId,
+            shop_status: "active",
+          };
+          const ins = await sb
+            .from("shops")
+            .insert(payload)
+            .select("*")
+            .single();
+          if (ins.error)
+            throw Error(
+              "Payment is valid, but the shop could not be created in the main project public.shops: " +
+                ins.error.message +
+                " Check the table columns, required fields, unique constraints and INSERT RLS policy.",
+            );
+          return ins.data;
+        }
+        $("workForm").onsubmit = async (e) => {
+          e.preventDefault();
+          if (!sb || !retailer) {
+            notice("Open a retailer account first.");
+            return;
+          }
+          const form = e.currentTarget,
+            btn = form.querySelector("button[type=submit]"),
+            fd = new FormData(form),
+            type = fd.get("work_type");
+          try {
+            await withLoading(btn, "Verifying payment…", async () => {
+              const paymentId = String(
+                fd.get("cashfree_payment_id") || "",
+              ).trim();
+              const { sub, shopId, retailerId, status } =
+                await lookupVerifiedCashfreePayment(paymentId);
+              const shop = await ensureLocalShop(sub, shopId, retailerId);
+              let savedSubscription = null;
+              if (type === "subscription") {
+                const planId = String(pick(sub, ["plan_id"]) || "").trim();
+                if (!planId)
+                  throw Error(
+                    "The verified payment record has no plan_id, required by public.subscriptions.",
+                  );
+                const distributorId = String(
+                  pick(retailer, [
+                    "assigned_distributor_id",
+                    "distributor_id_at_sale",
+                  ]) || "",
+                ).trim();
+                if (!distributorId)
+                  throw Error(
+                    "This retailer has no assigned_distributor_id. Assign a distributor before recording a subscription.",
+                  );
+                let paymentUuid = null;
+                for (const col of [
+                  "cashfree_payment_id",
+                  "provider_payment_id",
+                  "payment_reference",
+                  "order_id",
+                ]) {
+                  const res = await sb
+                    .from("payments")
+                    .select("payment_id")
+                    .eq(col, paymentId)
+                    .maybeSingle();
+                  if (!res.error && res.data) {
+                    paymentUuid = res.data.payment_id;
+                    break;
+                  }
+                }
+                const payload = {
+                  shop_id: shopId,
+                  retailer_id: retailerId,
+                  distributor_id_at_sale: distributorId,
+                  plan_id: planId,
+                  payment_id: paymentUuid,
+                  subscription_start:
+                    pick(sub, [
+                      "subscription_start",
+                      "started_at",
+                      "start_date",
+                    ]) || new Date().toISOString(),
+                  subscription_expiry:
+                    pick(sub, [
+                      "subscription_expiry",
+                      "expires_at",
+                      "expiry_date",
+                    ]) || null,
+                  subscription_status: "active",
+                  updated_at: new Date().toISOString(),
+                };
+                const existing = await sb
+                  .from("subscriptions")
+                  .select("subscription_id")
+                  .eq("shop_id", shopId)
+                  .eq("retailer_id", retailerId)
+                  .eq("plan_id", planId)
+                  .limit(1)
+                  .maybeSingle();
+                if (existing.error)
+                  throw Error(
+                    "Could not check existing subscriptions: " +
+                      existing.error.message,
+                  );
+                if (existing.data) {
+                  const upd = await sb
+                    .from("subscriptions")
+                    .update(payload)
+                    .eq("subscription_id", existing.data.subscription_id)
+                    .select("*")
+                    .single();
+                  if (upd.error)
+                    throw Error(
+                      "Shop was linked, but saving public.subscriptions failed: " +
+                        upd.error.message,
+                    );
+                  savedSubscription = upd.data;
+                } else {
+                  const ins = await sb
+                    .from("subscriptions")
+                    .insert(payload)
+                    .select("*")
+                    .single();
+                  if (ins.error)
+                    throw Error(
+                      "Shop was linked, but creating public.subscriptions failed: " +
+                        ins.error.message,
+                    );
+                  savedSubscription = ins.data;
+                }
+              }
+              // Claim the payment row in the separate project only after the main-project operation succeeded.
+              const { data: updated, error: updateError } = await subsSb
+                .from("shop_subscriptions")
+                .update({ source: retailerId })
+                .eq("subscription_id", sub.subscription_id)
+                .eq("cashfree_payment_id", paymentId)
+                .eq("source", String(pick(sub, ["source"]) || "direct"))
+                .select("*")
+                .maybeSingle();
+              if (updateError)
+                throw Error(
+                  (savedSubscription
+                    ? "Main subscriptions row saved. "
+                    : "Shop onboarding saved. ") +
+                    "However, assigning source in the separate shop_subscriptions project failed: " +
+                    updateError.message,
+                );
+              if (
+                !updated &&
+                String(pick(sub, ["source"]) || "") !== retailerId
+              )
+                throw Error(
+                  "The main-project record was saved, but source could not be assigned. Check UPDATE RLS policy for shop_subscriptions.",
+                );
+              const info = [
+                `Work type: ${type === "shop" ? "New shop / QR onboarding" : "Subscription sale"}`,
+                `Cashfree payment ID: ${paymentId}`,
+                `Shop ID: ${shopId}`,
+                `Shop: ${pick(shop, ["shop_name", "name"]) || "—"}`,
+                `Plan: ${pick(sub, ["plan_name", "plan_id", "plan"]) || "—"}`,
+                `Amount: ${currency(pick(sub, ["amount", "payment_amount", "amount_charged"]))}`,
+                `Payment status: ${pick(sub, ["payment_status", "status"]) || status}`,
+                `Assigned retailer ID: ${retailerId}`,
+                ...(savedSubscription
+                  ? [
+                      `Main subscription row: ${savedSubscription.subscription_id}`,
+                      `Subscription status: ${savedSubscription.subscription_status}`,
+                    ]
+                  : [
+                      "Onboarding: shop record verified/created in main project",
+                    ]),
+              ];
+              $("paymentLookupInfo").innerHTML = info
+                .map((v) => `<div>${esc(v)}</div>`)
+                .join("");
+              $("paymentLookupInfo").classList.remove("hidden");
+              $("workNotice").textContent =
+                type === "shop"
+                  ? "Payment verified. Shop onboarding saved and the payment source was assigned to your retailer ID."
+                  : "Payment verified. Shop and subscription saved in the main project, and payment source assigned to your retailer ID.";
+              $("workNotice").className =
+                "mt-5 rounded-xl p-4 text-sm font-semibold bg-emerald-50 text-emerald-800";
+              await refreshAll();
+            });
+          } catch (err) {
+            $("workNotice").textContent =
+              "Could not complete: " +
+              (err.message || String(err)) +
+              " Check the exact table columns and SELECT/INSERT/UPDATE RLS policies.";
+            $("workNotice").className =
+              "mt-5 rounded-xl p-4 text-sm font-semibold bg-rose-50 text-rose-800";
+          }
+        };
+        const now = new Date(),
+          first = new Date(now.getFullYear(), now.getMonth(), 1);
+        $("dateFrom").value = first.toISOString().slice(0, 10);
+        $("dateTo").value = now.toISOString().slice(0, 10);
+        if (window.lucide) lucide.createIcons();
+        loadAccounts();
+      })();
+    </script>
+  </body>
+</html>

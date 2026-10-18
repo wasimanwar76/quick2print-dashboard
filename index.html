@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Quick2Print | Partner Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+      body {
+        font-family: Inter, ui-sans-serif, system-ui;
+        background:
+          radial-gradient(circle at top right, #263b9b 0, transparent 38%),
+          linear-gradient(145deg, #070a2e, #0b1046);
+        min-height: 100vh;
+      }
+      .field {
+        width: 100%;
+        border: 1px solid #dbe2f0;
+        border-radius: 12px;
+        padding: 13px 14px;
+        color: #0f172a;
+        outline: none;
+      }
+      .field:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px #6366f122;
+      }
+      .btn {
+        width: 100%;
+        padding: 13px;
+        border-radius: 12px;
+        background: linear-gradient(100deg, #00aeef, #4f46e5);
+        color: white;
+        font-weight: 800;
+      }
+      .step {
+        display: none;
+      }
+      .step.active {
+        display: block;
+      }
+    </style>
+  </head>
+  <body class="flex items-center justify-center p-4 text-slate-900">
+    <main class="w-full max-w-md rounded-3xl bg-white p-7 sm:p-9 shadow-2xl">
+      <div class="flex items-center gap-3 mb-8">
+        <div
+          class="w-14 h-14 rounded-2xl bg-indigo-600 text-white grid place-items-center font-black text-lg"
+        >
+          Q2P
+        </div>
+        <div>
+          <div class="text-2xl font-black text-[#0b1046]">
+            Quick<span class="text-amber-500">2</span>Print
+          </div>
+          <div class="text-sm text-slate-500">Partner & Admin Login</div>
+        </div>
+      </div>
+      <div class="mb-6">
+        <p
+          class="text-xs uppercase tracking-[.2em] font-extrabold text-indigo-600"
+        >
+          Account access
+        </p>
+        <h1 class="text-2xl font-black mt-2">Welcome back</h1>
+        <p class="text-sm text-slate-500 mt-2">
+          Enter your account ID, then your registered mobile number as password.
+        </p>
+      </div>
+      <div id="stepId">
+        <label class="text-sm font-bold">Account ID</label
+        ><input
+          id="partnerId"
+          class="field mt-2"
+          placeholder="Retailer / Distributor / Admin ID"
+          autocomplete="username"
+        /><button id="continueBtn" class="btn mt-4">Continue</button>
+      </div>
+      <div id="stepPassword" class="hidden">
+        <div class="rounded-xl bg-indigo-50 p-3 mb-4">
+          <div class="text-xs text-indigo-600 font-bold">ACCOUNT TYPE</div>
+          <div
+            id="accountLabel"
+            class="font-extrabold text-[#0b1046] mt-1"
+          ></div>
+          <div id="roleLabel" class="text-sm text-slate-500"></div>
+        </div>
+        <label class="text-sm font-bold">Mobile number / Password</label
+        ><input
+          id="password"
+          type="password"
+          inputmode="numeric"
+          class="field mt-2"
+          placeholder="Enter mobile number"
+          autocomplete="current-password"
+        /><button id="loginBtn" class="btn mt-4">Login</button
+        ><button
+          id="backBtn"
+          class="w-full mt-3 py-2 text-sm font-bold text-slate-500"
+        >
+          Use a different ID
+        </button>
+      </div>
+      <div
+        id="error"
+        role="alert"
+        class="hidden mt-4 rounded-xl bg-rose-50 text-rose-700 p-3 text-sm font-semibold"
+      ></div>
+      <p class="text-xs leading-5 text-slate-400 mt-7">
+        Use the mobile number saved in your partner record. Admin access uses
+        the configured admin credentials.
+      </p>
+    </main>
+    <script>
+      const SB_URL = "https://cujyptlcmayipjekoqvq.supabase.co";
+      const SB_KEY = "sb_publishable_Umq1hMXB-MWXf5IlTAHAmA_2tKS3V6v";
+      const db = window.supabase.createClient(SB_URL, SB_KEY, {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+          detectSessionInUrl: false,
+        },
+      });
+      const ADMIN_ID = "admin@quick2print.in";
+      const ADMIN_PASSWORD = "jxj23c3zne";
+      const roles = [
+        {
+          role: "retailer",
+          table: "retailers",
+          idColumn: "retailer_id",
+          mobileColumns: ["mobile", "mobile_number", "phone", "phone_number"],
+          nameColumns: ["owner_name", "shop_name", "retailer_name"],
+          file: "retailer-dashboard.html",
+          label: "Retailer",
+        },
+        {
+          role: "distributor",
+          table: "distributors",
+          idColumn: "distributor_id",
+          mobileColumns: ["mobile", "mobile_number", "phone", "phone_number"],
+          nameColumns: ["full_name", "name", "distributor_name"],
+          file: "distributor-dashboard.html",
+          label: "Distributor",
+        },
+        {
+          role: "super_distributor",
+          table: "super_distributors",
+          idColumn: "super_distributor_code",
+          mobileColumns: ["mobile", "mobile_number", "phone", "phone_number"],
+          nameColumns: ["full_name", "name", "super_distributor_name"],
+          file: "super-distributor-dashboard.html",
+          label: "Super Distributor",
+        },
+      ];
+      let account = null;
+      const $ = (id) => document.getElementById(id);
+      function err(msg) {
+        $("error").textContent = msg;
+        $("error").classList.remove("hidden");
+      }
+      function clearErr() {
+        $("error").textContent = "";
+        $("error").classList.add("hidden");
+      }
+      function first(row, keys) {
+        for (const k of keys)
+          if (row && row[k] != null && String(row[k]).trim())
+            return String(row[k]).trim();
+        return "";
+      }
+      async function findAccount() {
+        clearErr();
+        const id = $("partnerId").value.trim();
+        if (!id) {
+          err("Enter your account ID.");
+          return;
+        }
+        if (id.toLowerCase() === ADMIN_ID) {
+          account = {
+            admin: true,
+            cfg: {
+              role: "admin",
+              label: "Administrator",
+              file: "admin-dashboard.html",
+            },
+            row: { id: ADMIN_ID, name: "Quick2Print Admin" },
+          };
+          showPassword();
+          return;
+        }
+        $("continueBtn").disabled = true;
+        $("continueBtn").textContent = "Checking ID…";
+        try {
+          let found = [];
+          for (const cfg of roles) {
+            const { data, error } = await db
+              .from(cfg.table)
+              .select("*")
+              .eq(cfg.idColumn, id)
+              .maybeSingle();
+            if (error) {
+              if (/does not exist|schema cache/i.test(error.message)) continue;
+              throw error;
+            }
+            if (data) found.push({ admin: false, cfg, row: data });
+          }
+          if (found.length !== 1)
+            throw new Error(
+              found.length
+                ? "This ID matches multiple account types. Contact administrator."
+                : "Account ID not found, or database read access is not allowed.",
+            );
+          account = found[0];
+          showPassword();
+        } catch (e) {
+          err(e.message || "Unable to verify account ID.");
+        } finally {
+          $("continueBtn").disabled = false;
+          $("continueBtn").textContent = "Continue";
+        }
+      }
+      function showPassword() {
+        $("accountLabel").textContent = account.cfg.label;
+        $("roleLabel").textContent = account.admin
+          ? ADMIN_ID
+          : account.row[account.cfg.idColumn];
+        $("stepId").classList.add("hidden");
+        $("stepPassword").classList.remove("hidden");
+        $("password").value = "";
+        $("password").focus();
+      }
+      async function login() {
+        clearErr();
+        if (!account) {
+          err("Enter and verify your account ID first.");
+          return;
+        }
+        const password = $("password").value.trim();
+        if (!password) {
+          err("Enter your password/mobile number.");
+          return;
+        }
+        $("loginBtn").disabled = true;
+        $("loginBtn").textContent = "Verifying…";
+        try {
+          if (account.admin) {
+            if (password !== ADMIN_PASSWORD)
+              throw new Error("Incorrect admin password.");
+            const auth = {
+              role: "admin",
+              id: ADMIN_ID,
+              name: "Quick2Print Admin",
+              at: Date.now(),
+            };
+            sessionStorage.setItem("q2p_partner_auth", JSON.stringify(auth));
+            location.replace(account.cfg.file);
+            return;
+          }
+          const mobile = first(account.row, account.cfg.mobileColumns);
+          if (!mobile)
+            throw new Error(
+              "Mobile number not found on this account. Expected one of: " +
+                account.cfg.mobileColumns.join(", ") +
+                ".",
+            );
+          if (password !== mobile)
+            throw new Error("Incorrect mobile number/password.");
+          const auth = {
+            role: account.cfg.role,
+            id: account.row[account.cfg.idColumn],
+            name:
+              first(account.row, account.cfg.nameColumns) ||
+              account.row[account.cfg.idColumn],
+            at: Date.now(),
+          };
+          sessionStorage.setItem("q2p_partner_auth", JSON.stringify(auth));
+          location.replace(account.cfg.file);
+        } catch (e) {
+          err(e.message || "Login failed.");
+        } finally {
+          $("loginBtn").disabled = false;
+          $("loginBtn").textContent = "Login";
+        }
+      }
+      $("continueBtn").addEventListener("click", findAccount);
+      $("partnerId").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") findAccount();
+      });
+      $("loginBtn").addEventListener("click", login);
+      $("password").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") login();
+      });
+      $("backBtn").addEventListener("click", () => {
+        account = null;
+        $("stepPassword").classList.add("hidden");
+        $("stepId").classList.remove("hidden");
+        $("partnerId").focus();
+        clearErr();
+      });
+      (function () {
+        try {
+          const a = JSON.parse(
+            sessionStorage.getItem("q2p_partner_auth") || "null",
+          );
+          if (a && a.role && a.id) {
+            const files = {
+              retailer: "retailer-dashboard.html",
+              distributor: "distributor-dashboard.html",
+              super_distributor: "super-distributor-dashboard.html",
+              admin: "admin-dashboard.html",
+            };
+            if (files[a.role]) location.replace(files[a.role]);
+          }
+        } catch {}
+      })();
+    </script>
+  </body>
+</html>
