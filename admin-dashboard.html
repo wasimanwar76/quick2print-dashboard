@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en">
   <head>
-<style>html.q2p-auth-pending body{visibility:hidden}#q2pLogout{position:fixed;right:18px;top:18px;z-index:999999;border:0;border-radius:10px;padding:10px 14px;background:#e11d48;color:#fff;font-weight:800;box-shadow:0 6px 18px #0b104633;cursor:pointer}</style>
-<script>(function(){document.documentElement.classList.add('q2p-auth-pending');let a=null;try{a=JSON.parse(sessionStorage.getItem('q2p_partner_auth')||'null')}catch{}const age=a&&Date.now()-Number(a.at||0);if(!a||a.role!=='admin'||a.id!=='admin@quick2print.in'||!Number.isFinite(age)||age<0||age>8*60*60*1000){try{sessionStorage.removeItem('q2p_partner_auth')}catch{}location.replace('index.html');return}window.q2pLoggedIn=a;document.addEventListener('DOMContentLoaded',()=>{document.documentElement.classList.remove('q2p-auth-pending');const b=document.createElement('button');b.id='q2pLogout';b.type='button';b.textContent='Logout';b.addEventListener('click',()=>{sessionStorage.removeItem('q2p_partner_auth');location.replace('index.html')});document.body.appendChild(b)});window.addEventListener('pageshow',()=>{let c=null;try{c=JSON.parse(sessionStorage.getItem('q2p_partner_auth')||'null')}catch{}if(!c||c.role!=='admin'||c.id!=='admin@quick2print.in')location.replace('index.html')})})();</script>
+<style>html.q2p-auth-pending body{visibility:hidden}#q2pLogout{position:static;flex:none;border:0;border-radius:10px;padding:10px 14px;background:#e11d48;color:#fff;font-weight:800;box-shadow:0 6px 18px #0b104633;cursor:pointer;white-space:nowrap;min-height:40px} @media(max-width:640px){#q2pLogout{padding:9px 10px;font-size:12px}}</style>
+<script>(function(){document.documentElement.classList.add('q2p-auth-pending');let a=null;try{a=JSON.parse(sessionStorage.getItem('q2p_partner_auth')||'null')}catch{}const age=a&&Date.now()-Number(a.at||0);if(!a||a.role!=='admin'||a.id!=='admin@quick2print.in'||!Number.isFinite(age)||age<0||age>8*60*60*1000){try{sessionStorage.removeItem('q2p_partner_auth')}catch{}location.replace('index.html');return}window.q2pLoggedIn=a;document.addEventListener('DOMContentLoaded',()=>{document.documentElement.classList.remove('q2p-auth-pending');const b=document.createElement('button');b.id='q2pLogout';b.type='button';b.textContent='Logout';b.setAttribute('aria-label','Log out of Quick2Print Admin');b.addEventListener('click',()=>{try{sessionStorage.removeItem('q2p_partner_auth')}catch{}location.replace('index.html')});const actions=document.querySelector('main > header .flex.items-center.gap-2:last-child');if(actions){actions.appendChild(b)}else{b.style.position='fixed';b.style.right='18px';b.style.top='18px';document.body.appendChild(b)}}); window.addEventListener('pageshow',()=>{let c=null;try{c=JSON.parse(sessionStorage.getItem('q2p_partner_auth')||'null')}catch{}if(!c||c.role!=='admin'||c.id!=='admin@quick2print.in')location.replace('index.html')})})();</script>
 
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -909,6 +909,16 @@
         color: #17105b;
         background: #ffffff;
       }
+
+      main > header .flex.items-center.justify-between { flex-wrap: wrap; }
+      main > header .flex.items-center.gap-2:last-child { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:10px; }
+      @media (max-width: 640px) {
+        main > header .flex.items-center.gap-2:last-child { gap:6px; }
+        main > header .btn-yellow { padding:9px 10px; }
+      }
+
+      /* Database settings are hard-coded in the script and hidden from users. */
+      #navigation [data-page="settings"], #page-settings { display: none !important; }
     </style>
   </head>
   <body>
@@ -1047,7 +1057,7 @@
                   aria-label="Select year"
                 ></select>
                 <input type="hidden" id="overviewDate" />
-                <button class="btn btn-light" onclick="renderAll()">
+                <button class="btn btn-light" onclick="refreshDashboard(this)">
                   ↻ Refresh
                 </button>
               </div>
@@ -2201,8 +2211,32 @@
         subscriptionSupabaseClient = null,
         subscriptionRows = [],
         liveMode = false;
-      const SUBS_CONFIG_KEY = "q2p_subscriptions_supabase_config_v1";
-      const SB_CONFIG_KEY = "q2p_supabase_config_v1";
+      // Quick2Print database configuration. Browser-safe publishable keys only.
+      // Credentials are defined here and are never saved to localStorage/sessionStorage.
+      const Q2P_SUPABASE_CONFIG = Object.freeze({
+        url: "https://gepkipszweqhftwaejbu.supabase.co",
+        key: "sb_publishable_forPZqB40NrPCFGQsdqeZw_4QTxOgBH",
+        tables: Object.freeze({
+          distributors: "distributors",
+          retailers: "retailers",
+          shops: "shops",
+          payments: "payments",
+          subscriptions: "subscriptions",
+          plans: "plans",
+          rules: "commission_rules",
+          commissions: "commission_ledger",
+          payouts: "commission_payouts",
+          auditLogs: "audit_logs",
+        }),
+      });
+      // shop_subscriptions is in a separate project. Add that project's public
+      // URL/key here when available; do not put a service-role key in this file.
+      const Q2P_SUBSCRIPTIONS_CONFIG = Object.freeze({
+        url: "",
+        key: "",
+        table: "shop_subscriptions",
+        plansTable: "plans",
+      });
       function getTableNames() {
         return {
           distributors:
@@ -2243,34 +2277,10 @@
         if (mode)
           mode.textContent = ok ? "Live Supabase data" : "Supabase workspace";
       }
-      function saveSbConfig() {
-        if (!supabaseConfig) return;
-        try {
-          localStorage.setItem(SB_CONFIG_KEY, JSON.stringify(supabaseConfig));
-        } catch (e) {}
-      }
+      function saveSbConfig() { /* Intentionally no browser-storage persistence. */ }
       function restoreSbConfig() {
-        try {
-          let c = JSON.parse(localStorage.getItem(SB_CONFIG_KEY) || "null");
-          if (!c) return;
-          document.getElementById("sbUrl").value = c.url || "";
-          document.getElementById("sbKey").value = c.key || "";
-          const ids = {
-            distributors: "tbDistributors",
-            retailers: "tbRetailers",
-            shops: "tbShops",
-            payments: "tbPayments",
-            subscriptions: "tbSubscriptions",
-            plans: "tbPlans",
-            rules: "tbRules",
-            commissions: "tbCommissions",
-            payouts: "tbPayouts",
-            auditLogs: "tbAuditLogs",
-          };
-          for (const [key, id] of Object.entries(ids))
-            if (c.tables?.[key])
-              document.getElementById(id).value = c.tables[key];
-        } catch (e) {}
+        // Settings UI is hidden; use the constants defined in this script.
+        return;
       }
       async function connectSupabase(url, key, tables) {
         if (!window.supabase?.createClient)
@@ -2285,7 +2295,6 @@
           },
         });
         supabaseConfig = { url, key, tables };
-        saveSbConfig();
         const test = await supabaseClient
           .from(tables.distributors)
           .select("*")
@@ -2584,9 +2593,6 @@
         supabaseClient = null;
         supabaseConfig = null;
         liveMode = false;
-        try {
-          localStorage.removeItem(SB_CONFIG_KEY);
-        } catch (e) {}
         data = loadData();
         setDbStatus(false, "Disconnected. Showing local demo data.");
         renderAll();
@@ -3043,6 +3049,33 @@
           toast("Super distributor deleted.");
         } catch (err) {
           toast("Delete failed: " + err.message);
+        }
+      }
+
+      async function refreshDashboard(button) {
+        const original = button?.innerHTML || "↻ Refresh";
+        if (button) { button.disabled = true; button.innerHTML = '<span class="q2p-spinner"></span> Refreshing…'; }
+        try {
+          if (supabaseClient && supabaseConfig) {
+            await loadSupabaseData();
+            await loadSuperDistributors();
+          }
+          if (subscriptionSupabaseClient) {
+            const c = Q2P_SUBSCRIPTIONS_CONFIG;
+            const result = await subscriptionSupabaseClient.from(c.table).select("*").order("created_at", { ascending: false }).limit(2000);
+            if (result.error) throw result.error;
+            let planNames = {};
+            const plansResult = await subscriptionSupabaseClient.from(c.plansTable).select("plan_id,plan_name").limit(1000);
+            if (!plansResult.error) (plansResult.data || []).forEach(p => { planNames[p.plan_id] = p.plan_name; });
+            subscriptionRows = (result.data || []).map(r => ({ ...r, plan_name: planNames[r.plan_id] || r.plan_id }));
+          }
+          renderAll();
+          toast(supabaseClient ? "Dashboard data refreshed." : "Dashboard refreshed using currently loaded data. Database is not connected.");
+        } catch (err) {
+          console.error("Dashboard refresh failed:", err);
+          toast("Refresh failed: " + (err.message || "Please check Supabase connection."));
+        } finally {
+          if (button) { button.disabled = false; button.innerHTML = original; }
         }
       }
 
@@ -4868,10 +4901,6 @@
               ...r,
               plan_name: planNames[r.plan_id] || r.plan_id,
             }));
-            localStorage.setItem(
-              SUBS_CONFIG_KEY,
-              JSON.stringify({ url, key, table, plansTable }),
-            );
             message.textContent = `Connected. Loaded ${subscriptionRows.length} subscription records from ${table}.`;
             renderAll();
             toast("Subscription project connected.");
@@ -4886,131 +4915,54 @@
         .addEventListener("click", () => {
           subscriptionSupabaseClient = null;
           subscriptionRows = [];
-          localStorage.removeItem(SUBS_CONFIG_KEY);
           document.getElementById("subsDbMessage").textContent =
             "Secondary project disconnected.";
           renderAll();
           toast("Subscription project disconnected.");
         });
-      (async function restoreSubscriptionProject() {
+      (async function autoConnectHardcodedSupabase() {
+        setDbStatus(false, "Connecting to Quick2Print database…");
         try {
-          const c = JSON.parse(localStorage.getItem(SUBS_CONFIG_KEY) || "null");
-          if (!c?.url || !c?.key) return;
-          document.getElementById("subsSbUrl").value = c.url;
-          document.getElementById("subsSbKey").value = c.key;
-          document.getElementById("subsTableName").value =
-            c.table || "shop_subscriptions";
-          document.getElementById("subsPlansTableName").value =
-            c.plansTable || "plans";
+          await connectSupabase(
+            Q2P_SUPABASE_CONFIG.url,
+            Q2P_SUPABASE_CONFIG.key,
+            { ...Q2P_SUPABASE_CONFIG.tables },
+          );
+          console.info("Quick2Print primary Supabase connected.");
+        } catch (err) {
+          liveMode = false;
+          setDbStatus(false, "Automatic database connection failed: " + err.message);
+          console.error("Quick2Print primary Supabase connection failed:", err);
+        }
+      })();
+      // Automatically connect the secondary subscription project only when its
+      // URL/key have been supplied in Q2P_SUBSCRIPTIONS_CONFIG above.
+      (async function autoConnectHardcodedSubscriptions() {
+        const c = Q2P_SUBSCRIPTIONS_CONFIG;
+        if (!c.url || !c.key) {
+          const message = document.getElementById("subsDbMessage");
+          if (message) message.textContent = "Secondary project credentials are not configured in the script.";
+          return;
+        }
+        try {
+          if (!window.supabase?.createClient) throw new Error("Supabase JS library did not load.");
           const client = window.supabase.createClient(c.url, c.key, {
-            auth: {
-              persistSession: false,
-              autoRefreshToken: false,
-              detectSessionInUrl: false,
-            },
+            auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
           });
-          const result = await client
-            .from(c.table || "shop_subscriptions")
-            .select("*")
-            .order("created_at", { ascending: false })
-            .limit(2000);
+          const result = await client.from(c.table).select("*").order("created_at", { ascending: false }).limit(2000);
           if (result.error) throw result.error;
           subscriptionSupabaseClient = client;
           let planNames = {};
-          const pr = await client
-            .from(c.plansTable || "plans")
-            .select("plan_id,plan_name")
-            .limit(1000);
-          if (!pr.error)
-            (pr.data || []).forEach(
-              (p) => (planNames[p.plan_id] = p.plan_name),
-            );
-          subscriptionRows = (result.data || []).map((r) => ({
-            ...r,
-            plan_name: planNames[r.plan_id] || r.plan_id,
-          }));
-          document.getElementById("subsDbMessage").textContent =
-            `Reconnected. Loaded ${subscriptionRows.length} subscription records.`;
+          const plansResult = await client.from(c.plansTable).select("plan_id,plan_name").limit(1000);
+          if (!plansResult.error) (plansResult.data || []).forEach((p) => { planNames[p.plan_id] = p.plan_name; });
+          subscriptionRows = (result.data || []).map((r) => ({ ...r, plan_name: planNames[r.plan_id] || r.plan_id }));
+          const message = document.getElementById("subsDbMessage");
+          if (message) message.textContent = `Connected. Loaded ${subscriptionRows.length} subscription records.`;
           renderAll();
         } catch (err) {
-          document.getElementById("subsDbMessage").textContent =
-            "Could not reconnect subscription project: " + err.message;
-        }
-      })();
-      document.getElementById("ruleForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        renderRulePreview();
-      });
-      function saveBrand() {
-        let v = document.getElementById("brandTitle").value.trim();
-        if (!v) return toast("Enter a title.");
-        document.title = v + " | Quick2Print";
-        log("Updated brand title", v);
-        persist();
-        toast("Title updated for this page session.");
-      }
-      (function initOverviewMonthYearDropdowns() {
-        const monthSelect = document.getElementById("overviewMonthSelect");
-        const yearSelect = document.getElementById("overviewYearSelect");
-        const hiddenDate = document.getElementById("overviewDate");
-        const now = new Date();
-        const currentYear = now.getFullYear();
-        for (let year = currentYear - 7; year <= currentYear + 2; year++) {
-          const option = document.createElement("option");
-          option.value = String(year);
-          option.textContent = String(year);
-          yearSelect.appendChild(option);
-        }
-        monthSelect.value = String(now.getMonth() + 1).padStart(2, "0");
-        yearSelect.value = String(currentYear);
-        function syncOverviewPeriod() {
-          hiddenDate.value = `${yearSelect.value}-${monthSelect.value}`;
-          const label = new Date(
-            `${hiddenDate.value}-01T12:00:00`,
-          ).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
-          const message = document.getElementById("overviewPeriodMessage");
-          if (message)
-            message.textContent = `Showing report for ${label}. Sales and charts include PAID records for this month only.`;
-          renderAll();
-        }
-        monthSelect.addEventListener("change", syncOverviewPeriod);
-        yearSelect.addEventListener("change", syncOverviewPeriod);
-        syncOverviewPeriod();
-      })();
-      restoreSbConfig();
-      renderAll();
-      renderRulePreview();
-      // Reconnect automatically using the URL/key the admin previously saved.
-      (async function autoConnectSavedSupabase() {
-        let saved;
-        try {
-          saved = JSON.parse(localStorage.getItem(SB_CONFIG_KEY) || "null");
-        } catch (_) {
-          saved = null;
-        }
-        if (!saved?.url || !saved?.key) {
-          setDbStatus(
-            false,
-            "Add your Supabase URL and publishable/anon key in Settings once. They will be reused on future visits.",
-          );
-          return;
-        }
-        setDbStatus(false, "Reconnecting to your saved Supabase project…");
-        try {
-          await connectSupabase(
-            saved.url,
-            saved.key,
-            saved.tables || getTableNames(),
-          );
-        } catch (err) {
-          liveMode = false;
-          setDbStatus(
-            false,
-            "Automatic connection failed: " +
-              err.message +
-              ". Check the saved URL/key, table names and Supabase RLS policies in Settings.",
-          );
-          console.error("Quick2Print Supabase auto-connect failed:", err);
+          const message = document.getElementById("subsDbMessage");
+          if (message) message.textContent = "Automatic subscription connection failed: " + err.message;
+          console.error("Quick2Print subscription Supabase connection failed:", err);
         }
       })();
       (function () {

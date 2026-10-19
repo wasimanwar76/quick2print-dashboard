@@ -1,908 +1,2373 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Quick2print | Super Distributor Portal</title>
-<link rel="icon" href="./logo.png" />
-<!-- Quick2Print login guard: direct dashboard access requires a valid login session. -->
-<style>
-html.q2p-auth-pending body{visibility:hidden}
-#q2pLogout{display:inline-flex;align-items:center;border:1.5px solid #f3b6d4;border-radius:10px;padding:9px 14px;background:#fff;color:#b0005f;font:700 13px Figtree,system-ui,sans-serif;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
-#q2pLogout:hover{background:#e6007e;border-color:#e6007e;color:#fff}
-#q2pAuthExpired{position:fixed;inset:0;z-index:100000;background:#1a1464;color:#fff;display:grid;place-items:center;padding:24px;font:700 16px system-ui}
-</style>
-<script>
-(function(){document.documentElement.classList.add('q2p-auth-pending');let a=null;try{a=JSON.parse(sessionStorage.getItem('q2p_partner_auth')||'null')}catch{}const expected='super_distributor';const age=a&&Date.now()-Number(a.at||0);if(!a||a.role!==expected||!a.id||!Number.isFinite(age)||age<0||age>8*60*60*1000){try{sessionStorage.removeItem('q2p_partner_auth')}catch{}location.replace('index.html');return}window.q2pLoggedIn=a;document.addEventListener('DOMContentLoaded',()=>{document.documentElement.classList.remove('q2p-auth-pending');const b=document.createElement('button');b.id='q2pLogout';b.type='button';b.textContent='Logout';b.title='Log out of Quick2Print';b.addEventListener('click',()=>{sessionStorage.removeItem('q2p_partner_auth');location.replace('index.html')});(document.getElementById('logoutSlot')||document.body).appendChild(b);const id=a.id;const name=a.name||id;const nameEl=document.getElementById('profileName');const codeEl=document.getElementById('profileCode');if(nameEl)nameEl.textContent=name;if(codeEl)codeEl.textContent=id;});window.addEventListener('pageshow',()=>{let current=null;try{current=JSON.parse(sessionStorage.getItem('q2p_partner_auth')||'null')}catch{}if(!current||current.role!==expected||current.id!==a.id)location.replace('index.html')})})();
-</script>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Quick2print | Super Distributor Portal</title>
+    <link rel="icon" href="./logo.png" />
+    <!-- Quick2Print login guard: direct dashboard access requires a valid login session. -->
+    <style>
+      html.q2p-auth-pending body {
+        visibility: hidden;
+      }
+      #q2pLogout {
+        display: inline-flex;
+        align-items: center;
+        border: 1.5px solid #f3b6d4;
+        border-radius: 10px;
+        padding: 9px 14px;
+        background: #fff;
+        color: #b0005f;
+        font:
+          700 13px Figtree,
+          system-ui,
+          sans-serif;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          color 0.2s,
+          border-color 0.2s;
+      }
+      #q2pLogout:hover {
+        background: #e6007e;
+        border-color: #e6007e;
+        color: #fff;
+      }
+      #q2pAuthExpired {
+        position: fixed;
+        inset: 0;
+        z-index: 100000;
+        background: #1a1464;
+        color: #fff;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        font: 700 16px system-ui;
+      }
 
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://unpkg.com/lucide@0.454.0"></script>
+      /* Workspace connection is configured in this file; never show setup to end users. */
+      #connectScreen {
+        display: none !important;
+      }
+    </style>
+    <script>
+      (function () {
+        document.documentElement.classList.add("q2p-auth-pending");
+        let a = null;
+        try {
+          a = JSON.parse(sessionStorage.getItem("q2p_partner_auth") || "null");
+        } catch {}
+        const expected = "super_distributor";
+        const age = a && Date.now() - Number(a.at || 0);
+        if (
+          !a ||
+          a.role !== expected ||
+          !a.id ||
+          !Number.isFinite(age) ||
+          age < 0 ||
+          age > 8 * 60 * 60 * 1000
+        ) {
+          try {
+            sessionStorage.removeItem("q2p_partner_auth");
+          } catch {}
+          location.replace("index.html");
+          return;
+        }
+        window.q2pLoggedIn = a;
+        document.addEventListener("DOMContentLoaded", () => {
+          document.documentElement.classList.remove("q2p-auth-pending");
+          const b = document.createElement("button");
+          b.id = "q2pLogout";
+          b.type = "button";
+          b.textContent = "Logout";
+          b.title = "Log out of Quick2Print";
+          b.addEventListener("click", () => {
+            sessionStorage.removeItem("q2p_partner_auth");
+            location.replace("index.html");
+          });
+          (document.getElementById("logoutSlot") || document.body).appendChild(
+            b,
+          );
+          const id = a.id;
+          const name = a.name || id;
+          const nameEl = document.getElementById("profileName");
+          const codeEl = document.getElementById("profileCode");
+          if (nameEl) nameEl.textContent = name;
+          if (codeEl) codeEl.textContent = id;
+        });
+        window.addEventListener("pageshow", () => {
+          let current = null;
+          try {
+            current = JSON.parse(
+              sessionStorage.getItem("q2p_partner_auth") || "null",
+            );
+          } catch {}
+          if (!current || current.role !== expected || current.id !== a.id)
+            location.replace("index.html");
+        });
+      })();
+    </script>
 
-<style>
-:root{
-  /* Palette sampled from the Quick2print logo */
-  --navy:#1a1464; --navy-2:#2b2391; --ink:#15113f;
-  --blue:#1d78d8; --cyan:#17b2e6; --mag:#e6007e; --yel:#fdb813;
-  --bg:#f5f6fb; --card:#fff; --line:#e3e5f2; --mut:#5f6585; --tint:#eef0fb;
-  --ease:cubic-bezier(.16,1,.3,1);
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;font:400 15px/1.55 Figtree,system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden}
-h1,h2,h3{font-family:"Baloo 2",Figtree,system-ui,sans-serif;margin:0;line-height:1.15;color:var(--navy);font-weight:700}
-h2{font-size:clamp(22px,3vw,28px)} h3{font-size:18px}
-p{margin:0}
-button{font:inherit;color:inherit;cursor:pointer}
-code{background:var(--tint);padding:1px 6px;border-radius:6px;font-size:13px}
-.hidden{display:none!important}
-.muted{color:var(--mut)}
-:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+    <script src="./block.js"></script>
 
-/* Layout */
-.shell{display:grid;grid-template-columns:272px minmax(0,1fr);min-height:100vh}
-.side{position:sticky;top:0;height:100vh;background:#fff;border-right:1px solid var(--line);padding:22px 16px 18px;display:flex;flex-direction:column;gap:18px;z-index:40;overflow-y:auto;transition:transform .35s var(--ease)}
-.side::before{content:"";position:absolute;inset:0 0 auto;height:5px;background:linear-gradient(90deg,var(--cyan) 0 25%,var(--mag) 25% 50%,var(--yel) 50% 75%,var(--navy) 75%)}
-.brand{display:block;padding:10px 4px 0}
-.brand img{display:block;width:100%;max-width:216px;height:auto;margin:0 auto}
-.nav-label{padding:0 12px;font-size:13px;font-weight:600;color:var(--mut)}
-.navlist{display:flex;flex-direction:column;gap:4px;flex:1}
-.nav{display:flex;align-items:center;gap:12px;width:100%;padding:11px 14px;border:0;border-radius:12px;background:none;color:#454b73;font-weight:600;font-size:14.5px;text-align:left;position:relative;transition:background .2s,color .2s}
-.nav:hover{background:var(--tint);color:var(--navy)}
-.nav.active{background:var(--navy);color:#fff}
-.nav.active::before{content:"";position:absolute;left:-16px;top:20%;height:60%;width:5px;border-radius:0 5px 5px 0;background:var(--yel)}
-.nav svg{width:18px;height:18px;flex:none}
-.nav.active svg{color:var(--yel)}
-.who{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--tint)}
-.who .av{width:40px;height:40px;border-radius:12px;background:var(--yel);color:var(--navy);display:grid;place-items:center;flex:none}
-.who b{display:block;font-size:14px;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.who small{display:block;font-size:12.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.who>div{min-width:0}
-.scrim{position:fixed;inset:0;background:rgba(21,17,63,.5);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s;z-index:35}
-.scrim.show{opacity:1;pointer-events:auto}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@0.454.0"></script>
 
-.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;flex-wrap:wrap;gap:12px 14px;padding:12px clamp(16px,3vw,32px);background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.top .ttl{flex:1;min-width:0}
-.top .crumb{font-size:13px;color:var(--mut);font-weight:500}
-.top h1{font-size:clamp(21px,2.6vw,27px)}
-.top-logo{display:none;height:34px;width:auto}
-.top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.menu{display:none;width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:#fff;place-items:center;color:var(--navy)}
-.content{padding:clamp(16px,3vw,32px);max-width:1480px;width:100%;margin:0 auto}
+    <style>
+      :root {
+        /* Palette sampled from the Quick2print logo */
+        --navy: #1a1464;
+        --navy-2: #2b2391;
+        --ink: #15113f;
+        --blue: #1d78d8;
+        --cyan: #17b2e6;
+        --mag: #e6007e;
+        --yel: #fdb813;
+        --bg: #f5f6fb;
+        --card: #fff;
+        --line: #e3e5f2;
+        --mut: #5f6585;
+        --tint: #eef0fb;
+        --ease: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        font:
+          400 15px/1.55 Figtree,
+          system-ui,
+          sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: "Baloo 2", Figtree, system-ui, sans-serif;
+        margin: 0;
+        line-height: 1.15;
+        color: var(--navy);
+        font-weight: 700;
+      }
+      h2 {
+        font-size: clamp(22px, 3vw, 28px);
+      }
+      h3 {
+        font-size: 18px;
+      }
+      p {
+        margin: 0;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+      }
+      code {
+        background: var(--tint);
+        padding: 1px 6px;
+        border-radius: 6px;
+        font-size: 13px;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .muted {
+        color: var(--mut);
+      }
+      :focus-visible {
+        outline: 3px solid var(--blue);
+        outline-offset: 2px;
+      }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+      }
 
-/* Components */
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(26,20,100,.04)}
-.pad{padding:clamp(18px,2.4vw,26px)}
-.grid{display:grid;gap:18px}
-.kpis{grid-template-columns:repeat(auto-fit,minmax(215px,1fr));margin-bottom:22px}
-.two{grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr))}
-.three{grid-template-columns:repeat(auto-fit,minmax(210px,1fr));margin-bottom:22px}
-.kpi{padding:18px 20px;border-left:6px solid var(--c,var(--blue));transition:border-color .2s,box-shadow .25s,transform .25s var(--ease)}
-.kpi:hover{box-shadow:0 10px 26px -10px rgba(26,20,100,.25);transform:translateY(-2px)}
-.kpi .lbl2{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;font-weight:600;color:var(--mut)}
-.kpi .lbl2 svg{width:20px;height:20px;color:var(--c,var(--blue))}
-.stat{font:700 clamp(28px,3vw,34px)/1.1 "Baloo 2",Figtree,sans-serif;color:var(--navy);margin-top:6px;letter-spacing:-.01em;overflow-wrap:anywhere}
-.kpi small{display:block;margin-top:8px;font-size:13px;color:var(--mut)}
-.sec-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px}
-.sec-head p{margin-top:4px;max-width:62ch}
-.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.search{position:relative}
-.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--mut);pointer-events:none}
-.search .field{padding-left:36px;min-width:210px}
+      /* Layout */
+      .shell {
+        display: grid;
+        grid-template-columns: 272px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+      .side {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        background: #fff;
+        border-right: 1px solid var(--line);
+        padding: 22px 16px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        z-index: 40;
+        overflow-y: auto;
+        transition: transform 0.35s var(--ease);
+      }
+      .side::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 5px;
+        background: linear-gradient(
+          90deg,
+          var(--cyan) 0 25%,
+          var(--mag) 25% 50%,
+          var(--yel) 50% 75%,
+          var(--navy) 75%
+        );
+      }
+      .brand {
+        display: block;
+        padding: 10px 4px 0;
+      }
+      .brand img {
+        display: block;
+        width: 100%;
+        max-width: 216px;
+        height: auto;
+        margin: 0 auto;
+      }
+      .nav-label {
+        padding: 0 12px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--mut);
+      }
+      .navlist {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex: 1;
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 11px 14px;
+        border: 0;
+        border-radius: 12px;
+        background: none;
+        color: #454b73;
+        font-weight: 600;
+        font-size: 14.5px;
+        text-align: left;
+        position: relative;
+        transition:
+          background 0.2s,
+          color 0.2s;
+      }
+      .nav:hover {
+        background: var(--tint);
+        color: var(--navy);
+      }
+      .nav.active {
+        background: var(--navy);
+        color: #fff;
+      }
+      .nav.active::before {
+        content: "";
+        position: absolute;
+        left: -16px;
+        top: 20%;
+        height: 60%;
+        width: 5px;
+        border-radius: 0 5px 5px 0;
+        background: var(--yel);
+      }
+      .nav svg {
+        width: 18px;
+        height: 18px;
+        flex: none;
+      }
+      .nav.active svg {
+        color: var(--yel);
+      }
+      .who {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 14px;
+        background: var(--tint);
+      }
+      .who .av {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: var(--yel);
+        color: var(--navy);
+        display: grid;
+        place-items: center;
+        flex: none;
+      }
+      .who b {
+        display: block;
+        font-size: 14px;
+        color: var(--navy);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .who small {
+        display: block;
+        font-size: 12.5px;
+        color: var(--mut);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .who > div {
+        min-width: 0;
+      }
+      .scrim {
+        position: fixed;
+        inset: 0;
+        background: rgba(21, 17, 63, 0.5);
+        backdrop-filter: blur(3px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+        z-index: 35;
+      }
+      .scrim.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
 
-/* Hero */
-.hero{position:relative;overflow:hidden;border-radius:22px;background:var(--navy);color:#fff;padding:clamp(22px,4vw,40px) clamp(20px,4vw,40px) clamp(30px,4.5vw,48px);margin-bottom:22px;display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end;justify-content:space-between}
-.hero>div{position:relative;z-index:1}
-.hero h2{color:#fff;font-size:clamp(28px,4.4vw,42px)}
-.hero p{color:#cfd3f5;margin-top:8px;max-width:56ch}
-.hero .reg{position:absolute;right:-30px;top:-30px;width:230px;height:230px;opacity:.16;color:#fff}
-.hero .ink{position:absolute;left:0;right:0;bottom:0;height:10px;display:flex}
-.hero .ink i{flex:1;transform-origin:left;animation:ink .9s var(--ease) both}
-.hero .ink i:nth-child(1){background:var(--cyan)}
-.hero .ink i:nth-child(2){background:var(--mag);animation-delay:.12s}
-.hero .ink i:nth-child(3){background:var(--yel);animation-delay:.24s}
-.hero .ink i:nth-child(4){background:#0d0a3a;animation-delay:.36s}
-@keyframes ink{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-.hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+      .top {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px 14px;
+        padding: 12px clamp(16px, 3vw, 32px);
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--line);
+      }
+      .top .ttl {
+        flex: 1;
+        min-width: 0;
+      }
+      .top .crumb {
+        font-size: 13px;
+        color: var(--mut);
+        font-weight: 500;
+      }
+      .top h1 {
+        font-size: clamp(21px, 2.6vw, 27px);
+      }
+      .top-logo {
+        display: none;
+        height: 34px;
+        width: auto;
+      }
+      .top-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .menu {
+        display: none;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: #fff;
+        place-items: center;
+        color: var(--navy);
+      }
+      .content {
+        padding: clamp(16px, 3vw, 32px);
+        max-width: 1480px;
+        width: 100%;
+        margin: 0 auto;
+      }
 
-/* Buttons */
-.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:11px;padding:10px 16px;border:1.5px solid transparent;font-weight:700;font-size:14px;transition:background .2s,transform .2s var(--ease),box-shadow .2s,border-color .2s;user-select:none;white-space:nowrap}
-.btn svg{width:16px;height:16px}
-.btn:active:not(:disabled){transform:scale(.97)}
-.btn:disabled{opacity:.8;cursor:wait}
-.primary{background:var(--navy);color:#fff}
-.primary:hover:not(:disabled){background:var(--navy-2);box-shadow:0 8px 18px -8px rgba(26,20,100,.7)}
-.amber-btn{background:var(--yel);color:var(--navy)}
-.amber-btn:hover:not(:disabled){background:#ffc83a;box-shadow:0 8px 18px -8px rgba(253,184,19,.9)}
-.ghost-w{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.35)}
-.ghost-w:hover:not(:disabled){background:rgba(255,255,255,.22)}
-.light{background:#fff;color:var(--navy);border-color:var(--line)}
-.light:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}
-.btn .btn-spinner{display:none;width:16px;height:16px;border:2.2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .65s linear infinite}
-.btn.is-loading .btn-spinner{display:inline-block}
-.btn.is-loading .btn-icon{display:none}
-@keyframes spin{to{transform:rotate(360deg)}}
+      /* Components */
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        box-shadow: 0 1px 2px rgba(26, 20, 100, 0.04);
+      }
+      .pad {
+        padding: clamp(18px, 2.4vw, 26px);
+      }
+      .grid {
+        display: grid;
+        gap: 18px;
+      }
+      .kpis {
+        grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+        margin-bottom: 22px;
+      }
+      .two {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+      }
+      .three {
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        margin-bottom: 22px;
+      }
+      .kpi {
+        padding: 18px 20px;
+        border-left: 6px solid var(--c, var(--blue));
+        transition:
+          border-color 0.2s,
+          box-shadow 0.25s,
+          transform 0.25s var(--ease);
+      }
+      .kpi:hover {
+        box-shadow: 0 10px 26px -10px rgba(26, 20, 100, 0.25);
+        transform: translateY(-2px);
+      }
+      .kpi .lbl2 {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--mut);
+      }
+      .kpi .lbl2 svg {
+        width: 20px;
+        height: 20px;
+        color: var(--c, var(--blue));
+      }
+      .stat {
+        font:
+          700 clamp(28px, 3vw, 34px)/1.1 "Baloo 2",
+          Figtree,
+          sans-serif;
+        color: var(--navy);
+        margin-top: 6px;
+        letter-spacing: -0.01em;
+        overflow-wrap: anywhere;
+      }
+      .kpi small {
+        display: block;
+        margin-top: 8px;
+        font-size: 13px;
+        color: var(--mut);
+      }
+      .sec-head {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+      .sec-head p {
+        margin-top: 4px;
+        max-width: 62ch;
+      }
+      .tools {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .search {
+        position: relative;
+      }
+      .search svg {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 16px;
+        height: 16px;
+        color: var(--mut);
+        pointer-events: none;
+      }
+      .search .field {
+        padding-left: 36px;
+        min-width: 210px;
+      }
 
-/* Forms */
-.lbl{display:block;font-weight:700;font-size:13.5px;color:var(--navy)}
-.lbl .req{color:var(--mag)}
-.field{display:block;width:100%;margin-top:6px;border:1.5px solid var(--line);border-radius:11px;padding:10px 13px;background:#fff;color:var(--ink);font:500 14.5px Figtree,system-ui,sans-serif;transition:border-color .2s,box-shadow .2s}
-.field:hover{border-color:#c9cde6}
-.field:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(29,120,216,.16)}
-input,select{accent-color:var(--navy)}
-.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px}
-.err-text{color:#b0005f;font-weight:600;font-size:14px;min-height:0}
-.err-text:empty{display:none}
+      /* Hero */
+      .hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 22px;
+        background: var(--navy);
+        color: #fff;
+        padding: clamp(22px, 4vw, 40px) clamp(20px, 4vw, 40px)
+          clamp(30px, 4.5vw, 48px);
+        margin-bottom: 22px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 22px;
+        align-items: flex-end;
+        justify-content: space-between;
+      }
+      .hero > div {
+        position: relative;
+        z-index: 1;
+      }
+      .hero h2 {
+        color: #fff;
+        font-size: clamp(28px, 4.4vw, 42px);
+      }
+      .hero p {
+        color: #cfd3f5;
+        margin-top: 8px;
+        max-width: 56ch;
+      }
+      .hero .reg {
+        position: absolute;
+        right: -30px;
+        top: -30px;
+        width: 230px;
+        height: 230px;
+        opacity: 0.16;
+        color: #fff;
+      }
+      .hero .ink {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 10px;
+        display: flex;
+      }
+      .hero .ink i {
+        flex: 1;
+        transform-origin: left;
+        animation: ink 0.9s var(--ease) both;
+      }
+      .hero .ink i:nth-child(1) {
+        background: var(--cyan);
+      }
+      .hero .ink i:nth-child(2) {
+        background: var(--mag);
+        animation-delay: 0.12s;
+      }
+      .hero .ink i:nth-child(3) {
+        background: var(--yel);
+        animation-delay: 0.24s;
+      }
+      .hero .ink i:nth-child(4) {
+        background: #0d0a3a;
+        animation-delay: 0.36s;
+      }
+      @keyframes ink {
+        from {
+          transform: scaleX(0);
+        }
+        to {
+          transform: scaleX(1);
+        }
+      }
+      .hero-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
 
-/* Tables */
-.tbl-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:640px}
-th,td{padding:14px 18px;text-align:left;font-size:14.5px}
-th{font-size:13px;font-weight:700;color:var(--mut);background:#f8f9fd;border-bottom:1px solid var(--line);white-space:nowrap}
-td{border-bottom:1px solid #eef0f8;color:#323a63;transition:background .15s}
-tbody tr:last-child td{border-bottom:0}
-tbody tr:hover td{background:#f7f8fe}
-td .nm{font-weight:700;color:var(--navy)}
-td .sub{font-size:13px;color:var(--mut)}
-td.empty{text-align:center;padding:38px 18px;color:var(--mut)}
-.code{display:inline-block;font:600 12.5px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--tint);color:var(--navy);padding:3px 9px;border-radius:7px}
-.pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:3px 11px;border-radius:999px;background:#e8f8ef;color:#0a7a45;text-transform:capitalize}
-.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:#12b76a}
-.pill.inactive,.pill.suspended{background:#fde8f2;color:#a3004f}
-.pill.inactive::before,.pill.suspended::before{background:var(--mag)}
+      /* Buttons */
+      .btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border-radius: 11px;
+        padding: 10px 16px;
+        border: 1.5px solid transparent;
+        font-weight: 700;
+        font-size: 14px;
+        transition:
+          background 0.2s,
+          transform 0.2s var(--ease),
+          box-shadow 0.2s,
+          border-color 0.2s;
+        user-select: none;
+        white-space: nowrap;
+      }
+      .btn svg {
+        width: 16px;
+        height: 16px;
+      }
+      .btn:active:not(:disabled) {
+        transform: scale(0.97);
+      }
+      .btn:disabled {
+        opacity: 0.8;
+        cursor: wait;
+      }
+      .primary {
+        background: var(--navy);
+        color: #fff;
+      }
+      .primary:hover:not(:disabled) {
+        background: var(--navy-2);
+        box-shadow: 0 8px 18px -8px rgba(26, 20, 100, 0.7);
+      }
+      .amber-btn {
+        background: var(--yel);
+        color: var(--navy);
+      }
+      .amber-btn:hover:not(:disabled) {
+        background: #ffc83a;
+        box-shadow: 0 8px 18px -8px rgba(253, 184, 19, 0.9);
+      }
+      .ghost-w {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.35);
+      }
+      .ghost-w:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.22);
+      }
+      .light {
+        background: #fff;
+        color: var(--navy);
+        border-color: var(--line);
+      }
+      .light:hover:not(:disabled) {
+        border-color: var(--blue);
+        color: var(--blue);
+      }
+      .btn .btn-spinner {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2.2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.65s linear infinite;
+      }
+      .btn.is-loading .btn-spinner {
+        display: inline-block;
+      }
+      .btn.is-loading .btn-icon {
+        display: none;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
 
-/* Overview extras */
-.mini{background:var(--tint);border-radius:14px;padding:16px}
-.mini span{font-size:13.5px;font-weight:600;color:var(--mut)}
-.mini div{font:700 26px/1.2 "Baloo 2",sans-serif;color:var(--navy);margin-top:4px;overflow-wrap:anywhere}
-.note{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px 14px;border-radius:12px;background:#f8f9fd;border:1px solid var(--line);font-size:14px;color:#3d446d}
-.note svg{width:18px;height:18px;flex:none;margin-top:2px;color:var(--blue)}
-.ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--tint);color:var(--navy)}
-.ic.y{background:#fff3cf;color:#8a5d00}
-.row{display:flex;gap:14px;align-items:center}
-.row>div:nth-child(2){flex:1;min-width:0}
-.action{width:100%;text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;transition:border-color .2s,transform .25s var(--ease),box-shadow .25s}
-.action+.action{margin-top:12px}
-.action:hover{border-color:var(--blue);transform:translateX(4px);box-shadow:0 8px 20px -12px rgba(29,120,216,.6)}
-.action b{display:block;color:var(--navy)}
-.action p{font-size:13.5px;color:var(--mut);margin-top:2px}
-.action .chev{color:var(--mut);transition:transform .25s}
-.action:hover .chev{transform:translateX(4px);color:var(--blue)}
-.bar-top{border-top:5px solid var(--c)}
-.verify{display:flex;gap:12px;align-items:flex-start;background:#fff9e6;border-color:#f6dc8a}
-.verify svg{flex:none;color:#8a5d00;margin-top:2px}
+      /* Forms */
+      .lbl {
+        display: block;
+        font-weight: 700;
+        font-size: 13.5px;
+        color: var(--navy);
+      }
+      .lbl .req {
+        color: var(--mag);
+      }
+      .field {
+        display: block;
+        width: 100%;
+        margin-top: 6px;
+        border: 1.5px solid var(--line);
+        border-radius: 11px;
+        padding: 10px 13px;
+        background: #fff;
+        color: var(--ink);
+        font:
+          500 14.5px Figtree,
+          system-ui,
+          sans-serif;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .field:hover {
+        border-color: #c9cde6;
+      }
+      .field:focus {
+        outline: none;
+        border-color: var(--blue);
+        box-shadow: 0 0 0 4px rgba(29, 120, 216, 0.16);
+      }
+      input,
+      select {
+        accent-color: var(--navy);
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+        gap: 14px;
+      }
+      .err-text {
+        color: #b0005f;
+        font-weight: 600;
+        font-size: 14px;
+        min-height: 0;
+      }
+      .err-text:empty {
+        display: none;
+      }
 
-/* Pages */
-.page{display:none}
-.page.active{display:block;animation:enter .4s var(--ease) both}
-@keyframes enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.status{display:flex;align-items:center;gap:8px;margin-top:22px;font-size:13.5px;font-weight:600;color:var(--mut)}
-.status .dot{width:8px;height:8px;border-radius:50%;background:var(--blue);flex:none}
-.status.err{color:#b0005f}.status.err .dot{background:var(--mag)}
+      /* Tables */
+      .tbl-wrap {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 640px;
+      }
+      th,
+      td {
+        padding: 14px 18px;
+        text-align: left;
+        font-size: 14.5px;
+      }
+      th {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--mut);
+        background: #f8f9fd;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      td {
+        border-bottom: 1px solid #eef0f8;
+        color: #323a63;
+        transition: background 0.15s;
+      }
+      tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      tbody tr:hover td {
+        background: #f7f8fe;
+      }
+      td .nm {
+        font-weight: 700;
+        color: var(--navy);
+      }
+      td .sub {
+        font-size: 13px;
+        color: var(--mut);
+      }
+      td.empty {
+        text-align: center;
+        padding: 38px 18px;
+        color: var(--mut);
+      }
+      .code {
+        display: inline-block;
+        font:
+          600 12.5px ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+        background: var(--tint);
+        color: var(--navy);
+        padding: 3px 9px;
+        border-radius: 7px;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        font-weight: 700;
+        padding: 3px 11px;
+        border-radius: 999px;
+        background: #e8f8ef;
+        color: #0a7a45;
+        text-transform: capitalize;
+      }
+      .pill::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #12b76a;
+      }
+      .pill.inactive,
+      .pill.suspended {
+        background: #fde8f2;
+        color: #a3004f;
+      }
+      .pill.inactive::before,
+      .pill.suspended::before {
+        background: var(--mag);
+      }
 
-/* Modal */
-.overlay{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(21,17,63,.55);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .28s var(--ease)}
-.overlay.show{opacity:1;pointer-events:auto}
-.modal-box{width:100%;max-width:600px;max-height:92vh;overflow-y:auto;position:relative;transform:translateY(18px) scale(.97);transition:transform .32s var(--ease)}
-.overlay.show .modal-box{transform:none}
-.modal-box::before,.connect-card::before{content:"";position:sticky;display:block;top:0;height:6px;margin:-1px -1px 0;background:linear-gradient(90deg,var(--cyan) 0 25%,var(--mag) 25% 50%,var(--yel) 50% 75%,var(--navy) 75%);border-radius:16px 16px 0 0;z-index:2}
-.modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}
-.x{width:40px;height:40px;padding:0;flex:none}
+      /* Overview extras */
+      .mini {
+        background: var(--tint);
+        border-radius: 14px;
+        padding: 16px;
+      }
+      .mini span {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--mut);
+      }
+      .mini div {
+        font:
+          700 26px/1.2 "Baloo 2",
+          sans-serif;
+        color: var(--navy);
+        margin-top: 4px;
+        overflow-wrap: anywhere;
+      }
+      .note {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        margin-top: 14px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: #f8f9fd;
+        border: 1px solid var(--line);
+        font-size: 14px;
+        color: #3d446d;
+      }
+      .note svg {
+        width: 18px;
+        height: 18px;
+        flex: none;
+        margin-top: 2px;
+        color: var(--blue);
+      }
+      .ic {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        flex: none;
+        background: var(--tint);
+        color: var(--navy);
+      }
+      .ic.y {
+        background: #fff3cf;
+        color: #8a5d00;
+      }
+      .row {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+      }
+      .row > div:nth-child(2) {
+        flex: 1;
+        min-width: 0;
+      }
+      .action {
+        width: 100%;
+        text-align: left;
+        background: #fff;
+        border: 1.5px solid var(--line);
+        border-radius: 14px;
+        padding: 14px 16px;
+        transition:
+          border-color 0.2s,
+          transform 0.25s var(--ease),
+          box-shadow 0.25s;
+      }
+      .action + .action {
+        margin-top: 12px;
+      }
+      .action:hover {
+        border-color: var(--blue);
+        transform: translateX(4px);
+        box-shadow: 0 8px 20px -12px rgba(29, 120, 216, 0.6);
+      }
+      .action b {
+        display: block;
+        color: var(--navy);
+      }
+      .action p {
+        font-size: 13.5px;
+        color: var(--mut);
+        margin-top: 2px;
+      }
+      .action .chev {
+        color: var(--mut);
+        transition: transform 0.25s;
+      }
+      .action:hover .chev {
+        transform: translateX(4px);
+        color: var(--blue);
+      }
+      .bar-top {
+        border-top: 5px solid var(--c);
+      }
+      .verify {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        background: #fff9e6;
+        border-color: #f6dc8a;
+      }
+      .verify svg {
+        flex: none;
+        color: #8a5d00;
+        margin-top: 2px;
+      }
 
-/* Connect screen */
-.connect{min-height:100vh;display:grid;place-items:center;padding:20px}
-.connect-card{width:100%;max-width:680px;overflow:hidden}
-.connect-card .logo{display:block;width:min(100%,300px);height:auto;margin:6px auto 18px}
-.tables-box{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+      /* Pages */
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: enter 0.4s var(--ease) both;
+      }
+      @keyframes enter {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 22px;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--mut);
+      }
+      .status .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--blue);
+        flex: none;
+      }
+      .status.err {
+        color: #b0005f;
+      }
+      .status.err .dot {
+        background: var(--mag);
+      }
 
-/* Responsive */
-@media (max-width:1023px){
-  .shell{grid-template-columns:minmax(0,1fr)}
-  .side{position:fixed;inset:0 auto 0 0;width:290px;max-width:86vw;transform:translateX(-102%);box-shadow:12px 0 40px rgba(21,17,63,.25)}
-  .side.open{transform:none}
-  .menu{display:grid}
-  .top-logo{display:block}
-  .top .crumb{display:none}
-}
-@media (max-width:640px){
-  .top .ttl{flex-basis:100%;order:5}
-  .top-actions{margin-left:auto}
-  .btn .btn-label.hide-sm{display:none}
-  .search,.search .field{width:100%}
-  .tools{width:100%}.tools .btn{flex:1}
-  .hero-actions .btn{flex:1}
-}
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
-}
-</style>
-</head>
+      /* Modal */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(21, 17, 63, 0.55);
+        backdrop-filter: blur(6px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.28s var(--ease);
+      }
+      .overlay.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .modal-box {
+        width: 100%;
+        max-width: 600px;
+        max-height: 92vh;
+        overflow-y: auto;
+        position: relative;
+        transform: translateY(18px) scale(0.97);
+        transition: transform 0.32s var(--ease);
+      }
+      .overlay.show .modal-box {
+        transform: none;
+      }
+      .modal-box::before,
+      .connect-card::before {
+        content: "";
+        position: sticky;
+        display: block;
+        top: 0;
+        height: 6px;
+        margin: -1px -1px 0;
+        background: linear-gradient(
+          90deg,
+          var(--cyan) 0 25%,
+          var(--mag) 25% 50%,
+          var(--yel) 50% 75%,
+          var(--navy) 75%
+        );
+        border-radius: 16px 16px 0 0;
+        z-index: 2;
+      }
+      .modal-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+      .x {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        flex: none;
+      }
 
-<body>
-<!-- Pre-connection configuration screen -->
-<div id="connectScreen" class="hidden connect">
-  <div class="card connect-card pad">
-    <img class="logo" src="./logo.png" alt="Quick2print" />
-    <h2>Connect your workspace</h2>
-    <p class="muted" style="margin:6px 0 20px;max-width:60ch">Supabase is preconfigured for your Quick2print workspace. Confirm the tables, load your Super Distributor accounts, then open the portal.</p>
+      /* Connect screen */
+      .connect {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+      }
+      .connect-card {
+        width: 100%;
+        max-width: 680px;
+        overflow: hidden;
+      }
+      .connect-card .logo {
+        display: block;
+        width: min(100%, 300px);
+        height: auto;
+        margin: 6px auto 18px;
+      }
+      .tables-box {
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
 
-    <form id="connectForm">
-      <div class="form-grid">
-        <label class="lbl">Supabase project URL
-          <input id="sbUrl" class="field" type="url" required value="https://cujyptlcmayipjekoqvq.supabase.co" />
-        </label>
-        <label class="lbl">Publishable key
-          <input id="sbKey" class="field" required value="sb_publishable_Umq1hMXB-MWXf5IlTAHAmA_2tKS3V6v" />
-        </label>
-      </div>
+      /* Responsive */
+      @media (max-width: 1023px) {
+        .shell {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .side {
+          position: fixed;
+          inset: 0 auto 0 0;
+          width: 290px;
+          max-width: 86vw;
+          transform: translateX(-102%);
+          box-shadow: 12px 0 40px rgba(21, 17, 63, 0.25);
+        }
+        .side.open {
+          transform: none;
+        }
+        .menu {
+          display: grid;
+        }
+        .top-logo {
+          display: block;
+        }
+        .top .crumb {
+          display: none;
+        }
+      }
+      @media (max-width: 640px) {
+        .top .ttl {
+          flex-basis: 100%;
+          order: 5;
+        }
+        .top-actions {
+          margin-left: auto;
+        }
+        .btn .btn-label.hide-sm {
+          display: none;
+        }
+        .search,
+        .search .field {
+          width: 100%;
+        }
+        .tools {
+          width: 100%;
+        }
+        .tools .btn {
+          flex: 1;
+        }
+        .hero-actions .btn {
+          flex: 1;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
 
-      <div class="tables-box">
-        <h3 style="margin-bottom:12px">Table configuration</h3>
-        <div class="form-grid">
-          <label class="lbl">Super distributors
-            <select id="tableSuper" class="field"><option value="super_distributors" selected>super_distributors</option></select>
-          </label>
-          <label class="lbl">Distributors
-            <select id="tableDist" class="field"><option value="distributors" selected>distributors</option></select>
-          </label>
-          <label class="lbl">Retailers
-            <select id="tableRetail" class="field"><option value="retailers" selected>retailers</option></select>
-          </label>
-          <label class="lbl">Subscriptions
-            <select id="tableSubs" class="field">
-              <option value="shop_subscriptions" selected>shop_subscriptions</option>
-              <option value="subscriptions">subscriptions</option>
-            </select>
-          </label>
-          <label class="lbl">Commission ledger
-            <select id="tableLedger" class="field"><option value="commission_ledger" selected>commission_ledger</option></select>
-          </label>
-        </div>
-      </div>
+  <body>
+    <!-- Pre-connection configuration screen -->
+    <div id="connectScreen" class="hidden connect">
+      <div class="card connect-card pad">
+        <img class="logo" src="./logo.png" alt="Quick2print" />
+        <h2>Connect your workspace</h2>
+        <p class="muted" style="margin: 6px 0 20px; max-width: 60ch">
+          Supabase is preconfigured for your Quick2print workspace. Confirm the
+          tables, load your Super Distributor accounts, then open the portal.
+        </p>
 
-      <div class="tables-box">
-        <label class="lbl">Super Distributor account
-          <select id="superSelect" class="field"><option value="">Click “Load accounts” first</option></select>
-        </label>
-        <div class="tools" style="margin-top:16px">
-          <button class="btn light" id="loadAccountsBtn" type="button">
-            <span class="btn-spinner"></span><i data-lucide="users" class="btn-icon"></i><span class="btn-label">Load accounts</span>
-          </button>
-          <button class="btn primary" id="openDashboardBtn" type="submit">
-            <span class="btn-spinner"></span><i data-lucide="arrow-right-circle" class="btn-icon"></i><span class="btn-label">Open Dashboard</span>
-          </button>
-        </div>
-        <p id="connectError" class="err-text" role="alert" style="margin-top:12px"></p>
-      </div>
-    </form>
-
-    <p class="muted" style="font-size:13px;margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">No Supabase Auth login is used. Access is governed by your database grants and Row Level Security. Never use a service-role or secret key in this browser file.</p>
-  </div>
-</div>
-
-<div id="app" class="shell">
-  <aside class="side" id="side" aria-label="Main navigation">
-    <a class="brand" href="#" aria-label="Quick2print home"><img src="./logo.png" alt="Quick2print" /></a>
-    <div class="nav-label">Partner workspace</div>
-    <nav class="navlist">
-      <button class="nav active" data-page="overview" aria-current="page"><i data-lucide="layout-dashboard"></i><span>Overview</span></button>
-      <button class="nav" data-page="distributors"><i data-lucide="network"></i><span>My Distributors</span></button>
-      <button class="nav" data-page="retailers"><i data-lucide="store"></i><span>My Retailers</span></button>
-      <button class="nav" data-page="activity"><i data-lucide="activity"></i><span>Network Activity</span></button>
-      <button class="nav" data-page="commission"><i data-lucide="indian-rupee"></i><span>My Commission</span></button>
-    </nav>
-    <div class="who">
-      <div class="av"><i data-lucide="shield-check"></i></div>
-      <div>
-        <b id="sideName">Super Distributor</b>
-        <small id="sideCode">Selected account</small>
-      </div>
-    </div>
-  </aside>
-  <div class="scrim" id="scrim"></div>
-
-  <main>
-    <header class="top">
-      <button class="menu" id="menuBtn" type="button" aria-label="Open menu" aria-controls="side" aria-expanded="false"><i data-lucide="menu"></i></button>
-      <img class="top-logo" src="./logo.png" alt="Quick2print" />
-      <div class="ttl">
-        <div class="crumb">Quick2print · Partner network</div>
-        <h1 id="pageTitle">Network overview</h1>
-      </div>
-      <div class="top-actions">
-        <span id="liveBadge" class="pill">Connected</span>
-        <button class="btn light" id="refreshBtn" type="button">
-          <span class="btn-spinner"></span><i data-lucide="refresh-cw" class="btn-icon"></i><span class="btn-label hide-sm">Refresh data</span>
-        </button>
-        <span id="logoutSlot"></span>
-      </div>
-    </header>
-
-    <div class="content">
-      <!-- PAGE 1: OVERVIEW -->
-      <section class="page active" id="page-overview">
-        <div class="hero">
-          <svg class="reg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="50" cy="50" r="22"/><circle cx="50" cy="50" r="8"/><path d="M50 4v92M4 50h92"/></svg>
-          <div>
-            <h2>Welcome back, <span id="welcomeName">Partner</span></h2>
-            <p>Manage your distributor and retailer network, follow verified subscription activations, and track commission as it lands in your ledger.</p>
+        <form id="connectForm">
+          <div class="form-grid">
+            <label class="lbl"
+              >Supabase project URL
+              <input
+                id="sbUrl"
+                class="field"
+                type="url"
+                required
+                value="https://cujyptlcmayipjekoqvq.supabase.co"
+              />
+            </label>
+            <label class="lbl"
+              >Publishable key
+              <input
+                id="sbKey"
+                class="field"
+                required
+                value="sb_publishable_Umq1hMXB-MWXf5IlTAHAmA_2tKS3V6v"
+              />
+            </label>
           </div>
-          <div class="hero-actions">
-            <button class="btn amber-btn" data-create="distributor" type="button">
-              <span class="btn-spinner"></span><i data-lucide="user-plus" class="btn-icon"></i><span class="btn-label">New Distributor</span>
-            </button>
-            <button class="btn ghost-w" data-create="retailer" type="button">
-              <span class="btn-spinner"></span><i data-lucide="store" class="btn-icon"></i><span class="btn-label">New Retailer</span>
-            </button>
-          </div>
-          <div class="ink" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-        </div>
 
-        <div class="grid kpis">
-          <div class="card kpi" style="--c:var(--cyan)">
-            <div class="lbl2">My Distributors <i data-lucide="network"></i></div>
-            <div id="kpiDist" class="stat">—</div>
-            <small>Assigned under your network</small>
+          <div class="tables-box">
+            <h3 style="margin-bottom: 12px">Table configuration</h3>
+            <div class="form-grid">
+              <label class="lbl"
+                >Super distributors
+                <select id="tableSuper" class="field">
+                  <option value="super_distributors" selected>
+                    super_distributors
+                  </option>
+                </select>
+              </label>
+              <label class="lbl"
+                >Distributors
+                <select id="tableDist" class="field">
+                  <option value="distributors" selected>distributors</option>
+                </select>
+              </label>
+              <label class="lbl"
+                >Retailers
+                <select id="tableRetail" class="field">
+                  <option value="retailers" selected>retailers</option>
+                </select>
+              </label>
+              <label class="lbl"
+                >Subscriptions
+                <select id="tableSubs" class="field">
+                  <option value="shop_subscriptions" selected>
+                    shop_subscriptions
+                  </option>
+                  <option value="subscriptions">subscriptions</option>
+                </select>
+              </label>
+              <label class="lbl"
+                >Commission ledger
+                <select id="tableLedger" class="field">
+                  <option value="commission_ledger" selected>
+                    commission_ledger
+                  </option>
+                </select>
+              </label>
+            </div>
           </div>
-          <div class="card kpi" style="--c:var(--blue)">
-            <div class="lbl2">My Retailers <i data-lucide="store"></i></div>
-            <div id="kpiRetail" class="stat">—</div>
-            <small>Direct and distributor retailers</small>
-          </div>
-          <div class="card kpi" style="--c:var(--mag)">
-            <div class="lbl2">Paid Subscriptions <i data-lucide="badge-check"></i></div>
-            <div id="kpiSubs" class="stat">—</div>
-            <small>Verified network work completed</small>
-          </div>
-          <div class="card kpi" style="--c:var(--yel)">
-            <div class="lbl2">Total Commission <i data-lucide="wallet"></i></div>
-            <div id="kpiCommission" class="stat">₹0.00</div>
-            <small>From recorded commission ledger</small>
-          </div>
-        </div>
 
-        <div class="grid two">
-          <div class="card pad">
-            <div class="sec-head" style="margin-bottom:16px">
-              <div class="row">
-                <div class="ic"><i data-lucide="bar-chart-3"></i></div>
-                <div>
-                  <h3>Network Performance</h3>
-                  <p class="muted" style="font-size:13.5px;margin-top:2px">Verified volume across your hierarchy</p>
-                </div>
-              </div>
-              <button class="btn light" data-goto="activity" type="button">
-                <span class="btn-spinner"></span><span class="btn-label">View activity</span><i data-lucide="arrow-up-right" class="btn-icon"></i>
+          <div class="tables-box">
+            <label class="lbl"
+              >Super Distributor account
+              <select id="superSelect" class="field">
+                <option value="">Click “Load accounts” first</option>
+              </select>
+            </label>
+            <div class="tools" style="margin-top: 16px">
+              <button class="btn light" id="loadAccountsBtn" type="button">
+                <span class="btn-spinner"></span
+                ><i data-lucide="users" class="btn-icon"></i
+                ><span class="btn-label">Load accounts</span>
+              </button>
+              <button class="btn primary" id="openDashboardBtn" type="submit">
+                <span class="btn-spinner"></span
+                ><i data-lucide="arrow-right-circle" class="btn-icon"></i
+                ><span class="btn-label">Open Dashboard</span>
               </button>
             </div>
-            <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px">
-              <div class="mini"><span>Paid subscription value</span><div id="kpiRevenue">₹0.00</div></div>
-              <div class="mini"><span>Active retailers</span><div id="kpiActiveRetail">0</div></div>
-            </div>
-            <div id="overviewRecent" class="note">
-              <i data-lucide="info"></i><span>Connect to load your recent network activity.</span>
-            </div>
+            <p
+              id="connectError"
+              class="err-text"
+              role="alert"
+              style="margin-top: 12px"
+            ></p>
           </div>
+        </form>
 
-          <div class="card pad">
-            <div class="row" style="margin-bottom:16px">
-              <div class="ic y"><i data-lucide="sparkles"></i></div>
+        <p
+          class="muted"
+          style="
+            font-size: 13px;
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid var(--line);
+          "
+        >
+          No Supabase Auth login is used. Access is governed by your database
+          grants and Row Level Security. Never use a service-role or secret key
+          in this browser file.
+        </p>
+      </div>
+    </div>
+
+    <div id="app" class="shell">
+      <aside class="side" id="side" aria-label="Main navigation">
+        <a class="brand" href="#" aria-label="Quick2print home"
+          ><img src="./logo.png" alt="Quick2print"
+        /></a>
+        <div class="nav-label">Partner workspace</div>
+        <nav class="navlist">
+          <button class="nav active" data-page="overview" aria-current="page">
+            <i data-lucide="layout-dashboard"></i><span>Overview</span>
+          </button>
+          <button class="nav" data-page="distributors">
+            <i data-lucide="network"></i><span>My Distributors</span>
+          </button>
+          <button class="nav" data-page="retailers">
+            <i data-lucide="store"></i><span>My Retailers</span>
+          </button>
+          <button class="nav" data-page="activity">
+            <i data-lucide="activity"></i><span>Network Activity</span>
+          </button>
+          <button class="nav" data-page="commission">
+            <i data-lucide="indian-rupee"></i><span>My Commission</span>
+          </button>
+        </nav>
+        <div class="who">
+          <div class="av"><i data-lucide="shield-check"></i></div>
+          <div>
+            <b id="sideName">Super Distributor</b>
+            <small id="sideCode">Selected account</small>
+          </div>
+        </div>
+      </aside>
+      <div class="scrim" id="scrim"></div>
+
+      <main>
+        <header class="top">
+          <button
+            class="menu"
+            id="menuBtn"
+            type="button"
+            aria-label="Open menu"
+            aria-controls="side"
+            aria-expanded="false"
+          >
+            <i data-lucide="menu"></i>
+          </button>
+          <img class="top-logo" src="./logo.png" alt="Quick2print" />
+          <div class="ttl">
+            <div class="crumb">Quick2print · Partner network</div>
+            <h1 id="pageTitle">Network overview</h1>
+          </div>
+          <div class="top-actions">
+            <span id="liveBadge" class="pill">Connected</span>
+            <button class="btn light" id="refreshBtn" type="button">
+              <span class="btn-spinner"></span
+              ><i data-lucide="refresh-cw" class="btn-icon"></i
+              ><span class="btn-label hide-sm">Refresh data</span>
+            </button>
+            <span id="logoutSlot"></span>
+          </div>
+        </header>
+
+        <div class="content">
+          <!-- PAGE 1: OVERVIEW -->
+          <section class="page active" id="page-overview">
+            <div class="hero">
+              <svg
+                class="reg"
+                viewBox="0 0 100 100"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <circle cx="50" cy="50" r="22" />
+                <circle cx="50" cy="50" r="8" />
+                <path d="M50 4v92M4 50h92" />
+              </svg>
               <div>
-                <h3>Quick Actions</h3>
-                <p class="muted" style="font-size:13.5px;margin-top:2px">Add partners directly to your network</p>
+                <h2>Welcome back, <span id="welcomeName">Partner</span></h2>
+                <p>
+                  Manage your distributor and retailer network, follow verified
+                  subscription activations, and track commission as it lands in
+                  your ledger.
+                </p>
+              </div>
+              <div class="hero-actions">
+                <button
+                  class="btn amber-btn"
+                  data-create="distributor"
+                  type="button"
+                >
+                  <span class="btn-spinner"></span
+                  ><i data-lucide="user-plus" class="btn-icon"></i
+                  ><span class="btn-label">New Distributor</span>
+                </button>
+                <button
+                  class="btn ghost-w"
+                  data-create="retailer"
+                  type="button"
+                >
+                  <span class="btn-spinner"></span
+                  ><i data-lucide="store" class="btn-icon"></i
+                  ><span class="btn-label">New Retailer</span>
+                </button>
+              </div>
+              <div class="ink" aria-hidden="true">
+                <i></i><i></i><i></i><i></i>
               </div>
             </div>
-            <button class="action row" data-create="distributor" type="button">
-              <div class="ic"><i data-lucide="user-plus"></i></div>
-              <div><b>Create Distributor</b><p>Add a distributor directly assigned to your account.</p></div>
-              <i data-lucide="chevron-right" class="chev"></i>
-            </button>
-            <button class="action row" data-create="retailer" type="button">
-              <div class="ic y"><i data-lucide="store"></i></div>
-              <div><b>Create Retailer</b><p>Register a print shop under one of your active distributors.</p></div>
-              <i data-lucide="chevron-right" class="chev"></i>
-            </button>
-          </div>
-        </div>
-      </section>
 
-      <!-- PAGE 2: DISTRIBUTORS -->
-      <section class="page" id="page-distributors">
-        <div class="sec-head">
-          <div>
-            <h2>My Distributors</h2>
-            <p class="muted">Only distributors assigned to your Super Distributor account appear here.</p>
-          </div>
-          <div class="tools">
-            <label class="search"><span class="sr">Search distributors</span><i data-lucide="search"></i>
-              <input id="distSearch" class="field" type="search" placeholder="Search distributors" style="margin-top:0" /></label>
-            <button class="btn primary" data-create="distributor" type="button">
-              <span class="btn-spinner"></span><i data-lucide="plus" class="btn-icon"></i><span class="btn-label">Create distributor</span>
-            </button>
-          </div>
-        </div>
-        <div class="card"><div class="tbl-wrap">
-          <table>
-            <thead><tr><th>Distributor</th><th>Code / ID</th><th>Retailers</th><th>Status</th><th>Created</th></tr></thead>
-            <tbody id="distributorRows"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
-          </table>
-        </div></div>
-      </section>
+            <div class="grid kpis">
+              <div class="card kpi" style="--c: var(--cyan)">
+                <div class="lbl2">
+                  My Distributors <i data-lucide="network"></i>
+                </div>
+                <div id="kpiDist" class="stat">—</div>
+                <small>Assigned under your network</small>
+              </div>
+              <div class="card kpi" style="--c: var(--blue)">
+                <div class="lbl2">My Retailers <i data-lucide="store"></i></div>
+                <div id="kpiRetail" class="stat">—</div>
+                <small>Direct and distributor retailers</small>
+              </div>
+              <div class="card kpi" style="--c: var(--mag)">
+                <div class="lbl2">
+                  Paid Subscriptions <i data-lucide="badge-check"></i>
+                </div>
+                <div id="kpiSubs" class="stat">—</div>
+                <small>Verified network work completed</small>
+              </div>
+              <div class="card kpi" style="--c: var(--yel)">
+                <div class="lbl2">
+                  Total Commission <i data-lucide="wallet"></i>
+                </div>
+                <div id="kpiCommission" class="stat">₹0.00</div>
+                <small>From recorded commission ledger</small>
+              </div>
+            </div>
 
-      <!-- PAGE 3: RETAILERS -->
-      <section class="page" id="page-retailers">
-        <div class="sec-head">
-          <div>
-            <h2>My Retailers</h2>
-            <p class="muted">Retailers linked directly to you or through your distributors.</p>
-          </div>
-          <div class="tools">
-            <label class="search"><span class="sr">Search retailers</span><i data-lucide="search"></i>
-              <input id="retailSearch" class="field" type="search" placeholder="Search retailers" style="margin-top:0" /></label>
-            <button class="btn primary" data-create="retailer" type="button">
-              <span class="btn-spinner"></span><i data-lucide="plus" class="btn-icon"></i><span class="btn-label">Create retailer</span>
-            </button>
-          </div>
-        </div>
-        <div class="card"><div class="tbl-wrap">
-          <table>
-            <thead><tr><th>Retailer</th><th>Retailer ID</th><th>Distributor</th><th>Status</th><th>Created</th></tr></thead>
-            <tbody id="retailerRows"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
-          </table>
-        </div></div>
-      </section>
+            <div class="grid two">
+              <div class="card pad">
+                <div class="sec-head" style="margin-bottom: 16px">
+                  <div class="row">
+                    <div class="ic"><i data-lucide="bar-chart-3"></i></div>
+                    <div>
+                      <h3>Network Performance</h3>
+                      <p
+                        class="muted"
+                        style="font-size: 13.5px; margin-top: 2px"
+                      >
+                        Verified volume across your hierarchy
+                      </p>
+                    </div>
+                  </div>
+                  <button class="btn light" data-goto="activity" type="button">
+                    <span class="btn-spinner"></span
+                    ><span class="btn-label">View activity</span
+                    ><i data-lucide="arrow-up-right" class="btn-icon"></i>
+                  </button>
+                </div>
+                <div
+                  class="grid"
+                  style="
+                    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+                    gap: 14px;
+                  "
+                >
+                  <div class="mini">
+                    <span>Paid subscription value</span>
+                    <div id="kpiRevenue">₹0.00</div>
+                  </div>
+                  <div class="mini">
+                    <span>Active retailers</span>
+                    <div id="kpiActiveRetail">0</div>
+                  </div>
+                </div>
+                <div id="overviewRecent" class="note">
+                  <i data-lucide="info"></i
+                  ><span>Connect to load your recent network activity.</span>
+                </div>
+              </div>
 
-      <!-- PAGE 4: NETWORK ACTIVITY -->
-      <section class="page" id="page-activity">
-        <div class="sec-head"><div>
-          <h2>Network Activity &amp; Work Completed</h2>
-          <p class="muted">Paid subscriptions attributed to your retailers and distributors.</p>
-        </div></div>
-        <div class="grid three">
-          <div class="card kpi" style="--c:var(--cyan)"><div class="lbl2">Paid Subscriptions</div><div id="actCount" class="stat">0</div></div>
-          <div class="card kpi" style="--c:var(--blue)"><div class="lbl2">Paid Value</div><div id="actValue" class="stat">₹0</div></div>
-          <div class="card kpi" style="--c:var(--yel)"><div class="lbl2">This Month</div><div id="actMonth" class="stat">0</div><small>Paid subscriptions</small></div>
-        </div>
-        <div class="card"><div class="tbl-wrap">
-          <table>
-            <thead><tr><th>Date</th><th>Shop ID</th><th>Plan</th><th>Amount</th><th>Payment status</th><th>Retailer / Distributor</th></tr></thead>
-            <tbody id="activityRows"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
-          </table>
-        </div></div>
-      </section>
+              <div class="card pad">
+                <div class="row" style="margin-bottom: 16px">
+                  <div class="ic y"><i data-lucide="sparkles"></i></div>
+                  <div>
+                    <h3>Quick Actions</h3>
+                    <p class="muted" style="font-size: 13.5px; margin-top: 2px">
+                      Add partners directly to your network
+                    </p>
+                  </div>
+                </div>
+                <button
+                  class="action row"
+                  data-create="distributor"
+                  type="button"
+                >
+                  <div class="ic"><i data-lucide="user-plus"></i></div>
+                  <div>
+                    <b>Create Distributor</b>
+                    <p>Add a distributor directly assigned to your account.</p>
+                  </div>
+                  <i data-lucide="chevron-right" class="chev"></i>
+                </button>
+                <button class="action row" data-create="retailer" type="button">
+                  <div class="ic y"><i data-lucide="store"></i></div>
+                  <div>
+                    <b>Create Retailer</b>
+                    <p>
+                      Register a print shop under one of your active
+                      distributors.
+                    </p>
+                  </div>
+                  <i data-lucide="chevron-right" class="chev"></i>
+                </button>
+              </div>
+            </div>
+          </section>
 
-      <!-- PAGE 5: COMMISSION -->
-      <section class="page" id="page-commission">
-        <div class="sec-head"><div>
-          <h2>My Commission</h2>
-          <p class="muted">Monthly commission from your recorded ledger. Missing ledger data shows as ₹0.00 and is never estimated.</p>
-        </div></div>
-        <div class="grid three">
-          <div class="card kpi" style="--c:var(--yel)"><div class="lbl2">Total Recorded</div><div id="commTotal" class="stat">₹0.00</div></div>
-          <div class="card kpi" style="--c:var(--cyan)"><div class="lbl2">This Month</div><div id="commMonth" class="stat">₹0.00</div></div>
-          <div class="card kpi" style="--c:var(--mag)"><div class="lbl2">Commission Records</div><div id="commCount" class="stat">0</div></div>
-        </div>
-        <div class="card" style="margin-bottom:22px">
-          <div class="pad" style="padding-bottom:14px;border-bottom:1px solid var(--line)">
-            <h3>Monthly Breakdown</h3>
-            <p class="muted" style="font-size:13.5px;margin-top:2px">Based on ledger rows belonging to your account.</p>
-          </div>
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr><th>Month</th><th>Eligible records</th><th>Commission</th></tr></thead>
-              <tbody id="monthlyCommissionRows"><tr><td colspan="3" class="empty">₹0.00 — no commission records loaded.</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-        <div class="card pad verify">
-          <i data-lucide="shield-alert"></i>
-          <div>
-            <h3 style="font-size:16px">Commission verification note</h3>
-            <p style="font-size:14px;margin-top:4px;color:#4b4a3a;max-width:75ch">Record finalized amounts in <code>commission_ledger</code> and link each row to your Super Distributor ID. Gross subscription totals are shown separately from earned partner commission.</p>
-          </div>
-        </div>
-      </section>
+          <!-- PAGE 2: DISTRIBUTORS -->
+          <section class="page" id="page-distributors">
+            <div class="sec-head">
+              <div>
+                <h2>My Distributors</h2>
+                <p class="muted">
+                  Only distributors assigned to your Super Distributor account
+                  appear here.
+                </p>
+              </div>
+              <div class="tools">
+                <label class="search"
+                  ><span class="sr">Search distributors</span
+                  ><i data-lucide="search"></i>
+                  <input
+                    id="distSearch"
+                    class="field"
+                    type="search"
+                    placeholder="Search distributors"
+                    style="margin-top: 0"
+                /></label>
+                <button
+                  class="btn primary"
+                  data-create="distributor"
+                  type="button"
+                >
+                  <span class="btn-spinner"></span
+                  ><i data-lucide="plus" class="btn-icon"></i
+                  ><span class="btn-label">Create distributor</span>
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="tbl-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Distributor</th>
+                      <th>Code / ID</th>
+                      <th>Retailers</th>
+                      <th>Status</th>
+                      <th>Created</th>
+                    </tr>
+                  </thead>
+                  <tbody id="distributorRows">
+                    <tr>
+                      <td colspan="5" class="empty">Loading…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
 
-      <div id="statusMsg" class="status" role="status" aria-live="polite"></div>
+          <!-- PAGE 3: RETAILERS -->
+          <section class="page" id="page-retailers">
+            <div class="sec-head">
+              <div>
+                <h2>My Retailers</h2>
+                <p class="muted">
+                  Retailers linked directly to you or through your distributors.
+                </p>
+              </div>
+              <div class="tools">
+                <label class="search"
+                  ><span class="sr">Search retailers</span
+                  ><i data-lucide="search"></i>
+                  <input
+                    id="retailSearch"
+                    class="field"
+                    type="search"
+                    placeholder="Search retailers"
+                    style="margin-top: 0"
+                /></label>
+                <button
+                  class="btn primary"
+                  data-create="retailer"
+                  type="button"
+                >
+                  <span class="btn-spinner"></span
+                  ><i data-lucide="plus" class="btn-icon"></i
+                  ><span class="btn-label">Create retailer</span>
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="tbl-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Retailer</th>
+                      <th>Retailer ID</th>
+                      <th>Distributor</th>
+                      <th>Status</th>
+                      <th>Created</th>
+                    </tr>
+                  </thead>
+                  <tbody id="retailerRows">
+                    <tr>
+                      <td colspan="5" class="empty">Loading…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- PAGE 4: NETWORK ACTIVITY -->
+          <section class="page" id="page-activity">
+            <div class="sec-head">
+              <div>
+                <h2>Network Activity &amp; Work Completed</h2>
+                <p class="muted">
+                  Paid subscriptions attributed to your retailers and
+                  distributors.
+                </p>
+              </div>
+            </div>
+            <div class="grid three">
+              <div class="card kpi" style="--c: var(--cyan)">
+                <div class="lbl2">Paid Subscriptions</div>
+                <div id="actCount" class="stat">0</div>
+              </div>
+              <div class="card kpi" style="--c: var(--blue)">
+                <div class="lbl2">Paid Value</div>
+                <div id="actValue" class="stat">₹0</div>
+              </div>
+              <div class="card kpi" style="--c: var(--yel)">
+                <div class="lbl2">This Month</div>
+                <div id="actMonth" class="stat">0</div>
+                <small>Paid subscriptions</small>
+              </div>
+            </div>
+            <div class="card">
+              <div class="tbl-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Shop ID</th>
+                      <th>Plan</th>
+                      <th>Amount</th>
+                      <th>Payment status</th>
+                      <th>Retailer / Distributor</th>
+                    </tr>
+                  </thead>
+                  <tbody id="activityRows">
+                    <tr>
+                      <td colspan="6" class="empty">Loading…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- PAGE 5: COMMISSION -->
+          <section class="page" id="page-commission">
+            <div class="sec-head">
+              <div>
+                <h2>My Commission</h2>
+                <p class="muted">
+                  Monthly commission from your recorded ledger. Missing ledger
+                  data shows as ₹0.00 and is never estimated.
+                </p>
+              </div>
+            </div>
+            <div class="grid three">
+              <div class="card kpi" style="--c: var(--yel)">
+                <div class="lbl2">Total Recorded</div>
+                <div id="commTotal" class="stat">₹0.00</div>
+              </div>
+              <div class="card kpi" style="--c: var(--cyan)">
+                <div class="lbl2">This Month</div>
+                <div id="commMonth" class="stat">₹0.00</div>
+              </div>
+              <div class="card kpi" style="--c: var(--mag)">
+                <div class="lbl2">Commission Records</div>
+                <div id="commCount" class="stat">0</div>
+              </div>
+            </div>
+            <div class="card" style="margin-bottom: 22px">
+              <div
+                class="pad"
+                style="
+                  padding-bottom: 14px;
+                  border-bottom: 1px solid var(--line);
+                "
+              >
+                <h3>Monthly Breakdown</h3>
+                <p class="muted" style="font-size: 13.5px; margin-top: 2px">
+                  Based on ledger rows belonging to your account.
+                </p>
+              </div>
+              <div class="tbl-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Month</th>
+                      <th>Eligible records</th>
+                      <th>Commission</th>
+                    </tr>
+                  </thead>
+                  <tbody id="monthlyCommissionRows">
+                    <tr>
+                      <td colspan="3" class="empty">
+                        ₹0.00 — no commission records loaded.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card pad verify">
+              <i data-lucide="shield-alert"></i>
+              <div>
+                <h3 style="font-size: 16px">Commission verification note</h3>
+                <p
+                  style="
+                    font-size: 14px;
+                    margin-top: 4px;
+                    color: #4b4a3a;
+                    max-width: 75ch;
+                  "
+                >
+                  Record finalized amounts in <code>commission_ledger</code> and
+                  link each row to your Super Distributor ID. Gross subscription
+                  totals are shown separately from earned partner commission.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <div
+            id="statusMsg"
+            class="status"
+            role="status"
+            aria-live="polite"
+          ></div>
+        </div>
+      </main>
     </div>
-  </main>
-</div>
 
-<div id="modal" class="overlay">
-  <div class="card modal-box pad" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-head">
-      <div class="row">
-        <div class="ic"><i data-lucide="user-plus"></i></div>
-        <div>
-          <h3 id="modalTitle">Create partner</h3>
-          <p id="modalSub" class="muted" style="font-size:13.5px;margin-top:2px">This account will be assigned to your network.</p>
+    <div id="modal" class="overlay">
+      <div
+        class="card modal-box pad"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitle"
+      >
+        <div class="modal-head">
+          <div class="row">
+            <div class="ic"><i data-lucide="user-plus"></i></div>
+            <div>
+              <h3 id="modalTitle">Create partner</h3>
+              <p
+                id="modalSub"
+                class="muted"
+                style="font-size: 13.5px; margin-top: 2px"
+              >
+                This account will be assigned to your network.
+              </p>
+            </div>
+          </div>
+          <button
+            id="closeModal"
+            class="btn light x"
+            type="button"
+            aria-label="Close dialog"
+          >
+            <i data-lucide="x"></i>
+          </button>
         </div>
+
+        <form id="partnerForm">
+          <input type="hidden" id="partnerType" />
+          <div id="partnerDynamicFields" class="form-grid"></div>
+          <div
+            id="distributorSelectWrap"
+            class="hidden"
+            style="margin-top: 14px"
+          >
+            <label class="lbl"
+              >Assign to distributor <span class="req">*</span>
+              <select id="partnerDistributor" class="field">
+                <option value="">Select a distributor</option>
+              </select>
+            </label>
+          </div>
+          <button
+            id="createSubmitBtn"
+            class="btn primary"
+            type="submit"
+            style="width: 100%; margin-top: 20px; padding: 12px"
+          >
+            <span class="btn-spinner"></span
+            ><i data-lucide="check-circle-2" class="btn-icon"></i
+            ><span class="btn-label">Create Partner Record</span>
+          </button>
+          <p class="muted" style="font-size: 13px; margin-top: 12px">
+            Fields match your Supabase table schema. Network links are bound to
+            your Super Distributor ID automatically.
+          </p>
+          <p
+            id="formError"
+            class="err-text"
+            role="alert"
+            style="margin-top: 8px"
+          ></p>
+        </form>
       </div>
-      <button id="closeModal" class="btn light x" type="button" aria-label="Close dialog"><i data-lucide="x"></i></button>
     </div>
 
-    <form id="partnerForm">
-      <input type="hidden" id="partnerType" />
-      <div id="partnerDynamicFields" class="form-grid"></div>
-      <div id="distributorSelectWrap" class="hidden" style="margin-top:14px">
-        <label class="lbl">Assign to distributor <span class="req">*</span>
-          <select id="partnerDistributor" class="field"><option value="">Select a distributor</option></select>
-        </label>
-      </div>
-      <button id="createSubmitBtn" class="btn primary" type="submit" style="width:100%;margin-top:20px;padding:12px">
-        <span class="btn-spinner"></span><i data-lucide="check-circle-2" class="btn-icon"></i><span class="btn-label">Create Partner Record</span>
-      </button>
-      <p class="muted" style="font-size:13px;margin-top:12px">Fields match your Supabase table schema. Network links are bound to your Super Distributor ID automatically.</p>
-      <p id="formError" class="err-text" role="alert" style="margin-top:8px"></p>
-    </form>
-  </div>
-</div>
+    <script>
+      const $ = (id) => document.getElementById(id);
+      let sb = null,
+        user = null,
+        profile = null,
+        superId = null,
+        connected = false,
+        dist = [],
+        retail = [],
+        subs = [],
+        ledger = [],
+        lastFocus = null;
 
-<script>
-const $ = (id) => document.getElementById(id);
-let sb = null, user = null, profile = null, superId = null, connected = false,
-    dist = [], retail = [], subs = [], ledger = [], lastFocus = null;
+      const fmt = (n) =>
+        "₹" +
+        (Number(n) || 0).toLocaleString("en-IN", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+      const esc = (s) =>
+        String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      const date = (s) => (s ? new Date(s).toLocaleDateString("en-IN") : "—");
+      const icons = () => {
+        if (window.lucide) window.lucide.createIcons();
+      };
 
-const fmt = (n) => "₹" + (Number(n) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-const date = (s) => (s ? new Date(s).toLocaleDateString("en-IN") : "—");
-const icons = () => { if (window.lucide) window.lucide.createIcons(); };
+      /** Toggles spinner, disables the button during async work, and swaps the label text. */
+      async function withButtonLoader(btn, loadingText, asyncTask) {
+        if (!btn) return await asyncTask();
+        const labelEl = btn.querySelector(".btn-label");
+        const originalText = labelEl ? labelEl.textContent : btn.textContent;
+        btn.disabled = true;
+        btn.classList.add("is-loading");
+        if (labelEl && loadingText) labelEl.textContent = loadingText;
+        try {
+          return await asyncTask();
+        } finally {
+          btn.disabled = false;
+          btn.classList.remove("is-loading");
+          if (labelEl) labelEl.textContent = originalText;
+        }
+      }
 
-/** Toggles spinner, disables the button during async work, and swaps the label text. */
-async function withButtonLoader(btn, loadingText, asyncTask) {
-  if (!btn) return await asyncTask();
-  const labelEl = btn.querySelector(".btn-label");
-  const originalText = labelEl ? labelEl.textContent : btn.textContent;
-  btn.disabled = true;
-  btn.classList.add("is-loading");
-  if (labelEl && loadingText) labelEl.textContent = loadingText;
-  try { return await asyncTask(); }
-  finally {
-    btn.disabled = false;
-    btn.classList.remove("is-loading");
-    if (labelEl) labelEl.textContent = originalText;
-  }
-}
+      function msg(s, err = false) {
+        const el = $("statusMsg");
+        el.className = "status" + (err ? " err" : "");
+        el.innerHTML = `<span class="dot"></span><span>${esc(s)}</span>`;
+      }
 
-function msg(s, err = false) {
-  const el = $("statusMsg");
-  el.className = "status" + (err ? " err" : "");
-  el.innerHTML = `<span class="dot"></span><span>${esc(s)}</span>`;
-}
+      /* Navigation + mobile drawer */
+      const titles = {
+        overview: "Network overview",
+        distributors: "My distributors",
+        retailers: "My retailers",
+        activity: "Network activity",
+        commission: "My commission",
+      };
+      function drawer(open) {
+        $("side").classList.toggle("open", open);
+        $("scrim").classList.toggle("show", open);
+        $("menuBtn").setAttribute("aria-expanded", String(open));
+      }
+      function page(p) {
+        document
+          .querySelectorAll(".page")
+          .forEach((x) => x.classList.toggle("active", x.id === "page-" + p));
+        document.querySelectorAll(".nav").forEach((x) => {
+          const on = x.dataset.page === p;
+          x.classList.toggle("active", on);
+          on
+            ? x.setAttribute("aria-current", "page")
+            : x.removeAttribute("aria-current");
+        });
+        $("pageTitle").textContent = titles[p] || p;
+        drawer(false);
+        window.scrollTo({ top: 0 });
+      }
+      document
+        .querySelectorAll("[data-page]")
+        .forEach((b) => (b.onclick = () => page(b.dataset.page)));
+      document
+        .querySelectorAll("[data-goto]")
+        .forEach((b) => (b.onclick = () => page(b.dataset.goto)));
+      $("menuBtn").onclick = () =>
+        drawer(!$("side").classList.contains("open"));
+      $("scrim").onclick = () => drawer(false);
+      document.querySelector(".brand").addEventListener("click", (e) => {
+        e.preventDefault();
+        page("overview");
+      });
 
-/* Navigation + mobile drawer */
-const titles = { overview: "Network overview", distributors: "My distributors", retailers: "My retailers", activity: "Network activity", commission: "My commission" };
-function drawer(open) {
-  $("side").classList.toggle("open", open);
-  $("scrim").classList.toggle("show", open);
-  $("menuBtn").setAttribute("aria-expanded", String(open));
-}
-function page(p) {
-  document.querySelectorAll(".page").forEach((x) => x.classList.toggle("active", x.id === "page-" + p));
-  document.querySelectorAll(".nav").forEach((x) => {
-    const on = x.dataset.page === p;
-    x.classList.toggle("active", on);
-    on ? x.setAttribute("aria-current", "page") : x.removeAttribute("aria-current");
-  });
-  $("pageTitle").textContent = titles[p] || p;
-  drawer(false);
-  window.scrollTo({ top: 0 });
-}
-document.querySelectorAll("[data-page]").forEach((b) => (b.onclick = () => page(b.dataset.page)));
-document.querySelectorAll("[data-goto]").forEach((b) => (b.onclick = () => page(b.dataset.goto)));
-$("menuBtn").onclick = () => drawer(!$("side").classList.contains("open"));
-$("scrim").onclick = () => drawer(false);
-document.querySelector(".brand").addEventListener("click", (e) => { e.preventDefault(); page("overview"); });
+      document.querySelectorAll("[data-create]").forEach(
+        (b) =>
+          (b.onclick = () =>
+            withButtonLoader(b, "Opening…", async () => {
+              await new Promise((r) => setTimeout(r, 140));
+              await openModal(b.dataset.create);
+            })),
+      );
 
-document.querySelectorAll("[data-create]").forEach((b) =>
-  (b.onclick = () => withButtonLoader(b, "Opening…", async () => {
-    await new Promise((r) => setTimeout(r, 140));
-    await openModal(b.dataset.create);
-  })));
+      /* Modal */
+      function closeModal() {
+        $("modal").classList.remove("show");
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+      }
+      $("closeModal").onclick = closeModal;
+      $("modal").addEventListener("click", (e) => {
+        if (e.target === $("modal")) closeModal();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape") return;
+        if ($("modal").classList.contains("show")) closeModal();
+        else drawer(false);
+      });
 
-/* Modal */
-function closeModal() {
-  $("modal").classList.remove("show");
-  if (lastFocus && lastFocus.focus) lastFocus.focus();
-}
-$("closeModal").onclick = closeModal;
-$("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeModal(); });
-document.addEventListener("keydown", (e) => {
-  if (e.key !== "Escape") return;
-  if ($("modal").classList.contains("show")) closeModal(); else drawer(false);
-});
+      async function openModal(type) {
+        lastFocus = document.activeElement;
+        $("partnerForm").reset();
+        $("formError").textContent = "";
+        $("partnerType").value = type;
+        $("modalTitle").textContent =
+          type === "distributor" ? "Create distributor" : "Create retailer";
+        $("modalSub").textContent =
+          type === "distributor"
+            ? "Enter details matching public.distributors."
+            : "Enter details matching public.retailers.";
+        $("distributorSelectWrap").classList.toggle(
+          "hidden",
+          type !== "retailer",
+        );
+        $("partnerDistributor").innerHTML = dist.length
+          ? dist
+              .map(
+                (d) =>
+                  `<option value="${esc(d.distributor_id)}">${esc(d.full_name || d.distributor_id)}</option>`,
+              )
+              .join("")
+          : `<option value="">No distributors available — create a distributor first</option>`;
 
-async function openModal(type) {
-  lastFocus = document.activeElement;
-  $("partnerForm").reset();
-  $("formError").textContent = "";
-  $("partnerType").value = type;
-  $("modalTitle").textContent = type === "distributor" ? "Create distributor" : "Create retailer";
-  $("modalSub").textContent = type === "distributor" ? "Enter details matching public.distributors." : "Enter details matching public.retailers.";
-  $("distributorSelectWrap").classList.toggle("hidden", type !== "retailer");
-  $("partnerDistributor").innerHTML = dist.length
-    ? dist.map((d) => `<option value="${esc(d.distributor_id)}">${esc(d.full_name || d.distributor_id)}</option>`).join("")
-    : `<option value="">No distributors available — create a distributor first</option>`;
+        const distributorFields = [
+          ["full_name", "Full name", "text", true],
+          ["mobile", "Mobile number", "tel", true],
+          ["email", "Email address", "email", false],
+          ["father_name", "Father name", "text", false],
+          ["mother_name", "Mother name", "text", false],
+          ["age", "Age", "number", false],
+          ["address", "Address", "text", false],
+          ["city", "City", "text", false],
+          ["district", "District", "text", false],
+          ["state", "State", "text", false],
+          ["pincode", "PIN code", "text", false],
+        ];
+        const retailerFields = [
+          ["owner_name", "Retailer full name", "text", true],
+          ["mobile", "Mobile number", "tel", true],
+          ["email", "Email address", "email", false],
+          ["address", "Address", "text", false],
+          ["city", "City", "text", false],
+          ["district", "District", "text", false],
+          ["state", "State", "text", false],
+          ["pincode", "PIN code", "text", false],
+        ];
+        const host = $("partnerDynamicFields");
+        host.innerHTML = "";
+        for (const [key, label, inputType, required] of type === "distributor"
+          ? distributorFields
+          : retailerFields) {
+          host.insertAdjacentHTML(
+            "beforeend",
+            `<label class="lbl">${label}${required ? ' <span class="req">*</span>' : ""}<input class="field partner-field" data-column="${key}" type="${inputType}" ${required ? "required" : ""} ${inputType === "number" ? 'min="18" max="120" step="1"' : ""} placeholder="Enter ${label.toLowerCase()}"></label>`,
+          );
+        }
+        if (type === "distributor") {
+          host.insertAdjacentHTML(
+            "beforeend",
+            `<label class="lbl">Account status<select class="field partner-field" data-column="account_status">${["active", "inactive", "suspended"].map((x) => `<option value="${x}" ${x === "active" ? "selected" : ""}>${x[0].toUpperCase() + x.slice(1)}</option>`).join("")}</select></label>`,
+          );
+        }
+        $("modal").classList.add("show");
+        setTimeout(() => {
+          const f = host.querySelector("input");
+          if (f) f.focus();
+        }, 120);
+      }
 
-  const distributorFields = [
-    ["full_name", "Full name", "text", true], ["mobile", "Mobile number", "tel", true],
-    ["email", "Email address", "email", false], ["father_name", "Father name", "text", false],
-    ["mother_name", "Mother name", "text", false], ["age", "Age", "number", false],
-    ["address", "Address", "text", false], ["city", "City", "text", false],
-    ["district", "District", "text", false], ["state", "State", "text", false],
-    ["pincode", "PIN code", "text", false],
-  ];
-  const retailerFields = [
-    ["owner_name", "Retailer full name", "text", true], ["mobile", "Mobile number", "tel", true],
-    ["email", "Email address", "email", false], ["address", "Address", "text", false],
-    ["city", "City", "text", false], ["district", "District", "text", false],
-    ["state", "State", "text", false], ["pincode", "PIN code", "text", false],
-  ];
-  const host = $("partnerDynamicFields");
-  host.innerHTML = "";
-  for (const [key, label, inputType, required] of type === "distributor" ? distributorFields : retailerFields) {
-    host.insertAdjacentHTML("beforeend",
-      `<label class="lbl">${label}${required ? ' <span class="req">*</span>' : ""}<input class="field partner-field" data-column="${key}" type="${inputType}" ${required ? "required" : ""} ${inputType === "number" ? 'min="18" max="120" step="1"' : ""} placeholder="Enter ${label.toLowerCase()}"></label>`);
-  }
-  if (type === "distributor") {
-    host.insertAdjacentHTML("beforeend",
-      `<label class="lbl">Account status<select class="field partner-field" data-column="account_status">${["active", "inactive", "suspended"].map((x) => `<option value="${x}" ${x === "active" ? "selected" : ""}>${x[0].toUpperCase() + x.slice(1)}</option>`).join("")}</select></label>`);
-  }
-  $("modal").classList.add("show");
-  setTimeout(() => { const f = host.querySelector("input"); if (f) f.focus(); }, 120);
-}
+      /* Supabase config + data */
+      // Fixed workspace configuration stored in this HTML file. Publishable keys are intended for browser use.
+      const Q2P_SD_CONFIG = Object.freeze({
+        url: "https://cujyptlcmayipjekoqvq.supabase.co",
+        key: "sb_publishable_Umq1hMXB-MWXf5IlTAHAmA_2tKS3V6v",
+        tables: Object.freeze({
+          super: "super_distributors",
+          dist: "distributors",
+          retail: "retailers",
+          subs: "shop_subscriptions",
+          ledger: "commission_ledger",
+        }),
+      });
+      function getTables() {
+        return Q2P_SD_CONFIG.tables;
+      }
+      function configureClient() {
+        if (!window.supabase?.createClient)
+          throw new Error(
+            "Supabase client library did not load. Check your internet connection.",
+          );
+        sb = window.supabase.createClient(
+          Q2P_SD_CONFIG.url,
+          Q2P_SD_CONFIG.key,
+          {
+            auth: {
+              persistSession: false,
+              autoRefreshToken: false,
+              detectSessionInUrl: false,
+            },
+          },
+        );
+      }
 
-/* Supabase config + data */
-function getTables() {
-  return { super: $("tableSuper").value, dist: $("tableDist").value, retail: $("tableRetail").value, subs: $("tableSubs").value, ledger: $("tableLedger").value };
-}
-function configureClient() {
-  const url = $("sbUrl").value.trim(), key = $("sbKey").value.trim();
-  if (!url || !key) throw new Error("Supabase URL and publishable key are required.");
-  sb = window.supabase.createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
-  localStorage.setItem("q2p_sd_portal_config", JSON.stringify({ url, key, tables: getTables() }));
-}
+      async function loadAccounts() {
+        $("connectError").textContent = "";
+        await withButtonLoader($("loadAccountsBtn"), "Loading…", async () => {
+          try {
+            configureClient();
+            const t = getTables();
+            const { data, error } = await sb
+              .from(t.super)
+              .select("*")
+              .limit(500);
+            if (error) throw error;
+            if (!data?.length)
+              throw new Error(
+                "No Super Distributor rows found or SELECT permission is missing on " +
+                  t.super +
+                  ".",
+              );
+            $("superSelect").innerHTML = data
+              .map((x) => {
+                const id = x.super_distributor_id || x.id;
+                const name =
+                  x.full_name ||
+                  x.name ||
+                  x.super_distributor_name ||
+                  x.super_distributor_code ||
+                  id;
+                return `<option value="${esc(id)}">${esc(name)} — ${esc(x.super_distributor_code || id)}</option>`;
+              })
+              .join("");
+            msg("Loaded " + data.length + " Super Distributor account(s).");
+          } catch (err) {
+            $("connectError").textContent = err.message || String(err);
+          }
+        });
+      }
 
-async function loadAccounts() {
-  $("connectError").textContent = "";
-  await withButtonLoader($("loadAccountsBtn"), "Loading…", async () => {
-    try {
-      configureClient();
-      const t = getTables();
-      const { data, error } = await sb.from(t.super).select("*").limit(500);
-      if (error) throw error;
-      if (!data?.length) throw new Error("No Super Distributor rows found or SELECT permission is missing on " + t.super + ".");
-      $("superSelect").innerHTML = data.map((x) => {
-        const id = x.super_distributor_id || x.id;
-        const name = x.full_name || x.name || x.super_distributor_name || x.super_distributor_code || id;
-        return `<option value="${esc(id)}">${esc(name)} — ${esc(x.super_distributor_code || id)}</option>`;
-      }).join("");
-      msg("Loaded " + data.length + " Super Distributor account(s).");
-    } catch (err) {
-      $("connectError").textContent = err.message || String(err);
-    }
-  });
-}
+      async function connect(e) {
+        e.preventDefault();
+        $("connectError").textContent = "";
+        await withButtonLoader(
+          $("openDashboardBtn"),
+          "Opening Portal…",
+          async () => {
+            try {
+              if (!sb) configureClient();
+              superId = $("superSelect").value;
+              if (!superId)
+                throw new Error(
+                  "Load accounts and select a Super Distributor first.",
+                );
+              const t = getTables();
+              const { data, error } = await sb
+                .from(t.super)
+                .select("*")
+                .limit(500);
+              if (error) throw error;
+              profile =
+                (data || []).find(
+                  (x) =>
+                    String(x.super_distributor_id || x.id) === String(superId),
+                ) || {};
+              if (!profile.id && !profile.super_distributor_id)
+                throw new Error("Selected Super Distributor was not found.");
+              const nm =
+                profile.full_name ||
+                profile.name ||
+                profile.super_distributor_name;
+              $("sideName").textContent = nm || "Super Distributor";
+              $("welcomeName").textContent = nm || "Partner";
+              $("sideCode").textContent =
+                profile.super_distributor_code || superId;
+              await loadData();
+              connected = true;
+              $("connectScreen").classList.add("hidden");
+              $("app").classList.remove("hidden");
+              msg("Dashboard loaded. Synchronized with Quick2print database.");
+            } catch (err) {
+              $("connectError").textContent = err.message || String(err);
+            }
+          },
+        );
+      }
+      $("connectForm").addEventListener("submit", connect);
+      $("loadAccountsBtn").addEventListener("click", loadAccounts);
 
-async function connect(e) {
-  e.preventDefault();
-  $("connectError").textContent = "";
-  await withButtonLoader($("openDashboardBtn"), "Opening Portal…", async () => {
-    try {
-      if (!sb) configureClient();
-      superId = $("superSelect").value;
-      if (!superId) throw new Error("Load accounts and select a Super Distributor first.");
-      const t = getTables();
-      const { data, error } = await sb.from(t.super).select("*").limit(500);
-      if (error) throw error;
-      profile = (data || []).find((x) => String(x.super_distributor_id || x.id) === String(superId)) || {};
-      if (!profile.id && !profile.super_distributor_id) throw new Error("Selected Super Distributor was not found.");
-      const nm = profile.full_name || profile.name || profile.super_distributor_name;
-      $("sideName").textContent = nm || "Super Distributor";
-      $("welcomeName").textContent = nm || "Partner";
-      $("sideCode").textContent = profile.super_distributor_code || superId;
-      await loadData();
-      connected = true;
-      $("connectScreen").classList.add("hidden");
-      $("app").classList.remove("hidden");
-      msg("Dashboard loaded. Synchronized with Quick2print database.");
-    } catch (err) {
-      $("connectError").textContent = err.message || String(err);
-    }
-  });
-}
-$("connectForm").addEventListener("submit", connect);
-$("loadAccountsBtn").addEventListener("click", loadAccounts);
+      // No Supabase URL, key, or table configuration is read from or written to browser storage.
 
-try {
-  const c = JSON.parse(localStorage.getItem("q2p_sd_portal_config") || "{}");
-  if (c.url) $("sbUrl").value = c.url;
-  if (c.key) $("sbKey").value = c.key;
-  if (c.tables) {
-    $("tableSuper").value = c.tables.super || "super_distributors";
-    $("tableDist").value = c.tables.dist || "distributors";
-    $("tableRetail").value = c.tables.retail || "retailers";
-    $("tableSubs").value = c.tables.subs || "shop_subscriptions";
-    $("tableLedger").value = c.tables.ledger || "commission_ledger";
-  }
-} catch {}
+      async function loadTable(table, cols = "*") {
+        const r = await sb.from(table).select(cols);
+        if (r.error) throw new Error(table + ": " + r.error.message);
+        return r.data || [];
+      }
 
-async function loadTable(table, cols = "*") {
-  const r = await sb.from(table).select(cols);
-  if (r.error) throw new Error(table + ": " + r.error.message);
-  return r.data || [];
-}
+      async function loadData() {
+        msg("Synchronizing network data…");
+        try {
+          const t = getTables();
+          dist = (await loadTable(t.dist)).filter(
+            (d) => String(d.super_distributor_id || "") === String(superId),
+          );
+          const allR = await loadTable(t.retail);
+          const ids = new Set(
+            dist.map((d) => String(d.distributor_id || d.id)),
+          );
+          retail = allR.filter(
+            (r) =>
+              String(r.super_distributor_id || "") === String(superId) ||
+              ids.has(String(r.assigned_distributor_id || "")),
+          );
+          try {
+            subs = await loadTable(t.subs);
+          } catch (e) {
+            subs = [];
+            throw e;
+          }
+          try {
+            ledger = await loadTable(t.ledger);
+          } catch (e) {
+            ledger = [];
+            msg("Commission ledger unavailable: " + e.message, true);
+          }
+          ledger = ledger.filter(
+            (x) =>
+              String(
+                x.super_distributor_id || x.recipient_id || x.partner_id || "",
+              ) === String(superId),
+          );
+          render();
+          msg("Last refreshed at " + new Date().toLocaleTimeString() + ".");
+        } catch (e) {
+          msg(e.message, true);
+          throw e;
+        }
+      }
 
-async function loadData() {
-  msg("Synchronizing network data…");
-  try {
-    const t = getTables();
-    dist = (await loadTable(t.dist)).filter((d) => String(d.super_distributor_id || "") === String(superId));
-    const allR = await loadTable(t.retail);
-    const ids = new Set(dist.map((d) => String(d.distributor_id || d.id)));
-    retail = allR.filter((r) => String(r.super_distributor_id || "") === String(superId) || ids.has(String(r.assigned_distributor_id || "")));
-    try { subs = await loadTable(t.subs); } catch (e) { subs = []; throw e; }
-    try { ledger = await loadTable(t.ledger); }
-    catch (e) { ledger = []; msg("Commission ledger unavailable: " + e.message, true); }
-    ledger = ledger.filter((x) => String(x.super_distributor_id || x.recipient_id || x.partner_id || "") === String(superId));
-    render();
-    msg("Last refreshed at " + new Date().toLocaleTimeString() + ".");
-  } catch (e) {
-    msg(e.message, true);
-    throw e;
-  }
-}
+      function applyFilter(inputId, bodyId) {
+        const q = $(inputId).value.trim().toLowerCase();
+        $(bodyId)
+          .querySelectorAll("tr[data-row]")
+          .forEach(
+            (r) => (r.hidden = !!q && !r.textContent.toLowerCase().includes(q)),
+          );
+      }
+      [
+        ["distSearch", "distributorRows"],
+        ["retailSearch", "retailerRows"],
+      ].forEach(([i, t]) =>
+        $(i).addEventListener("input", () => applyFilter(i, t)),
+      );
 
-function applyFilter(inputId, bodyId) {
-  const q = $(inputId).value.trim().toLowerCase();
-  $(bodyId).querySelectorAll("tr[data-row]").forEach((r) => (r.hidden = !!q && !r.textContent.toLowerCase().includes(q)));
-}
-[["distSearch", "distributorRows"], ["retailSearch", "retailerRows"]].forEach(([i, t]) => $(i).addEventListener("input", () => applyFilter(i, t)));
+      function render() {
+        const amt = (x) =>
+          Number(x.commission_amount || x.amount || x.commission || 0);
+        const paid = subs.filter(
+          (s) =>
+            String(s.payment_status || s.status || "").toUpperCase() === "PAID",
+        );
+        const retailIds = new Set(
+          retail.map((r) => String(r.retailer_id || r.id)),
+        );
+        const distIds = new Set(
+          dist.map((d) => String(d.distributor_id || d.id)),
+        );
+        const month = new Date().toISOString().slice(0, 7);
+        const relevantPaid = paid.filter(
+          (s) =>
+            String(s.super_distributor_id || "") === String(superId) ||
+            distIds.has(String(s.distributor_id || "")) ||
+            retailIds.has(String(s.retailer_id || "")),
+        );
+        const revenue = relevantPaid.reduce(
+          (n, s) => n + Number(s.amount || s.amount_paid || 0),
+          0,
+        );
+        const totalComm = ledger.reduce((n, x) => n + amt(x), 0);
+        const thisMonth = ledger
+          .filter(
+            (x) => String(x.created_at || x.month || "").slice(0, 7) === month,
+          )
+          .reduce((n, x) => n + amt(x), 0);
 
-function render() {
-  const amt = (x) => Number(x.commission_amount || x.amount || x.commission || 0);
-  const paid = subs.filter((s) => String(s.payment_status || s.status || "").toUpperCase() === "PAID");
-  const retailIds = new Set(retail.map((r) => String(r.retailer_id || r.id)));
-  const distIds = new Set(dist.map((d) => String(d.distributor_id || d.id)));
-  const month = new Date().toISOString().slice(0, 7);
-  const relevantPaid = paid.filter((s) =>
-    String(s.super_distributor_id || "") === String(superId) || distIds.has(String(s.distributor_id || "")) || retailIds.has(String(s.retailer_id || "")));
-  const revenue = relevantPaid.reduce((n, s) => n + Number(s.amount || s.amount_paid || 0), 0);
-  const totalComm = ledger.reduce((n, x) => n + amt(x), 0);
-  const thisMonth = ledger.filter((x) => String(x.created_at || x.month || "").slice(0, 7) === month).reduce((n, x) => n + amt(x), 0);
+        $("kpiDist").textContent = dist.length;
+        $("kpiRetail").textContent = retail.length;
+        $("kpiSubs").textContent = relevantPaid.length;
+        $("kpiCommission").textContent = fmt(totalComm);
+        $("kpiRevenue").textContent = fmt(revenue);
+        $("kpiActiveRetail").textContent = retail.filter(
+          (x) =>
+            String(x.status || x.account_status || "active").toLowerCase() ===
+            "active",
+        ).length;
+        $("actCount").textContent = relevantPaid.length;
+        $("actValue").textContent = fmt(revenue);
+        $("actMonth").textContent = relevantPaid.filter(
+          (s) => String(s.paid_at || s.created_at || "").slice(0, 7) === month,
+        ).length;
+        $("commTotal").textContent = fmt(totalComm);
+        $("commMonth").textContent = fmt(thisMonth);
+        $("commCount").textContent = ledger.length;
 
-  $("kpiDist").textContent = dist.length;
-  $("kpiRetail").textContent = retail.length;
-  $("kpiSubs").textContent = relevantPaid.length;
-  $("kpiCommission").textContent = fmt(totalComm);
-  $("kpiRevenue").textContent = fmt(revenue);
-  $("kpiActiveRetail").textContent = retail.filter((x) => String(x.status || x.account_status || "active").toLowerCase() === "active").length;
-  $("actCount").textContent = relevantPaid.length;
-  $("actValue").textContent = fmt(revenue);
-  $("actMonth").textContent = relevantPaid.filter((s) => String(s.paid_at || s.created_at || "").slice(0, 7) === month).length;
-  $("commTotal").textContent = fmt(totalComm);
-  $("commMonth").textContent = fmt(thisMonth);
-  $("commCount").textContent = ledger.length;
-
-  $("distributorRows").innerHTML = dist.length ? dist.map((d) => {
-    const id = d.distributor_id || d.id;
-    const n = retail.filter((r) => String(r.assigned_distributor_id || r.distributor_id || "") === String(id)).length;
-    const st = String(d.account_status || d.status || "active").toLowerCase();
-    return `<tr data-row>
+        $("distributorRows").innerHTML = dist.length
+          ? dist
+              .map((d) => {
+                const id = d.distributor_id || d.id;
+                const n = retail.filter(
+                  (r) =>
+                    String(
+                      r.assigned_distributor_id || r.distributor_id || "",
+                    ) === String(id),
+                ).length;
+                const st = String(
+                  d.account_status || d.status || "active",
+                ).toLowerCase();
+                return `<tr data-row>
       <td><div class="nm">${esc(d.full_name || d.name || d.distributor_name || "Distributor")}</div><div class="sub">${esc(d.email || d.mobile || "")}</div></td>
       <td><span class="code">${esc(d.distributor_code || d.distributor_id || d.id || "—")}</span></td>
       <td><b>${n}</b></td>
       <td><span class="pill ${esc(st)}">${esc(st)}</span></td>
       <td>${date(d.created_at)}</td></tr>`;
-  }).join("") : '<tr><td colspan="5" class="empty">No distributors yet. Select “Create distributor” to onboard your first partner.</td></tr>';
+              })
+              .join("")
+          : '<tr><td colspan="5" class="empty">No distributors yet. Select “Create distributor” to onboard your first partner.</td></tr>';
 
-  $("retailerRows").innerHTML = retail.length ? retail.map((r) => {
-    const did = String(r.assigned_distributor_id || "");
-    const d = dist.find((x) => String(x.distributor_id) === did);
-    const st = String(r.account_status || r.status || "active").toLowerCase();
-    return `<tr data-row>
+        $("retailerRows").innerHTML = retail.length
+          ? retail
+              .map((r) => {
+                const did = String(r.assigned_distributor_id || "");
+                const d = dist.find((x) => String(x.distributor_id) === did);
+                const st = String(
+                  r.account_status || r.status || "active",
+                ).toLowerCase();
+                return `<tr data-row>
       <td><div class="nm">${esc(r.shop_name || r.owner_name || "Retailer")}</div><div class="sub">${esc(r.email || r.mobile || "")}</div></td>
       <td><span class="code">${esc(r.retailer_code || r.retailer_id || r.id || "—")}</span></td>
       <td>${esc(d?.full_name || d?.name || d?.distributor_code || "Direct")}</td>
       <td><span class="pill ${esc(st)}">${esc(st)}</span></td>
       <td>${date(r.created_at)}</td></tr>`;
-  }).join("") : '<tr><td colspan="5" class="empty">No retailers found in your network.</td></tr>';
+              })
+              .join("")
+          : '<tr><td colspan="5" class="empty">No retailers found in your network.</td></tr>';
 
-  $("activityRows").innerHTML = relevantPaid.length ? relevantPaid
-    .sort((a, b) => new Date(b.paid_at || b.created_at || 0) - new Date(a.paid_at || a.created_at || 0))
-    .map((s) => `<tr>
+        $("activityRows").innerHTML = relevantPaid.length
+          ? relevantPaid
+              .sort(
+                (a, b) =>
+                  new Date(b.paid_at || b.created_at || 0) -
+                  new Date(a.paid_at || a.created_at || 0),
+              )
+              .map(
+                (s) => `<tr>
       <td>${date(s.paid_at || s.created_at)}</td>
       <td><span class="code">${esc(s.shop_id || "—")}</span></td>
       <td class="nm">${esc(s.plan_id || s.plan_name || "—")}</td>
       <td class="nm">${fmt(s.amount || s.amount_paid || 0)}</td>
       <td><span class="pill">PAID</span></td>
-      <td>${esc(s.retailer_id || s.distributor_id || "Network")}</td></tr>`).join("")
-    : '<tr><td colspan="6" class="empty">No paid subscription rows could be attributed to your network.</td></tr>';
+      <td>${esc(s.retailer_id || s.distributor_id || "Network")}</td></tr>`,
+              )
+              .join("")
+          : '<tr><td colspan="6" class="empty">No paid subscription rows could be attributed to your network.</td></tr>';
 
-  const groups = {};
-  ledger.forEach((x) => {
-    const key = String(x.created_at || x.month || "").slice(0, 7) || "Unknown";
-    groups[key] ??= { n: 0, amount: 0 };
-    groups[key].n++;
-    groups[key].amount += amt(x);
-  });
-  const keys = Object.keys(groups).sort().reverse();
-  $("monthlyCommissionRows").innerHTML = keys.length
-    ? keys.map((k) => `<tr><td class="nm">${esc(k)}</td><td>${groups[k].n}</td><td class="nm">${fmt(groups[k].amount)}</td></tr>`).join("")
-    : '<tr><td colspan="3" class="empty">₹0.00 — no commission records for this account.</td></tr>';
+        const groups = {};
+        ledger.forEach((x) => {
+          const key =
+            String(x.created_at || x.month || "").slice(0, 7) || "Unknown";
+          groups[key] ??= { n: 0, amount: 0 };
+          groups[key].n++;
+          groups[key].amount += amt(x);
+        });
+        const keys = Object.keys(groups).sort().reverse();
+        $("monthlyCommissionRows").innerHTML = keys.length
+          ? keys
+              .map(
+                (k) =>
+                  `<tr><td class="nm">${esc(k)}</td><td>${groups[k].n}</td><td class="nm">${fmt(groups[k].amount)}</td></tr>`,
+              )
+              .join("")
+          : '<tr><td colspan="3" class="empty">₹0.00 — no commission records for this account.</td></tr>';
 
-  $("overviewRecent").innerHTML = `<i data-lucide="check-circle-2"></i><span><b>${relevantPaid.length}</b> paid subscription(s) attributed to your network · <b>${ledger.length}</b> commission record(s) verified.</span>`;
-  applyFilter("distSearch", "distributorRows");
-  applyFilter("retailSearch", "retailerRows");
-  icons();
-}
-
-$("partnerForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const form = e.currentTarget;
-  const type = $("partnerType").value;
-  const row = {};
-  document.querySelectorAll(".partner-field").forEach((input) => {
-    const k = input.dataset.column, v = input.value.trim();
-    if (v !== "") row[k] = input.type === "number" ? Number(v) : v;
-  });
-  if (type === "distributor") {
-    row.super_distributor_id = superId;
-  } else {
-    // The form asks for one retailer full name; the schema requires both shop_name and owner_name.
-    row.shop_name = row.owner_name;
-    row.assigned_distributor_id = $("partnerDistributor").value;
-    if (!row.assigned_distributor_id) {
-      $("formError").textContent = "Select a distributor for this retailer first.";
-      return;
-    }
-  }
-  await withButtonLoader($("createSubmitBtn"), "Creating record…", async () => {
-    try {
-      const table = type === "distributor" ? getTables().dist : getTables().retail;
-      const r = await sb.from(table).insert(row).select().single();
-      if (r.error) throw r.error;
-      form.reset();
-      closeModal();
-      await loadData();
-      msg((type === "distributor" ? "Distributor" : "Retailer") + " record created successfully.");
-    } catch (err) {
-      $("formError").textContent = err.message + " — Confirm the table schema and INSERT RLS policies.";
-    }
-  });
-});
-
-$("refreshBtn").onclick = () => withButtonLoader($("refreshBtn"), "Refreshing…", () => loadData().catch(() => {}));
-
-// Initialize icons and auto-connect on load
-window.addEventListener("DOMContentLoaded", () => {
-  icons();
-  (async () => {
-    try {
-      configureClient();
-      await loadAccounts();
-      const sel = $("superSelect");
-      if (sel.value || sel.options.length > 1) {
-        // Prefer the account that matches the logged-in session, else the first one.
-        const me = window.q2pLoggedIn && String(window.q2pLoggedIn.id);
-        const i = [...sel.options].findIndex((o) => o.value === me);
-        sel.selectedIndex = i >= 0 ? i : 0;
-        await connect({ preventDefault() {} });
+        $("overviewRecent").innerHTML =
+          `<i data-lucide="check-circle-2"></i><span><b>${relevantPaid.length}</b> paid subscription(s) attributed to your network · <b>${ledger.length}</b> commission record(s) verified.</span>`;
+        applyFilter("distSearch", "distributorRows");
+        applyFilter("retailSearch", "retailerRows");
+        icons();
       }
-    } catch (err) {
-      msg(err.message || String(err), true);
-    }
-    // If auto-connect didn't succeed, show the connect screen so the error is visible and retryable.
-    if (!connected) {
-      $("app").classList.add("hidden");
-      $("connectScreen").classList.remove("hidden");
-    }
-  })();
-});
-</script>
-</body>
+
+      $("partnerForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        const type = $("partnerType").value;
+        const row = {};
+        document.querySelectorAll(".partner-field").forEach((input) => {
+          const k = input.dataset.column,
+            v = input.value.trim();
+          if (v !== "") row[k] = input.type === "number" ? Number(v) : v;
+        });
+        if (type === "distributor") {
+          row.super_distributor_id = superId;
+        } else {
+          // The form asks for one retailer full name; the schema requires both shop_name and owner_name.
+          row.shop_name = row.owner_name;
+          row.assigned_distributor_id = $("partnerDistributor").value;
+          if (!row.assigned_distributor_id) {
+            $("formError").textContent =
+              "Select a distributor for this retailer first.";
+            return;
+          }
+        }
+        await withButtonLoader(
+          $("createSubmitBtn"),
+          "Creating record…",
+          async () => {
+            try {
+              const table =
+                type === "distributor" ? getTables().dist : getTables().retail;
+              const r = await sb.from(table).insert(row).select().single();
+              if (r.error) throw r.error;
+              form.reset();
+              closeModal();
+              await loadData();
+              msg(
+                (type === "distributor" ? "Distributor" : "Retailer") +
+                  " record created successfully.",
+              );
+            } catch (err) {
+              $("formError").textContent =
+                err.message +
+                " — Confirm the table schema and INSERT RLS policies.";
+            }
+          },
+        );
+      });
+
+      $("refreshBtn").onclick = () =>
+        withButtonLoader($("refreshBtn"), "Refreshing…", () =>
+          loadData().catch(() => {}),
+        );
+
+      // Initialize icons and auto-connect on load
+      window.addEventListener("DOMContentLoaded", () => {
+        icons();
+        (async () => {
+          try {
+            configureClient();
+            await loadAccounts();
+            const sel = $("superSelect");
+            if (sel.value || sel.options.length > 1) {
+              // Prefer the account that matches the logged-in session, else the first one.
+              const me = window.q2pLoggedIn && String(window.q2pLoggedIn.id);
+              const i = [...sel.options].findIndex((o) => o.value === me);
+              sel.selectedIndex = i >= 0 ? i : 0;
+              await connect({ preventDefault() {} });
+            }
+          } catch (err) {
+            msg(err.message || String(err), true);
+          }
+          // Keep setup controls hidden. Leave the portal visible and report connection errors in its status area.
+          if (!connected) {
+            $("connectScreen").classList.add("hidden");
+            $("app").classList.remove("hidden");
+            msg(
+              "Automatic connection failed. Check Supabase URL/key, table names, and SELECT/RLS permissions.",
+              true,
+            );
+          }
+        })();
+      });
+    </script>
+  </body>
 </html>
