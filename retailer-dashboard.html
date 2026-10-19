@@ -3,104 +3,374 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#1b1464" />
     <title>Quick2Print | Retailer Dashboard</title>
-<!-- Quick2Print login guard: direct dashboard access requires a valid login session. -->
-<style>html.q2p-auth-pending body{visibility:hidden}#q2pLogout{position:fixed;right:18px;top:18px;z-index:99999;border:0;border-radius:10px;padding:10px 14px;background:#e11d48;color:#fff;font-weight:800;box-shadow:0 6px 18px #0b104633;cursor:pointer}#q2pAuthExpired{position:fixed;inset:0;z-index:100000;background:#070a2e;color:#fff;display:grid;place-items:center;padding:24px;font:700 16px system-ui}</style>
-<script>
-(function(){document.documentElement.classList.add('q2p-auth-pending');let a=null;try{a=JSON.parse(sessionStorage.getItem('q2p_partner_auth')||'null')}catch{}const expected='retailer';const age=a&&Date.now()-Number(a.at||0);if(!a||a.role!==expected||!a.id||!Number.isFinite(age)||age<0||age>8*60*60*1000){try{sessionStorage.removeItem('q2p_partner_auth')}catch{}location.replace('index.html');return}window.q2pLoggedIn=a;document.addEventListener('DOMContentLoaded',()=>{document.documentElement.classList.remove('q2p-auth-pending');const b=document.createElement('button');b.id='q2pLogout';b.type='button';b.textContent='Logout';b.title='Log out of Quick2Print';b.addEventListener('click',()=>{sessionStorage.removeItem('q2p_partner_auth');location.replace('index.html')});document.body.appendChild(b);const id=a.id;const role=a.role;const name=a.name||id;const nameEl=document.getElementById('profileName');const codeEl=document.getElementById('profileCode');if(nameEl)nameEl.textContent=name;if(codeEl)codeEl.textContent=id;});window.addEventListener('pageshow',()=>{let current=null;try{current=JSON.parse(sessionStorage.getItem('q2p_partner_auth')||'null')}catch{}if(!current||current.role!==expected||current.id!==a.id)location.replace('index.html')})})();
-</script>
+    <link rel="icon" type="image/png" href="./logo.png" />
+    <!-- Quick2Print login guard: direct dashboard access requires a valid login session. -->
+    <style>
+      html.q2p-auth-pending body {
+        visibility: hidden;
+      }
+      #q2pLogout {
+        position: fixed;
+        right: 18px;
+        top: 18px;
+        z-index: 99999;
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        background: #e11d48;
+        color: #fff;
+        font-weight: 800;
+        box-shadow: 0 6px 18px #0b104633;
+        cursor: pointer;
+      }
+      #q2pAuthExpired {
+        position: fixed;
+        inset: 0;
+        z-index: 100000;
+        background: #070a2e;
+        color: #fff;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        font: 700 16px system-ui;
+      }
+    </style>
+    <script>
+      (function () {
+        document.documentElement.classList.add("q2p-auth-pending");
+        let a = null;
+        try {
+          a = JSON.parse(sessionStorage.getItem("q2p_partner_auth") || "null");
+        } catch {}
+        const expected = "retailer";
+        const age = a && Date.now() - Number(a.at || 0);
+        if (
+          !a ||
+          a.role !== expected ||
+          !a.id ||
+          !Number.isFinite(age) ||
+          age < 0 ||
+          age > 8 * 60 * 60 * 1000
+        ) {
+          try {
+            sessionStorage.removeItem("q2p_partner_auth");
+          } catch {}
+          location.replace("index.html");
+          return;
+        }
+        window.q2pLoggedIn = a;
+        document.addEventListener("DOMContentLoaded", () => {
+          document.documentElement.classList.remove("q2p-auth-pending");
+          const b = document.createElement("button");
+          b.id = "q2pLogout";
+          b.type = "button";
+          b.textContent = "Logout";
+          b.title = "Log out of Quick2Print";
+          b.addEventListener("click", () => {
+            sessionStorage.removeItem("q2p_partner_auth");
+            location.replace("index.html");
+          });
+          document.body.appendChild(b);
+          const id = a.id;
+          const role = a.role;
+          const name = a.name || id;
+          const nameEl = document.getElementById("profileName");
+          const codeEl = document.getElementById("profileCode");
+          if (nameEl) nameEl.textContent = name;
+          if (codeEl) codeEl.textContent = id;
+        });
+        window.addEventListener("pageshow", () => {
+          let current = null;
+          try {
+            current = JSON.parse(
+              sessionStorage.getItem("q2p_partner_auth") || "null",
+            );
+          } catch {}
+          if (!current || current.role !== expected || current.id !== a.id)
+            location.replace("index.html");
+        });
+      })();
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+      /* ===== Palette taken from the Quick2Print logo ===== */
       :root {
-        --navy: #0b1046;
-        --navy2: #070a2e;
-        --indigo: #4f46e5;
-        --bg: #f4f7fc;
+        --navy: #1b1464;
+        --navy2: #120c47;
+        --blue: #1e7be0;
+        --cyan: #00aeef;
+        --magenta: #ec008c;
+        --gold: #fcb814;
+        --bg: #f4f6fc;
+        --ink: #17143f;
+        --muted: #6b7399;
+        --line: #e6e9f5;
+        --radius: 18px;
+        --ease: cubic-bezier(0.22, 1, 0.36, 1);
       }
       * {
         box-sizing: border-box;
       }
+      html {
+        scroll-behavior: smooth;
+      }
       body {
         margin: 0;
-        font-family: "Plus Jakarta Sans", sans-serif;
-        background: var(--bg);
-        color: #17203c;
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+        background:
+          radial-gradient(900px 420px at 100% -10%, #1e7be014, transparent 60%),
+          radial-gradient(700px 360px at -10% 110%, #ec008c0f, transparent 60%),
+          var(--bg);
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
       }
+      h1,
+      h2,
+      h3,
+      .brand-font {
+        font-family: "Nunito", "Plus Jakarta Sans", sans-serif;
+      }
+
+      /* Accessibility */
+      .skip-link {
+        position: fixed;
+        left: 12px;
+        top: -60px;
+        z-index: 100001;
+        background: var(--navy);
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-weight: 800;
+        transition: top 0.2s var(--ease);
+      }
+      .skip-link:focus {
+        top: 12px;
+      }
+      :focus-visible {
+        outline: 3px solid var(--blue);
+        outline-offset: 2px;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+
+      /* Sidebar */
       .side {
-        background: linear-gradient(165deg, var(--navy), var(--navy2));
-        box-shadow: 8px 0 32px #0b10462b;
+        background:
+          radial-gradient(420px 260px at 0% 0%, #1e7be033, transparent 65%),
+          radial-gradient(360px 240px at 100% 100%, #ec008c26, transparent 65%),
+          linear-gradient(170deg, var(--navy), var(--navy2));
+        box-shadow: 8px 0 36px #120c4733;
+        color: #fff;
       }
+      .logo-card {
+        background: #fff;
+        border-radius: 20px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 28px #00000033;
+        transition:
+          transform 0.35s var(--ease),
+          box-shadow 0.35s var(--ease);
+      }
+      .logo-card:hover {
+        transform: translateY(-2px) scale(1.01);
+        box-shadow: 0 16px 34px #0000003d;
+      }
+      .logo-card img {
+        width: 100%;
+        height: auto;
+        max-height: 84px;
+        object-fit: contain;
+        display: block;
+      }
+      .logo-fallback {
+        font:
+          900 26px "Nunito",
+          sans-serif;
+        color: var(--navy);
+        letter-spacing: -0.02em;
+      }
+      .logo-fallback b {
+        color: var(--gold);
+      }
+
+      .nav {
+        width: 100%;
+        text-align: left;
+        padding: 12px 14px;
+        border-radius: 14px;
+        color: #d9defc;
+        font-weight: 700;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        position: relative;
+        transition:
+          background 0.25s var(--ease),
+          color 0.25s var(--ease),
+          transform 0.25s var(--ease);
+      }
+      .nav:hover {
+        background: #ffffff14;
+        color: #fff;
+        transform: translateX(3px);
+      }
+      .nav.active {
+        background: linear-gradient(90deg, #ffffff26, #ffffff0d);
+        color: #fff;
+        box-shadow: inset 3px 0 0 var(--gold);
+      }
+      .nav svg {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+      }
+
+      /* Form + buttons */
       .field {
         width: 100%;
-        border: 1px solid #d7def0;
+        border: 1.5px solid #d9def0;
         background: #fbfcff;
         border-radius: 12px;
         padding: 12px 14px;
         outline: none;
-        color: #111a3e;
+        color: var(--ink);
         min-height: 46px;
+        font: inherit;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s,
+          background 0.2s;
+      }
+      .field:hover {
+        border-color: #b7c2ea;
       }
       .field:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px #6366f120;
+        border-color: var(--blue);
+        box-shadow: 0 0 0 4px #1e7be024;
+        background: #fff;
       }
       .btn {
         border: 0;
         border-radius: 12px;
-        padding: 11px 16px;
+        padding: 11px 18px;
         font-weight: 800;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
+        min-height: 44px;
+        font-family: inherit;
+        transition:
+          transform 0.2s var(--ease),
+          box-shadow 0.25s var(--ease),
+          background 0.25s,
+          filter 0.25s;
+      }
+      .btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+      }
+      .btn:active:not(:disabled) {
+        transform: translateY(0) scale(0.98);
+      }
+      .btn:disabled {
+        opacity: 0.7;
+        cursor: progress;
       }
       .primary {
-        background: #4f46e5;
-        color: white;
+        background: linear-gradient(
+          135deg,
+          var(--blue),
+          #3a4fe0 60%,
+          var(--navy)
+        );
+        color: #fff;
+        box-shadow: 0 8px 20px #1e7be047;
       }
-      .primary:hover {
-        background: #4338ca;
+      .primary:hover:not(:disabled) {
+        box-shadow: 0 12px 26px #1e7be061;
+        filter: brightness(1.06);
       }
       .light {
-        background: #eef2ff;
-        color: #3730a3;
+        background: #eaf1ff;
+        color: var(--navy);
       }
+      .light:hover:not(:disabled) {
+        background: #dce8ff;
+      }
+      .side .light {
+        background: #ffffff1f;
+        color: #fff;
+      }
+      .side .light:hover:not(:disabled) {
+        background: #ffffff33;
+      }
+
       .card {
-        background: white;
-        border: 1px solid #e7ebf5;
-        border-radius: 18px;
-        box-shadow: 0 8px 28px #0b104608;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: 0 8px 28px #1b146410;
+        transition:
+          transform 0.3s var(--ease),
+          box-shadow 0.3s var(--ease);
       }
-      .nav {
-        width: 100%;
-        text-align: left;
-        padding: 12px;
+      .kpi:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 18px 38px #1b146420;
+      }
+      .kpi {
+        position: relative;
+        overflow: hidden;
+      }
+      .kpi::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 4px;
+        background: var(--accent, var(--blue));
+      }
+      .kpi .ico {
+        width: 40px;
+        height: 40px;
         border-radius: 12px;
-        color: #dce4ff;
-        font-weight: 700;
-        display: flex;
-        gap: 12px;
-        align-items: center;
-      }
-      .nav:hover,
-      .nav.active {
-        background: #ffffff18;
-        color: white;
+        display: grid;
+        place-items: center;
+        background: color-mix(in srgb, var(--accent, var(--blue)) 14%, white);
+        color: var(--accent, var(--blue));
       }
       .muted {
-        color: #7180a4;
+        color: var(--muted);
       }
       .tablewrap {
         overflow: auto;
+        -webkit-overflow-scrolling: touch;
       }
       table {
         width: 100%;
@@ -109,34 +379,50 @@
       }
       th {
         font-size: 11px;
-        letter-spacing: 0.07em;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #7180a4;
-        background: #f8faff;
+        color: var(--muted);
+        background: #f7f9ff;
         text-align: left;
+        position: sticky;
+        top: 0;
       }
       th,
       td {
         padding: 14px 16px;
-        border-bottom: 1px solid #edf0f7;
+        border-bottom: 1px solid #edf0f8;
       }
       td {
         font-size: 13px;
       }
+      tbody tr {
+        transition: background 0.2s;
+      }
+      tbody tr:hover {
+        background: #f5f8ff;
+      }
       .badge {
-        padding: 5px 9px;
+        padding: 5px 10px;
         border-radius: 999px;
         font-size: 11px;
         font-weight: 800;
-        background: #ecfdf5;
+        background: #e8fbf2;
         color: #047857;
+        display: inline-block;
+        text-transform: capitalize;
       }
       .hidden {
         display: none !important;
       }
       .cmyk {
-        height: 4px;
-        background: linear-gradient(90deg, #00aeef, #0072ff, #ec008c, #ffb800);
+        height: 5px;
+        background: linear-gradient(
+          90deg,
+          var(--cyan),
+          var(--blue),
+          var(--magenta),
+          var(--gold)
+        );
       }
       .spin {
         display: inline-block;
@@ -152,80 +438,319 @@
           transform: rotate(360deg);
         }
       }
-      @media (max-width: 800px) {
+
+      /* Animations */
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes pop {
+        from {
+          opacity: 0;
+          transform: scale(0.94) translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .page:not(.hidden) {
+        animation: rise 0.5s var(--ease) both;
+      }
+      .page:not(.hidden) .kpi,
+      .page:not(.hidden) .card {
+        animation: rise 0.55s var(--ease) both;
+      }
+      .page:not(.hidden) .kpi:nth-child(1) {
+        animation-delay: 0.04s;
+      }
+      .page:not(.hidden) .kpi:nth-child(2) {
+        animation-delay: 0.1s;
+      }
+      .page:not(.hidden) .kpi:nth-child(3) {
+        animation-delay: 0.16s;
+      }
+      .page:not(.hidden) .kpi:nth-child(4) {
+        animation-delay: 0.22s;
+      }
+      #notice:not(.hidden),
+      #workNotice:not(.hidden),
+      #paymentLookupInfo:not(.hidden) {
+        animation: pop 0.35s var(--ease) both;
+      }
+      #accountModal .modal-box {
+        animation: pop 0.45s var(--ease) both;
+      }
+      #accountModal {
+        animation: fade 0.3s ease both;
+      }
+      @keyframes fade {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .tick {
+        animation: tick 0.45s var(--ease);
+      }
+      @keyframes tick {
+        0% {
+          transform: translateY(6px);
+          opacity: 0.2;
+        }
+        100% {
+          transform: none;
+          opacity: 1;
+        }
+      }
+
+      /* Hero banner */
+      .hero {
+        background:
+          radial-gradient(500px 220px at 90% 0%, #00aeef55, transparent 60%),
+          radial-gradient(420px 220px at 10% 120%, #ec008c40, transparent 60%),
+          linear-gradient(120deg, var(--navy), #2a2290);
+        color: #fff;
+        border-radius: 22px;
+        position: relative;
+        overflow: hidden;
+      }
+      .hero::after {
+        content: "";
+        position: absolute;
+        right: -40px;
+        top: -40px;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        border: 18px solid #ffffff12;
+      }
+      .pill {
+        background: #ffffff1f;
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .pill i {
+        color: var(--gold);
+      }
+
+      /* Logout button (injected by login guard) — keep clear of page content */
+      #q2pLogout {
+        top: 14px !important;
+        right: 16px !important;
+        min-height: 40px;
+        background: linear-gradient(135deg, #f43f5e, #be123c) !important;
+        transition:
+          transform 0.2s var(--ease),
+          box-shadow 0.2s !important;
+        font-family: inherit;
+      }
+      #q2pLogout:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 22px #be123c55 !important;
+      }
+
+      /* Layout: desktop sidebar is sticky, tablet/mobile collapses to top bar */
+      @media (min-width: 1024px) {
+        .side {
+          position: sticky;
+          top: 0;
+          height: 100vh;
+          overflow-y: auto;
+          width: 17.5rem;
+        }
+      }
+      @media (max-width: 1023px) {
         .layout {
           display: block;
         }
         .side {
           width: 100%;
+          padding: 14px 16px;
+          border-radius: 0 0 24px 24px;
+        }
+        .side .logo-card {
+          max-width: 360px;
+          margin: 0 auto 14px;
+          padding: 10px 14px;
+        }
+        .side .logo-card img {
+          max-height: 64px;
+        }
+        .side .ws-label,
+        .side .net-foot {
+          display: none;
         }
         .navs {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 8px;
+        }
+        .navs > * {
+          margin: 0 !important;
+        }
+        .nav {
+          flex-direction: column;
+          gap: 4px;
+          padding: 10px 6px;
+          text-align: center;
+          font-size: 12px;
+        }
+        .nav:hover {
+          transform: translateY(-2px);
+        }
+        .nav.active {
+          box-shadow: inset 0 -3px 0 var(--gold);
+        }
+        .acct {
+          margin-top: 12px !important;
+          padding: 12px 14px !important;
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 4px 12px;
+          align-items: center;
+        }
+        .acct #changeAccount {
+          grid-column: 2;
+          grid-row: 1 / span 3;
+          margin-top: 0 !important;
+          width: auto;
         }
         .main {
-          padding: 16px !important;
+          padding: 18px !important;
         }
+        .main > header {
+          padding-right: 0;
+        }
+        .topspace {
+          height: 0;
+        }
+      }
+      @media (max-width: 800px) {
         .stats {
           grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+        .main {
+          padding: 14px !important;
+        }
+        .kpi {
+          padding: 16px !important;
+        }
+        .kpi [class*="text-3xl"] {
+          font-size: 1.45rem;
+        }
+      }
+      @media (max-width: 480px) {
+        .stats {
+          grid-template-columns: 1fr !important;
+        }
+        .navs .nav span.lbl {
+          font-size: 11px;
+        }
+        #q2pLogout {
+          padding: 8px 12px !important;
+          top: 10px !important;
+          right: 10px !important;
+          font-size: 13px;
+        }
+      }
+      @media (min-width: 1024px) {
+        .main > header {
+          padding-right: 7rem;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
         }
       }
     </style>
   </head>
   <body>
-    <div class="cmyk"></div>
-    <div class="layout min-h-screen md:flex">
-      <aside class="side text-white md:w-64 p-5 shrink-0">
-        <div class="bg-white rounded-2xl p-3 flex items-center gap-3 mb-7">
-          <div
-            class="w-12 h-12 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold"
-          >
-            Q2P
-          </div>
-          <div>
-            <div class="font-extrabold text-lg text-[#0b1046]">
-              Quick<span class="text-amber-500">2</span>Print
-            </div>
-            <div class="text-xs text-slate-500">Retailer portal</div>
-          </div>
-        </div>
+    <a href="#pageTitle" class="skip-link">Skip to main content</a>
+    <div class="cmyk" aria-hidden="true"></div>
+    <div class="layout min-h-screen lg:flex">
+      <aside class="side p-5 shrink-0" aria-label="Sidebar">
+        <a
+          class="logo-card mb-7"
+          href="#"
+          aria-label="Quick2Print home"
+          onclick="return false;"
+        >
+          <img
+            src="./logo.png"
+            alt="Quick2Print logo"
+            width="320"
+            height="110"
+            onerror="
+              this.outerHTML =
+                '<span class=&quot;logo-fallback&quot;>Quick<b>2</b>print</span>'
+            "
+          />
+        </a>
         <div
-          class="text-xs uppercase tracking-widest text-slate-400 font-bold mb-3"
+          class="ws-label text-xs uppercase tracking-widest text-slate-300 font-bold mb-3"
         >
           Workspace
         </div>
-        <nav class="navs space-y-2">
-          <button class="nav active" data-page="overview">
-            <i data-lucide="layout-dashboard"></i>Overview</button
-          ><button class="nav" data-page="work">
-            <i data-lucide="clipboard-list"></i>Today’s work</button
-          ><button class="nav" data-page="commission">
-            <i data-lucide="wallet"></i>Commission</button
-          ><button class="nav" data-page="shops">
-            <i data-lucide="store"></i>My shops
+        <nav class="navs space-y-2" aria-label="Dashboard sections">
+          <button class="nav active" data-page="overview" type="button">
+            <i data-lucide="layout-dashboard"></i
+            ><span class="lbl">Overview</span></button
+          ><button class="nav" data-page="work" type="button">
+            <i data-lucide="clipboard-list"></i
+            ><span class="lbl">Today’s work</span></button
+          ><button class="nav" data-page="commission" type="button">
+            <i data-lucide="wallet"></i
+            ><span class="lbl">Commission</span></button
+          ><button class="nav" data-page="shops" type="button">
+            <i data-lucide="store"></i><span class="lbl">My shops</span>
           </button>
         </nav>
-        <div class="mt-8 p-4 rounded-2xl bg-white/10">
+        <div
+          class="acct mt-8 p-4 rounded-2xl bg-white/10 border border-white/10"
+        >
           <div class="text-xs text-slate-300">Retailer account</div>
-          <div id="profileName" class="font-extrabold mt-1">Choose account</div>
-          <div id="profileCode" class="text-xs text-slate-300 mt-1">—</div>
-          <button id="changeAccount" class="btn light w-full mt-4">
-            Change account
-          </button>
+          <div id="profileName" class="font-extrabold mt-1 break-words">
+            Choose account
+          </div>
+          <div id="profileCode" class="text-xs text-slate-300 mt-1 break-all">
+            —
+          </div>
         </div>
-        <p class="text-xs text-slate-400 mt-8">Quick2Print partner network</p>
+        <p class="net-foot text-xs text-slate-300/80 mt-8">
+          Quick2Print partner network
+        </p>
       </aside>
-      <main class="main flex-1 p-7 lg:p-9 min-w-0">
+      <main id="main" class="main flex-1 p-7 lg:p-9 min-w-0">
         <header class="flex flex-wrap items-center justify-between gap-4 mb-7">
           <div>
             <div
-              class="text-xs uppercase tracking-widest text-indigo-600 font-extrabold"
+              class="text-xs uppercase tracking-widest font-extrabold"
+              style="color: var(--blue)"
             >
               Retailer workspace
             </div>
             <h1
               id="pageTitle"
-              class="text-3xl font-extrabold text-[#0b1046] mt-1"
+              class="text-3xl font-extrabold mt-1"
+              style="color: var(--navy)"
+              tabindex="-1"
             >
               Retailer overview
             </h1>
@@ -233,53 +758,86 @@
               Track today's work, shops, subscriptions and recorded commissions.
             </p>
           </div>
-          <button id="refreshBtn" class="btn light">
+          <button id="refreshBtn" class="btn light" type="button">
             <i data-lucide="refresh-cw" class="w-4 h-4"></i>Refresh data
           </button>
         </header>
         <div
           id="notice"
+          role="status"
+          aria-live="polite"
           class="hidden mb-5 rounded-xl p-4 text-sm font-semibold"
         ></div>
-        <section id="page-overview" class="page">
+        <section id="page-overview" class="page" aria-labelledby="pageTitle">
+          <div class="hero p-6 sm:p-7 mb-6">
+            <div
+              class="relative z-10 flex flex-wrap items-center justify-between gap-4"
+            >
+              <div class="max-w-xl">
+                <h2 class="text-xl sm:text-2xl font-extrabold">
+                  Print smarter. Earn faster.
+                </h2>
+                <p class="text-sm mt-2 text-white/80">
+                  Every shop you onboard and every paid subscription flows into
+                  your commission statement.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <span class="pill"
+                  ><i
+                    data-lucide="qr-code"
+                    class="w-3.5 h-3.5 inline -mt-0.5"
+                  ></i>
+                  QR onboarding</span
+                >
+                <span class="pill"
+                  ><i
+                    data-lucide="shield-check"
+                    class="w-3.5 h-3.5 inline -mt-0.5"
+                  ></i>
+                  Verified payments</span
+                >
+              </div>
+            </div>
+          </div>
           <div
             class="grid stats grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6"
           >
-            <div class="card p-5">
-              <div class="flex justify-between">
+            <div class="card kpi p-5" style="--accent: var(--blue)">
+              <div class="flex justify-between items-center">
                 <span class="muted text-sm font-semibold">My shops</span
-                ><i data-lucide="store" class="text-indigo-600"></i>
+                ><span class="ico"><i data-lucide="store"></i></span>
               </div>
               <div id="kShops" class="text-3xl font-extrabold mt-4">—</div>
               <div class="text-xs muted mt-2">
                 Shop records linked to this retailer
               </div>
             </div>
-            <div class="card p-5">
-              <div class="flex justify-between">
+            <div class="card kpi p-5" style="--accent: #10b981">
+              <div class="flex justify-between items-center">
                 <span class="muted text-sm font-semibold">Today's work</span
-                ><i data-lucide="calendar-check" class="text-emerald-600"></i>
+                ><span class="ico"><i data-lucide="calendar-check"></i></span>
               </div>
               <div id="kToday" class="text-3xl font-extrabold mt-4">—</div>
               <div class="text-xs muted mt-2">
                 Today's recorded subscriptions
               </div>
             </div>
-            <div class="card p-5">
-              <div class="flex justify-between">
+            <div class="card kpi p-5" style="--accent: var(--cyan)">
+              <div class="flex justify-between items-center">
                 <span class="muted text-sm font-semibold">Paid sales</span
-                ><i data-lucide="indian-rupee" class="text-sky-600"></i>
+                ><span class="ico"><i data-lucide="indian-rupee"></i></span>
               </div>
               <div id="kRevenue" class="text-3xl font-extrabold mt-4">
                 ₹0.00
               </div>
               <div class="text-xs muted mt-2">Paid subscription amount</div>
             </div>
-            <div class="card p-5">
-              <div class="flex justify-between">
+            <div class="card kpi p-5" style="--accent: var(--gold)">
+              <div class="flex justify-between items-center">
                 <span class="muted text-sm font-semibold"
                   >Recorded commission</span
-                ><i data-lucide="wallet" class="text-amber-600"></i>
+                ><span class="ico"><i data-lucide="wallet"></i></span>
               </div>
               <div id="kCommission" class="text-3xl font-extrabold mt-4">
                 ₹0.00
@@ -290,20 +848,24 @@
           <div class="card p-6 mb-6">
             <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
               <div>
-                <h2 class="text-lg font-extrabold text-[#0b1046]">
+                <h2 class="text-lg font-extrabold" style="color: var(--navy)">
                   Date range
                 </h2>
                 <p class="text-sm muted">Filter work and commission by date.</p>
               </div>
               <div class="flex flex-wrap gap-3">
-                <label class="text-xs font-bold text-slate-600"
+                <label class="text-xs font-bold text-slate-600" for="dateFrom"
                   >FROM<input
                     id="dateFrom"
                     type="date"
                     class="field mt-1" /></label
-                ><label class="text-xs font-bold text-slate-600"
+                ><label class="text-xs font-bold text-slate-600" for="dateTo"
                   >TO<input id="dateTo" type="date" class="field mt-1" /></label
-                ><button id="applyDates" class="btn primary self-end">
+                ><button
+                  id="applyDates"
+                  class="btn primary self-end"
+                  type="button"
+                >
                   Apply dates
                 </button>
               </div>
@@ -317,28 +879,33 @@
           </div>
           <div class="card">
             <div class="p-5">
-              <h2 class="font-extrabold text-[#0b1046]">
+              <h2 class="font-extrabold" style="color: var(--navy)">
                 Today's work activity
               </h2>
               <p class="text-sm muted mt-1">
                 Recent subscription activity attached to your retailer account.
               </p>
             </div>
-            <div class="tablewrap">
+            <div
+              class="tablewrap"
+              tabindex="0"
+              role="region"
+              aria-label="Today's work activity table"
+            >
               <table>
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Shop / reference</th>
-                    <th>Plan</th>
-                    <th>Payment status</th>
-                    <th>Amount</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Shop / reference</th>
+                    <th scope="col">Plan</th>
+                    <th scope="col">Payment status</th>
+                    <th scope="col">Amount</th>
                   </tr>
                 </thead>
                 <tbody id="todayRows">
                   <tr>
                     <td colspan="5" class="muted">
-                      Choose a retailer account to load data.
+                      Loading authenticated retailer data…
                     </td>
                   </tr>
                 </tbody>
@@ -349,7 +916,7 @@
         <section id="page-work" class="page hidden">
           <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div class="card p-6 xl:col-span-1">
-              <h2 class="text-xl font-extrabold text-[#0b1046]">
+              <h2 class="text-xl font-extrabold" style="color: var(--navy)">
                 Record work / onboarding
               </h2>
               <p class="text-sm muted mt-1 mb-5">
@@ -376,7 +943,7 @@
                     id="cashfreePaymentId"
                     placeholder="Enter Cashfree payment ID"
                     autocomplete="off"
-                  /><span class="block text-xs muted mt-2"
+                  /><span class="block text-xs muted mt-2 font-medium"
                     >Required for both onboarding and subscription sale. The
                     payment ID is checked against the separate Supabase
                     project’s shop_subscriptions table; only confirmed paid
@@ -386,6 +953,7 @@
                 <div
                   id="paymentLookupInfo"
                   class="hidden rounded-xl border border-indigo-100 bg-indigo-50 p-4 text-sm text-indigo-950"
+                  aria-live="polite"
                 ></div>
                 <label class="block text-sm font-bold"
                   >Work date<input
@@ -405,7 +973,7 @@
               </form>
             </div>
             <div class="card p-6 xl:col-span-2">
-              <h2 class="text-xl font-extrabold text-[#0b1046]">
+              <h2 class="text-xl font-extrabold" style="color: var(--navy)">
                 Work rules & commission
               </h2>
               <p class="text-sm muted mt-2">
@@ -416,13 +984,11 @@
                 function using the official rules.
               </p>
               <div class="grid sm:grid-cols-2 gap-4 mt-5">
-                <div
-                  class="rounded-2xl border border-indigo-100 bg-indigo-50 p-5"
-                >
-                  <div class="font-extrabold text-indigo-900">
+                <div class="rounded-2xl border border-blue-100 bg-blue-50 p-5">
+                  <div class="font-extrabold text-blue-900">
                     Subscription plans
                   </div>
-                  <div class="text-sm text-indigo-800 mt-2">
+                  <div class="text-sm text-blue-800 mt-2 leading-7">
                     ₹99 / 1 month<br />₹249 / 3 months<br />₹444 / 6 months<br />₹759
                     / 12 months
                   </div>
@@ -442,6 +1008,8 @@
               </div>
               <div
                 id="workNotice"
+                role="status"
+                aria-live="polite"
                 class="hidden mt-5 rounded-xl p-4 text-sm font-semibold"
               ></div>
             </div>
@@ -451,32 +1019,39 @@
           <div class="card">
             <div class="p-5 flex flex-wrap justify-between gap-3">
               <div>
-                <h2 class="text-xl font-extrabold text-[#0b1046]">My shops</h2>
+                <h2 class="text-xl font-extrabold" style="color: var(--navy)">
+                  My shops
+                </h2>
                 <p class="text-sm muted mt-1">
-                  Shops linked to the selected retailer account.
+                  Shops linked to the authenticated retailer account.
                 </p>
               </div>
-              <input
-                id="shopSearch"
-                class="field"
-                style="max-width: 280px"
-                placeholder="Search shops"
-              />
+              <div class="flex flex-wrap items-end gap-2">
+                <label class="text-sm font-bold">Month<select id="shopMonth" class="field mt-1" aria-label="Filter shops by month"></select></label>
+                <label class="text-sm font-bold">Year<select id="shopYear" class="field mt-1" aria-label="Filter shops by year"></select></label>
+                <label class="text-sm font-bold">Status<select id="shopStatusFilter" class="field mt-1" aria-label="Filter shops by subscription status"><option value="all">All statuses</option><option value="active">Active</option><option value="expired">Expired</option></select></label>
+                <input id="shopSearch" class="field" style="max-width: 220px" placeholder="Search shops" aria-label="Search shops" type="search" />
+              </div>
             </div>
-            <div class="tablewrap">
+            <div
+              class="tablewrap"
+              tabindex="0"
+              role="region"
+              aria-label="Shops table"
+            >
               <table>
                 <thead>
                   <tr>
-                    <th>Shop ID</th>
-                    <th>Shop name</th>
-                    <th>Mobile</th>
-                    <th>Status</th>
-                    <th>Created</th>
+                    <th scope="col">Shop ID</th>
+                    <th scope="col">Shop name</th>
+                    <th scope="col">Plan</th>
+                    <th scope="col">Subscription status</th>
+                    <th scope="col">Expiry date</th>
                   </tr>
                 </thead>
                 <tbody id="shopRows">
                   <tr>
-                    <td colspan="5" class="muted">Choose account first.</td>
+                    <td colspan="5" class="muted">Loading authenticated retailer…</td>
                   </tr>
                 </tbody>
               </table>
@@ -485,19 +1060,19 @@
         </section>
         <section id="page-commission" class="page hidden">
           <div class="grid stats grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            <div class="card p-5">
+            <div class="card kpi p-5" style="--accent: var(--gold)">
               <div class="muted text-sm font-semibold">Commission total</div>
               <div id="commissionTotal" class="text-3xl font-extrabold mt-3">
                 ₹0.00
               </div>
             </div>
-            <div class="card p-5">
+            <div class="card kpi p-5" style="--accent: var(--magenta)">
               <div class="muted text-sm font-semibold">Pending / recorded</div>
               <div id="commissionPending" class="text-3xl font-extrabold mt-3">
                 ₹0.00
               </div>
             </div>
-            <div class="card p-5">
+            <div class="card kpi p-5" style="--accent: #10b981">
               <div class="muted text-sm font-semibold">Payouts recorded</div>
               <div id="payoutTotal" class="text-3xl font-extrabold mt-3">
                 ₹0.00
@@ -507,27 +1082,31 @@
           <div class="card">
             <div class="p-5 flex flex-wrap justify-between gap-3">
               <div>
-                <h2 class="text-xl font-extrabold text-[#0b1046]">
+                <h2 class="text-xl font-extrabold" style="color: var(--navy)">
                   Commission statement
                 </h2>
-                <p class="text-sm muted mt-1">
-                  Filtered by the date range above.
-                </p>
+                <p class="text-sm muted mt-1">View recorded commissions for a selected month and year.</p>
+                <div class="flex flex-wrap gap-2 mt-3"><label class="text-sm font-bold">Month <select id="commissionMonth" class="field mt-1" aria-label="Commission month"></select></label><label class="text-sm font-bold">Year <select id="commissionYear" class="field mt-1" aria-label="Commission year"></select></label><button id="applyCommissionPeriod" class="btn light self-end" type="button">Apply period</button></div>
               </div>
-              <button id="exportCommission" class="btn light">
-                Export CSV
+              <button id="exportCommission" class="btn light" type="button">
+                <i data-lucide="download" class="w-4 h-4"></i>Export CSV
               </button>
             </div>
-            <div class="tablewrap">
+            <div
+              class="tablewrap"
+              tabindex="0"
+              role="region"
+              aria-label="Commission statement table"
+            >
               <table>
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Reference</th>
-                    <th>Commission type</th>
-                    <th>Status</th>
-                    <th>Amount</th>
-                    <th>Bonus</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Reference</th>
+                    <th scope="col">Commission type</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Amount</th>
+                    <th scope="col">Bonus</th>
                   </tr>
                 </thead>
                 <tbody id="commissionRows">
@@ -543,56 +1122,12 @@
         </section>
       </main>
     </div>
-    <div
-      id="accountModal"
-      class="fixed inset-0 z-50 bg-[#080d36]/60 backdrop-blur-sm flex items-center justify-center p-4"
-    >
-      <div class="bg-white rounded-3xl p-7 w-full max-w-xl shadow-2xl">
-        <div class="flex items-start justify-between">
-          <div>
-            <div
-              class="text-xs uppercase tracking-widest text-indigo-600 font-extrabold"
-            >
-              Quick2Print
-            </div>
-            <h2 class="text-2xl font-extrabold text-[#0b1046] mt-2">
-              Open retailer account
-            </h2>
-            <p class="muted text-sm mt-2">
-              Select the retailer account to view its shops, work and
-              commission.
-            </p>
-          </div>
-          <div
-            class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-700 grid place-items-center font-extrabold"
-          >
-            Q2P
-          </div>
-        </div>
-        <div class="mt-6 space-y-4">
-          <label class="block text-sm font-bold"
-            >Retailer account<select id="accountSelect" class="field mt-2">
-              <option value="">Load accounts first</option>
-            </select></label
-          >
-          <div id="accountError" class="text-sm text-rose-600"></div>
-          <div class="flex gap-3">
-            <button id="loadAccounts" class="btn light">
-              <i data-lucide="download" class="w-4 h-4"></i>Load accounts</button
-            ><button id="useAccount" class="btn primary">Open dashboard</button>
-          </div>
-        </div>
-        <p class="text-xs muted mt-5">
-          No login screen is used. Protect private data with restrictive
-          Supabase RLS policies; never expose a service-role key in browser
-          code.
-        </p>
-      </div>
-    </div>
+    <div id="accountModal" class="fixed inset-0 z-50 bg-[#080d36]/60 backdrop-blur-sm flex items-center justify-center p-4" role="status" aria-live="polite"><div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"><h2 class="text-xl font-extrabold" style="color:var(--navy)">Loading retailer dashboard</h2><p id="accountError" class="muted mt-3">Checking your authenticated retailer session…</p></div></div>
     <script>
       (() => {
         "use strict";
         const $ = (id) => document.getElementById(id),
+          // Publishable keys only. Never place service-role or Cashfree secrets in client-side code.
           SB_URL = "https://cujyptlcmayipjekoqvq.supabase.co",
           SB_KEY = "sb_publishable_Umq1hMXB-MWXf5IlTAHAmA_2tKS3V6v",
           SUBS_URL = "https://gepkipszweqhftwaejbu.supabase.co",
@@ -737,43 +1272,18 @@
         }
         async function loadAccounts() {
           try {
+            const auth = window.q2pLoggedIn;
+            if (!auth || auth.role !== "retailer" || !auth.id) { sessionStorage.removeItem("q2p_partner_auth"); location.replace("index.html"); return; }
             if (!sb) init();
-            const { data, error } = await sb
-              .from("retailers")
-              .select("*")
-              .order("created_at", { ascending: false });
+            const { data, error } = await sb.from("retailers").select("*").eq("retailer_id", String(auth.id)).maybeSingle();
             if (error) throw error;
-            const rows = data || [];
-            $("accountSelect").innerHTML =
-              '<option value="">Select retailer account</option>' +
-              rows
-                .map(
-                  (r) =>
-                    `<option value="${esc(r.retailer_id)}">${esc(r.owner_name || r.shop_name || r.retailer_id)} — ${esc(r.retailer_id)}</option>`,
-                )
-                .join("");
-            $("accountError").textContent = rows.length
-              ? ""
-              : "No retailer accounts found or table access denied.";
-          } catch (e) {
-            $("accountError").textContent = e.message || String(e);
-          }
-        }
-        async function openAccount() {
-          const id = $("accountSelect").value;
-          if (!id) throw Error("Select a retailer account.");
-          const { data, error } = await sb
-            .from("retailers")
-            .select("*")
-            .eq("retailer_id", id)
-            .single();
-          if (error) throw error;
-          retailer = data;
-          $("accountModal").classList.add("hidden");
-          $("profileName").textContent =
-            data.owner_name || data.shop_name || "Retailer";
-          $("profileCode").textContent = data.retailer_id || "";
-          await refreshAll();
+            if (!data) throw Error("The logged-in retailer ID was not found in public.retailers.");
+            retailer = data;
+            $("profileName").textContent = data.owner_name || data.retailer_name || data.shop_name || data.retailer_id;
+            $("profileCode").textContent = data.retailer_id;
+            $("accountModal").classList.add("hidden");
+            await refreshAll();
+          } catch (e) { $("accountError").textContent = e.message || String(e); setTimeout(() => location.replace("index.html"), 2500); }
         }
         async function optional(table) {
           try {
@@ -801,6 +1311,11 @@
                   String(retailer.retailer_id),
             );
             let s = await optional("subscriptions");
+            const expiredRows = s.filter(x => String(x.subscription_status || "").toLowerCase() === "active" && x.subscription_expiry && new Date(x.subscription_expiry).getTime() < Date.now());
+            for (const row of expiredRows) {
+              const upd = await sb.from("subscriptions").update({subscription_status:"expired", updated_at:new Date().toISOString()}).eq("subscription_id",row.subscription_id).eq("subscription_status","active");
+              if (upd.error) console.warn("Could not mark subscription expired:",upd.error.message); else row.subscription_status = "expired";
+            }
             if (!s.length) {
               try {
                 s = await safeSelectFrom(subsSb, "shop_subscriptions");
@@ -830,9 +1345,8 @@
           );
         }
         function rangedLedger() {
-          return ledger.filter((x) =>
-            inRange(x, ["created_at", "earned_at", "commission_date", "date"]),
-          );
+          const month = $("commissionMonth")?.value || "", year = $("commissionYear")?.value || "";
+          return ledger.filter(x => { const d = dateOf(x, ["created_at", "earned_at", "commission_date", "date"]); if (month && year && d) return d.slice(0,4) === year && d.slice(5,7) === month; return inRange(x,["created_at","earned_at","commission_date","date"]); });
         }
         function render() {
           const paid = paidSubs(),
@@ -931,19 +1445,35 @@
                 )
                 .join("")
             : '<tr><td colspan="5" class="muted">No subscription work found for this retailer in the selected dates.</td></tr>';
-          $("shopRows").innerHTML = shops.length
-            ? shops
-                .filter((s) =>
-                  JSON.stringify(s)
-                    .toLowerCase()
-                    .includes(($("shopSearch").value || "").toLowerCase()),
-                )
-                .map(
-                  (s) =>
-                    `<tr><td class="font-bold">${esc(pick(s, ["shop_id", "id"]) || "—")}</td><td>${esc(pick(s, ["shop_name", "name"]) || "—")}</td><td>${esc(s.mobile || s.whatsapp_number || "—")}</td><td><span class="badge">${esc(s.status || s.account_status || "recorded")}</span></td><td>${esc(dateOf(s, ["created_at"]) || "—")}</td></tr>`,
-                )
-                .join("")
-            : '<tr><td colspan="5" class="muted">No shops are linked to this retailer or table access is restricted.</td></tr>';
+          const shopMonth = $("shopMonth")?.value || "";
+          const shopYear = $("shopYear")?.value || "";
+          const statusFilter = $("shopStatusFilter")?.value || "all";
+          const searchText = ($("shopSearch")?.value || "").toLowerCase();
+          const filteredShops = shops.filter(shop => {
+            const shopId = String(pick(shop,["shop_id","id"]) || "");
+            const related = subs.filter(x => String(pick(x,["shop_id","shopId"]) || "") === shopId)
+              .sort((a,b) => String(pick(b,["subscription_start","created_at"]) || "").localeCompare(String(pick(a,["subscription_start","created_at"]) || "")));
+            const latest = related[0] || null;
+            const rawStatus = String(pick(latest,["subscription_status","status"]) || pick(shop,["shop_status","status","account_status"]) || "unknown").toLowerCase();
+            const effectiveStatus = rawStatus === "active" && pick(latest,["subscription_expiry"]) && new Date(latest.subscription_expiry).getTime() < Date.now() ? "expired" : rawStatus;
+            const date = dateOf(latest || shop,["subscription_start","started_at","created_at","createdAt"]);
+            const periodMatch = !shopMonth || !shopYear || (!!date && date.slice(0,4) === shopYear && date.slice(5,7) === shopMonth);
+            const statusMatch = statusFilter === "all" || effectiveStatus === statusFilter;
+            const searchMatch = JSON.stringify({...shop, subscription:latest}).toLowerCase().includes(searchText);
+            return periodMatch && statusMatch && searchMatch;
+          });
+          $("shopRows").innerHTML = filteredShops.length
+            ? filteredShops.map((shop) => {
+                const shopId = String(pick(shop,["shop_id","id"]) || "");
+                const related = subs.filter(x => String(pick(x,["shop_id","shopId"]) || "") === shopId)
+                  .sort((a,b) => String(pick(b,["subscription_start","created_at"]) || "").localeCompare(String(pick(a,["subscription_start","created_at"]) || "")));
+                const latest = related[0] || null;
+                const rawStatus = String(pick(latest,["subscription_status","status"]) || pick(shop,["shop_status","status","account_status"]) || "unknown").toLowerCase();
+                const effectiveStatus = rawStatus === "active" && pick(latest,["subscription_expiry"]) && new Date(latest.subscription_expiry).getTime() < Date.now() ? "expired" : rawStatus;
+                const badgeClass = effectiveStatus === "active" ? "badge" : effectiveStatus === "expired" ? "badge" : "badge";
+                return `<tr><td class="font-bold">${esc(shopId || "—")}</td><td>${esc(pick(shop,["shop_name","name"]) || "—")}</td><td>${esc(pick(latest,["plan_id","plan_name"]) || "—")}</td><td><span class="${badgeClass}">${esc(effectiveStatus)}</span></td><td>${esc(dateOf(latest,["subscription_expiry"]) || "—")}</td></tr>`;
+              }).join("")
+            : '<tr><td colspan="5" class="muted">No shops match the selected month, year, status, or search. Try changing the filters.</td></tr>';
           $("commissionRows").innerHTML = led.length
             ? led
                 .map(
@@ -974,19 +1504,6 @@
         document
           .querySelectorAll("[data-page]")
           .forEach((b) => (b.onclick = () => showPage(b.dataset.page)));
-        $("changeAccount").onclick = () =>
-          $("accountModal").classList.remove("hidden");
-        $("loadAccounts").onclick = () =>
-          withLoading($("loadAccounts"), "Loading…", loadAccounts);
-        $("useAccount").onclick = () =>
-          withLoading($("useAccount"), "Opening…", async () => {
-            try {
-              if (!sb) init();
-              await openAccount();
-            } catch (e) {
-              $("accountError").textContent = e.message || String(e);
-            }
-          });
         $("refreshBtn").onclick = () =>
           withLoading($("refreshBtn"), "Refreshing…", refreshAll);
         $("applyDates").onclick = () =>
@@ -1067,12 +1584,13 @@
                 (status || "unknown") +
                 ". Only confirmed paid payments can be used.",
             );
-          const source = String(pick(sub, ["source"]) || "direct").trim();
-          if (source && source !== "direct" && source !== retailerId)
+          const rawSource = pick(sub, ["source"]);
+          const source = String(rawSource ?? "").trim().toLowerCase();
+          if (source !== "direct")
             throw Error(
-              "This payment is already assigned to source " +
-                source +
-                ". It cannot be assigned to this retailer.",
+              source
+                ? `Payment verified, but this payment is not available for direct retailer assignment. Current source: "${source}". Only payments whose source is exactly "direct" can be used. No shop or subscription record was changed.`
+                : `Payment verified, but its source is blank. Only payments explicitly marked source = "direct" can be used. No shop or subscription record was changed.`
             );
           const shopId = String(pick(sub, ["shop_id", "shopId"]) || "").trim();
           if (!shopId)
@@ -1080,7 +1598,7 @@
               "The matched shop_subscriptions record has no shop_id.",
             );
           if (!retailerId)
-            throw Error("The selected retailer account has no retailer_id.");
+            throw Error("The authenticated retailer account has no retailer_id.");
           return { sub, shopId, retailerId, status };
         }
         async function ensureLocalShop(sub, shopId, retailerId) {
@@ -1177,8 +1695,18 @@
               ).trim();
               const { sub, shopId, retailerId, status } =
                 await lookupVerifiedCashfreePayment(paymentId);
-              const shop = await ensureLocalShop(sub, shopId, retailerId);
               let savedSubscription = null;
+              let shop;
+              if (type === "shop") {
+                shop = await ensureLocalShop(sub, shopId, retailerId);
+              } else {
+                // Subscriptions must reference an existing shop, but subscription sales do not create/update shops.
+                const shopResult = await sb.from("shops").select("shop_id, shop_name, retailer_id").eq("shop_id", shopId).maybeSingle();
+                if (shopResult.error) throw Error("Payment verified, but the existing shop could not be checked: " + shopResult.error.message);
+                if (!shopResult.data) throw Error("Payment verified, but shop " + shopId + " does not exist in public.shops. Create/link the shop through onboarding first; no subscription row was changed.");
+                if (shopResult.data.retailer_id !== retailerId) throw Error("Payment verified, but shop " + shopId + " belongs to a different retailer. No subscription row was changed.");
+                shop = shopResult.data;
+              }
               if (type === "subscription") {
                 const planId = String(pick(sub, ["plan_id"]) || "").trim();
                 if (!planId)
@@ -1195,22 +1723,53 @@
                   throw Error(
                     "This retailer has no assigned_distributor_id. Assign a distributor before recording a subscription.",
                   );
-                let paymentUuid = null;
-                for (const col of [
-                  "cashfree_payment_id",
-                  "provider_payment_id",
-                  "payment_reference",
-                  "order_id",
-                ]) {
-                  const res = await sb
-                    .from("payments")
-                    .select("payment_id")
-                    .eq(col, paymentId)
-                    .maybeSingle();
-                  if (!res.error && res.data) {
-                    paymentUuid = res.data.payment_id;
-                    break;
+                // Schema verified from the user's database export:
+                // payments.provider_payment_id stores the external Cashfree ID;
+                // payments.payment_id is the internal UUID referenced by subscriptions.
+                const paymentLookup = await sb
+                  .from("payments")
+                  .select("payment_id, shop_id, retailer_id, payment_status")
+                  .eq("provider_payment_id", paymentId)
+                  .maybeSingle();
+                if (paymentLookup.error) {
+                  throw Error(
+                    "Could not look up public.payments by provider_payment_id: " +
+                      paymentLookup.error.message,
+                  );
+                }
+                let paymentUuid = paymentLookup.data?.payment_id || null;
+                if (paymentLookup.data) {
+                  if (paymentLookup.data.shop_id !== shopId) {
+                    throw Error(
+                      "The Cashfree payment exists in public.payments but belongs to shop " +
+                        paymentLookup.data.shop_id + ", not " + shopId + ". No subscription was changed.",
+                    );
                   }
+                  if (paymentLookup.data.retailer_id !== retailerId) {
+                    throw Error(
+                      "The Cashfree payment exists in public.payments but is assigned to a different retailer. No subscription was changed.",
+                    );
+                  }
+                  const mainStatus = String(paymentLookup.data.payment_status || "").trim().toLowerCase();
+                  if (!["paid", "success", "successful", "completed"].includes(mainStatus)) {
+                    throw Error(
+                      "The payment row in public.payments is not confirmed paid (status: " +
+                        (mainStatus || "unknown") + "). No subscription was changed.",
+                    );
+                  }
+                }
+                if (!paymentUuid) {
+                  throw Error(
+                    "The Cashfree payment ID was verified in shop_subscriptions, but it could not be matched to a UUID payment_id in the main project's public.payments table. No subscription was created or updated. Ensure public.payments stores this Cashfree ID in one of the supported reference columns and retry."
+                  );
+                }
+                {
+                  const usedPayment = await sb.from("subscriptions")
+                    .select("subscription_id, shop_id, retailer_id, subscription_status")
+                    .eq("payment_id", paymentUuid)
+                    .maybeSingle();
+                  if (usedPayment.error) throw Error("Payment verified, but duplicate-payment protection could not be checked: " + usedPayment.error.message);
+                  if (usedPayment.data) throw Error("This payment has already been recorded in public.subscriptions for shop " + usedPayment.data.shop_id + " (status: " + usedPayment.data.subscription_status + "). It cannot be reused. No duplicate subscription was created.");
                 }
                 const payload = {
                   shop_id: shopId,
@@ -1224,12 +1783,11 @@
                       "started_at",
                       "start_date",
                     ]) || new Date().toISOString(),
-                  subscription_expiry:
-                    pick(sub, [
-                      "subscription_expiry",
-                      "expires_at",
-                      "expiry_date",
-                    ]) || null,
+                  subscription_expiry: (() => {
+                    const expiry = pick(sub,["subscription_expiry","expires_at","expiry_date"]); if (expiry) return expiry;
+                    const months = Number(pick(sub,["duration_months","plan_duration_months","duration"]) || 0); if (!Number.isFinite(months) || months < 1) return null;
+                    const start = new Date(pick(sub,["subscription_start","started_at","start_date"]) || new Date().toISOString()); start.setMonth(start.getMonth()+months); return start.toISOString();
+                  })(),
                   subscription_status: "active",
                   updated_at: new Date().toISOString(),
                 };
@@ -1279,7 +1837,7 @@
                 .update({ source: retailerId })
                 .eq("subscription_id", sub.subscription_id)
                 .eq("cashfree_payment_id", paymentId)
-                .eq("source", String(pick(sub, ["source"]) || "direct"))
+                .eq("source", "direct")
                 .select("*")
                 .maybeSingle();
               if (updateError)
@@ -1290,10 +1848,7 @@
                     "However, assigning source in the separate shop_subscriptions project failed: " +
                     updateError.message,
                 );
-              if (
-                !updated &&
-                String(pick(sub, ["source"]) || "") !== retailerId
-              )
+              if (!updated)
                 throw Error(
                   "The main-project record was saved, but source could not be assigned. Check UPDATE RLS policy for shop_subscriptions.",
                 );
@@ -1340,8 +1895,102 @@
           first = new Date(now.getFullYear(), now.getMonth(), 1);
         $("dateFrom").value = first.toISOString().slice(0, 10);
         $("dateTo").value = now.toISOString().slice(0, 10);
+        // My Shops period filters use the subscription's start/created date; no schema columns are invented.
+        const sm = $("shopMonth"), sy = $("shopYear");
+        if (sm && sy) {
+          const now = new Date();
+          sm.innerHTML = Array.from({length:12}, (_,i) => `<option value="${String(i+1).padStart(2,"0")}">${new Date(2000,i,1).toLocaleString("en",{month:"long"})}</option>`).join("");
+          const years = Array.from({length:6}, (_,i) => String(now.getFullYear()-i));
+          sy.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
+          sm.value = String(now.getMonth()+1).padStart(2,"0"); sy.value = String(now.getFullYear());
+          [sm,sy,$("shopStatusFilter"),$("shopSearch")].filter(Boolean).forEach(el => el.addEventListener("change", render));
+          $("shopSearch")?.addEventListener("input", render);
+        }
+        const cm = $("commissionMonth"), cy = $("commissionYear");
+        if (cm && cy) { const now = new Date(); cm.innerHTML = Array.from({length:12},(_,i)=>`<option value="${String(i+1).padStart(2,"0")}">${new Date(2000,i,1).toLocaleString("en",{month:"long"})}</option>`).join(""); cy.innerHTML = Array.from({length:6},(_,i)=>`<option value="${now.getFullYear()-i}">${now.getFullYear()-i}</option>`).join(""); cm.value=String(now.getMonth()+1).padStart(2,"0"); cy.value=String(now.getFullYear()); $("applyCommissionPeriod").addEventListener("click",()=>render()); }
         if (window.lucide) lucide.createIcons();
         loadAccounts();
+      })();
+    </script>
+    <!-- UI enhancements only (no data logic): a11y state, focus handling, number tick animation -->
+    <script>
+      (function () {
+        var $ = function (id) {
+          return document.getElementById(id);
+        };
+        // aria-current on active nav item
+        var navs = document.querySelectorAll("[data-page]");
+        function syncNav() {
+          navs.forEach(function (b) {
+            if (b.classList.contains("active"))
+              b.setAttribute("aria-current", "page");
+            else b.removeAttribute("aria-current");
+          });
+        }
+        navs.forEach(function (b) {
+          new MutationObserver(syncNav).observe(b, {
+            attributes: true,
+            attributeFilter: ["class"],
+          });
+          b.addEventListener("click", function () {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            var t = $("pageTitle");
+            if (t) t.focus({ preventScroll: true });
+          });
+        });
+        syncNav();
+        // Subtle animation whenever a KPI value changes
+        [
+          "kShops",
+          "kToday",
+          "kRevenue",
+          "kCommission",
+          "commissionTotal",
+          "commissionPending",
+          "payoutTotal",
+        ].forEach(function (id) {
+          var el = $(id);
+          if (!el) return;
+          var last = el.textContent;
+          new MutationObserver(function () {
+            if (el.textContent !== last) {
+              last = el.textContent;
+              el.classList.remove("tick");
+              void el.offsetWidth;
+              el.classList.add("tick");
+            }
+          }).observe(el, {
+            childList: true,
+            characterData: true,
+            subtree: true,
+          });
+        });
+        // Modal: focus the select when it is visible; hide page from keyboard while open
+        var modal = $("accountModal"),
+          sel = $("accountSelect");
+        function modalState() {
+          var open = !modal.classList.contains("hidden");
+          var main = $("main");
+          if (main) {
+            open
+              ? main.setAttribute("aria-hidden", "true")
+              : main.removeAttribute("aria-hidden");
+          }
+          if (open && sel)
+            setTimeout(function () {
+              sel.focus({ preventScroll: true });
+            }, 60);
+        }
+        new MutationObserver(modalState).observe(modal, {
+          attributes: true,
+          attributeFilter: ["class"],
+        });
+        modalState();
+        // Enter on the select opens the dashboard
+        if (sel)
+          sel.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" && sel.value) $("useAccount").click();
+          });
       })();
     </script>
   </body>

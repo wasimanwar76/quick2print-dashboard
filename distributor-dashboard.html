@@ -4,329 +4,875 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Quick2Print | Distributor Dashboard</title>
-<!-- Quick2Print login guard: direct dashboard access requires a valid login session. -->
-<style>html.q2p-auth-pending body{visibility:hidden}#q2pLogout{position:fixed;right:18px;top:18px;z-index:99999;border:0;border-radius:10px;padding:10px 14px;background:#e11d48;color:#fff;font-weight:800;box-shadow:0 6px 18px #0b104633;cursor:pointer}#q2pAuthExpired{position:fixed;inset:0;z-index:100000;background:#070a2e;color:#fff;display:grid;place-items:center;padding:24px;font:700 16px system-ui}</style>
-<script>
-(function(){document.documentElement.classList.add('q2p-auth-pending');let a=null;try{a=JSON.parse(sessionStorage.getItem('q2p_partner_auth')||'null')}catch{}const expected='distributor';const age=a&&Date.now()-Number(a.at||0);if(!a||a.role!==expected||!a.id||!Number.isFinite(age)||age<0||age>8*60*60*1000){try{sessionStorage.removeItem('q2p_partner_auth')}catch{}location.replace('index.html');return}window.q2pLoggedIn=a;document.addEventListener('DOMContentLoaded',()=>{document.documentElement.classList.remove('q2p-auth-pending');const b=document.createElement('button');b.id='q2pLogout';b.type='button';b.textContent='Logout';b.title='Log out of Quick2Print';b.addEventListener('click',()=>{sessionStorage.removeItem('q2p_partner_auth');location.replace('index.html')});document.body.appendChild(b);const id=a.id;const role=a.role;const name=a.name||id;const nameEl=document.getElementById('profileName');const codeEl=document.getElementById('profileCode');if(nameEl)nameEl.textContent=name;if(codeEl)codeEl.textContent=id;});window.addEventListener('pageshow',()=>{let current=null;try{current=JSON.parse(sessionStorage.getItem('q2p_partner_auth')||'null')}catch{}if(!current||current.role!==expected||current.id!==a.id)location.replace('index.html')})})();
-</script>
-
+    <meta name="theme-color" content="#1b1464" />
+    <link rel="icon" href="./logo.png" />
+    <!-- Quick2Print login guard: direct dashboard access requires a valid login session. -->
+    <style>
+      html.q2p-auth-pending body {
+        visibility: hidden;
+      }
+    </style>
+    <script>
+      (function () {
+        document.documentElement.classList.add("q2p-auth-pending");
+        let a = null;
+        try {
+          a = JSON.parse(sessionStorage.getItem("q2p_partner_auth") || "null");
+        } catch {}
+        const expected = "distributor";
+        const age = a && Date.now() - Number(a.at || 0);
+        if (
+          !a ||
+          a.role !== expected ||
+          !a.id ||
+          !Number.isFinite(age) ||
+          age < 0 ||
+          age > 8 * 60 * 60 * 1000
+        ) {
+          try {
+            sessionStorage.removeItem("q2p_partner_auth");
+          } catch {}
+          location.replace("index.html");
+          return;
+        }
+        window.q2pLoggedIn = a;
+        document.addEventListener("DOMContentLoaded", () => {
+          document.documentElement.classList.remove("q2p-auth-pending");
+          const b = document.getElementById("q2pLogout");
+          if (b)
+            b.addEventListener("click", () => {
+              sessionStorage.removeItem("q2p_partner_auth");
+              location.replace("index.html");
+            });
+          const nameEl = document.getElementById("profileName");
+          const codeEl = document.getElementById("profileCode");
+          if (nameEl) nameEl.textContent = a.name || a.id;
+          if (codeEl) codeEl.textContent = a.id;
+        });
+        window.addEventListener("pageshow", () => {
+          let current = null;
+          try {
+            current = JSON.parse(
+              sessionStorage.getItem("q2p_partner_auth") || "null",
+            );
+          } catch {}
+          if (!current || current.role !== expected || current.id !== a.id)
+            location.replace("index.html");
+        });
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
     <style>
       :root {
-        --navy: #0b1046;
-        --navy2: #070a2e;
-        --indigo: #4f46e5;
-        --bg: #f4f7fc;
+        --ink: #1b1464;
+        --deep: #0f0a45;
+        --blue: #0a6cf0;
+        --cyan: #00aeef;
+        --mag: #ec008c;
+        --sun: #ffb800;
+        --bg: #f4f5fb;
+        --line: #e4e6f3;
+        --mut: #5d6488;
+        --ok: #047857;
+        --r: 16px;
       }
       * {
         box-sizing: border-box;
       }
+      html {
+        scroll-behavior: smooth;
+      }
       body {
         margin: 0;
-        font-family: "Plus Jakarta Sans", sans-serif;
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
         background: var(--bg);
-        color: #17203c;
+        color: #1a1d3d;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: Fredoka, "Plus Jakarta Sans", sans-serif;
+        color: var(--ink);
+        margin: 0;
+        font-weight: 600;
+        line-height: 1.2;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      code {
+        background: #eceefb;
+        border-radius: 6px;
+        padding: 1px 6px;
+        font-size: 0.92em;
+      }
+      .hidden {
+        display: none !important;
+      }
+      :focus-visible {
+        outline: 3px solid var(--blue);
+        outline-offset: 2px;
+      }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+      }
+
+      /* four-ink registration bar: the one animated moment on load */
+      .ink {
+        position: fixed;
+        inset: 0 0 auto 0;
+        height: 5px;
+        display: flex;
+        z-index: 60;
+      }
+      .ink i {
+        flex: 1;
+        transform-origin: left;
+        animation: sweep 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+      .ink i:nth-child(1) {
+        background: var(--cyan);
+      }
+      .ink i:nth-child(2) {
+        background: var(--mag);
+        animation-delay: 0.1s;
+      }
+      .ink i:nth-child(3) {
+        background: var(--sun);
+        animation-delay: 0.2s;
+      }
+      .ink i:nth-child(4) {
+        background: var(--ink);
+        animation-delay: 0.3s;
+      }
+      @keyframes sweep {
+        from {
+          transform: scaleX(0);
+        }
+      }
+
+      .shell {
+        display: flex;
+        min-height: 100vh;
+        padding-top: 5px;
       }
       .side {
-        background: linear-gradient(165deg, var(--navy), var(--navy2));
-        box-shadow: 8px 0 32px #0b10462b;
+        width: 280px;
+        flex: none;
+        background: linear-gradient(170deg, #1b1464, #0f0a45);
+        color: #fff;
+        padding: 22px 18px;
+        position: sticky;
+        top: 5px;
+        height: calc(100vh - 5px);
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        z-index: 50;
+        transition: transform 0.3s ease;
       }
-      .field {
+      .brand {
+        background: #fff;
+        border-radius: 20px;
+        padding: 14px 12px;
+        box-shadow: 0 10px 30px #0006;
+      }
+      .brand img,
+      .topbar img {
+        display: block;
         width: 100%;
-        border: 1px solid #d7def0;
-        background: #fbfcff;
-        border-radius: 12px;
+        height: auto;
+      }
+      .sec {
+        font-size: 12px;
+        font-weight: 700;
+        color: #b9bff0;
+        margin: 28px 8px 10px;
+      }
+      .navs {
+        display: grid;
+        gap: 6px;
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        text-align: left;
+        border: 0;
+        background: transparent;
+        color: #dfe3ff;
         padding: 12px 14px;
-        outline: none;
-        color: #111a3e;
-        min-height: 46px;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        position: relative;
+        transition:
+          background 0.2s,
+          color 0.2s,
+          transform 0.2s;
       }
-      .field:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px #6366f120;
+      .nav:hover {
+        background: #ffffff1c;
+        color: #fff;
+        transform: translateX(3px);
       }
+      .nav.active {
+        background: #fff;
+        color: var(--ink);
+      }
+      .nav.active::before {
+        content: "";
+        position: absolute;
+        left: -18px;
+        top: 10px;
+        bottom: 10px;
+        width: 5px;
+        border-radius: 0 5px 5px 0;
+        background: var(--sun);
+      }
+      .nav svg {
+        width: 20px;
+        height: 20px;
+      }
+      .me {
+        margin-top: auto;
+        padding: 16px;
+        border-radius: 16px;
+        background: #ffffff14;
+        font-size: 13px;
+      }
+      .me span {
+        color: #b9bff0;
+        display: block;
+      }
+      .me strong {
+        display: block;
+        font-size: 16px;
+        margin: 2px 0;
+        word-break: break-word;
+      }
+      .me small {
+        display: block;
+        color: #b9bff0;
+        margin-top: 12px;
+      }
+      .topbar {
+        display: none;
+      }
+      .scrim {
+        display: none;
+      }
+
+      .main {
+        flex: 1;
+        min-width: 0;
+        padding: 34px clamp(18px, 3.5vw, 44px) 28px;
+      }
+      .head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 26px;
+      }
+      .head h1 {
+        font-size: clamp(26px, 3.2vw, 36px);
+      }
+      .muted {
+        color: var(--mut);
+      }
+      .head p {
+        margin: 6px 0 0;
+        max-width: 56ch;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
       .btn {
         border: 0;
         border-radius: 12px;
-        padding: 11px 16px;
+        padding: 11px 18px;
         font-weight: 800;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
+        min-height: 44px;
+        transition:
+          background 0.2s,
+          transform 0.15s,
+          box-shadow 0.2s;
+      }
+      .btn:active {
+        transform: scale(0.97);
+      }
+      .btn svg {
+        width: 17px;
+        height: 17px;
       }
       .primary {
-        background: #4f46e5;
-        color: white;
+        background: var(--ink);
+        color: #fff;
       }
       .primary:hover {
-        background: #4338ca;
+        background: var(--blue);
+        box-shadow: 0 8px 20px #0a6cf040;
       }
       .light {
-        background: #eef2ff;
-        color: #3730a3;
+        background: #e9ebfa;
+        color: var(--ink);
       }
+      .light:hover {
+        background: #dde1f7;
+      }
+      .out {
+        background: #fff;
+        color: #a0005f;
+        border: 1.5px solid #f4b3d9;
+      }
+      .out:hover {
+        background: #fff0f8;
+      }
+      .btn:disabled {
+        opacity: 0.7;
+        cursor: wait;
+      }
+
+      .notice {
+        margin-bottom: 20px;
+        border-radius: 14px;
+        padding: 14px 18px;
+        font-size: 14px;
+        font-weight: 600;
+        animation: in 0.3s ease;
+      }
+      .notice.ok {
+        background: #e7f8f0;
+        color: #065f46;
+      }
+      .notice.err {
+        background: #ffe9f4;
+        color: #9d0058;
+      }
+
       .card {
-        background: white;
-        border: 1px solid #e7ebf5;
-        border-radius: 18px;
-        box-shadow: 0 8px 28px #0b104608;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+        box-shadow: 0 6px 24px #1b146408;
       }
-      .nav {
-        width: 100%;
-        text-align: left;
-        padding: 12px;
-        border-radius: 12px;
-        color: #dce4ff;
-        font-weight: 700;
+      .pad {
+        padding: 22px;
+      }
+      .gap {
+        margin-bottom: 22px;
+      }
+      .cardhead {
         display: flex;
-        gap: 12px;
+        flex-wrap: wrap;
         align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 20px 22px;
       }
-      .nav:hover,
-      .nav.active {
-        background: #ffffff18;
-        color: white;
+      .cardhead h2,
+      .cardhead h3 {
+        font-size: 20px;
       }
-      .muted {
-        color: #7180a4;
+      .cardhead p {
+        margin: 4px 0 0;
+        font-size: 14px;
       }
+      .page {
+        animation: in 0.3s ease;
+      }
+      @keyframes in {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 22px;
+      }
+      .stat {
+        padding: 20px;
+        border-top: 4px solid var(--c);
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+      .stat:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 14px 30px #1b146414;
+      }
+      .stat .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--mut);
+      }
+      .stat .ic {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: color-mix(in srgb, var(--c) 14%, #fff);
+        color: var(--ink);
+      }
+      .stat .ic svg {
+        width: 20px;
+        height: 20px;
+      }
+      .stat b {
+        display: block;
+        font:
+          600 clamp(26px, 2.6vw, 32px) Fredoka,
+          sans-serif;
+        color: var(--ink);
+        margin-top: 14px;
+        font-variant-numeric: tabular-nums;
+        overflow-wrap: anywhere;
+      }
+      .stat small {
+        color: var(--mut);
+        font-size: 12.5px;
+      }
+
+      .dates {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: flex-end;
+      }
+      .fld {
+        font-size: 13px;
+        font-weight: 700;
+        color: #363b66;
+        display: block;
+      }
+      .field {
+        display: block;
+        width: 100%;
+        margin-top: 6px;
+        border: 1.5px solid #d5d9ef;
+        background: #fbfbff;
+        border-radius: 12px;
+        padding: 11px 14px;
+        min-height: 46px;
+        color: #171a3a;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .field:focus {
+        outline: none;
+        border-color: var(--blue);
+        box-shadow: 0 0 0 4px #0a6cf025;
+      }
+      .note {
+        font-size: 12.5px;
+        color: var(--mut);
+        margin: 16px 0 0;
+      }
+
       .tablewrap {
-        overflow: auto;
+        overflow-x: auto;
       }
       table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 600px;
+        min-width: 620px;
       }
       th {
-        font-size: 11px;
-        letter-spacing: 0.07em;
-        text-transform: uppercase;
-        color: #7180a4;
-        background: #f8faff;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--mut);
+        background: #f7f8fe;
         text-align: left;
       }
       th,
       td {
-        padding: 14px 16px;
-        border-bottom: 1px solid #edf0f7;
+        padding: 14px 20px;
+        border-bottom: 1px solid #edeef8;
       }
       td {
-        font-size: 13px;
+        font-size: 14px;
+      }
+      tbody tr {
+        transition: background 0.15s;
+      }
+      tbody tr:hover {
+        background: #f8f9ff;
+      }
+      tbody tr:last-child td {
+        border-bottom: 0;
       }
       .badge {
-        padding: 5px 9px;
+        display: inline-block;
+        padding: 4px 11px;
         border-radius: 999px;
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 800;
-        background: #ecfdf5;
-        color: #047857;
+        background: #e7f8f0;
+        color: var(--ok);
       }
-      .hidden {
-        display: none !important;
+      .badge.off {
+        background: #fff3e0;
+        color: #a14100;
       }
-      .cmyk {
-        height: 4px;
-        background: linear-gradient(90deg, #00aeef, #0072ff, #ec008c, #ffb800);
+      .num {
+        font-weight: 800;
+        color: var(--ink);
       }
-      @media (max-width: 800px) {
-        .layout {
-          display: block;
-        }
-        .side {
-          width: 100%;
-        }
-        .navs {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-        .main {
-          padding: 16px !important;
-        }
-        .stats {
-          grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        }
+
+      .form {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
       }
-      .q2p-spinner {
+      .form .wide {
+        grid-column: 1/-1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .search {
+        max-width: 300px;
+      }
+      .total {
+        text-align: right;
+      }
+      .total span {
+        font-size: 13px;
+        color: var(--mut);
+        font-weight: 600;
+      }
+      .total b {
+        display: block;
+        font:
+          600 34px Fredoka,
+          sans-serif;
+        color: var(--ok);
+      }
+      .foot {
+        font-size: 12.5px;
+        color: var(--mut);
+        margin-top: 30px;
+      }
+      .spin {
         display: inline-block;
         width: 15px;
         height: 15px;
         border: 2px solid currentColor;
         border-right-color: transparent;
         border-radius: 50%;
-        animation: q2pspin 0.7s linear infinite;
-        vertical-align: middle;
+        animation: spin 0.7s linear infinite;
       }
-      @keyframes q2pspin {
+      @keyframes spin {
         to {
           transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 1180px) {
+        .stats {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 1024px) {
+        .topbar {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          position: sticky;
+          top: 5px;
+          z-index: 40;
+          background: #fff;
+          border-bottom: 1px solid var(--line);
+          padding: 10px 16px;
+        }
+        .topbar img {
+          width: auto;
+          height: 44px;
+        }
+        #menuBtn {
+          width: 46px;
+          height: 46px;
+          padding: 0;
+          margin-left: auto;
+        }
+        .shell {
+          display: block;
+        }
+        .side {
+          position: fixed;
+          top: 0;
+          left: 0;
+          height: 100%;
+          width: min(300px, 86vw);
+          transform: translateX(-102%);
+          padding-top: 28px;
+        }
+        .side.open {
+          transform: none;
+          box-shadow: 12px 0 40px #0007;
+        }
+        .nav.active::before {
+          left: -18px;
+        }
+        .scrim {
+          display: block;
+          position: fixed;
+          inset: 0;
+          background: #0f0a4580;
+          z-index: 45;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.3s;
+        }
+        .scrim.show {
+          opacity: 1;
+          pointer-events: auto;
+        }
+        .main {
+          padding-top: 24px;
+        }
+      }
+      @media (max-width: 640px) {
+        .stats {
+          grid-template-columns: 1fr;
+        }
+        .form {
+          grid-template-columns: 1fr;
+        }
+        .head .actions,
+        .head .actions .btn {
+          width: 100%;
+        }
+        .dates > *,
+        .dates .btn {
+          width: 100%;
+        }
+        .search {
+          max-width: none;
+          width: 100%;
+        }
+        .total {
+          text-align: left;
+        }
+        table {
+          min-width: 0;
+        }
+        thead {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          overflow: hidden;
+          clip: rect(0 0 0 0);
+        }
+        tr {
+          display: block;
+          padding: 12px 16px;
+          border-bottom: 1px solid var(--line);
+        }
+        td {
+          display: flex;
+          justify-content: space-between;
+          gap: 16px;
+          padding: 6px 0;
+          border: 0;
+          text-align: right;
+        }
+        td[data-label]::before {
+          content: attr(data-label);
+          font-weight: 700;
+          color: var(--mut);
+          text-align: left;
+        }
+        td[colspan] {
+          display: block;
+          text-align: left;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition: none !important;
+          scroll-behavior: auto !important;
         }
       }
     </style>
   </head>
   <body>
-    <div class="cmyk"></div>
-    <div class="layout min-h-screen md:flex">
-      <aside class="side text-white md:w-64 p-5 shrink-0">
-        <div class="bg-white rounded-2xl p-3 flex items-center gap-3 mb-7">
-          <div
-            class="w-12 h-12 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold"
-          >
-            Q2P
-          </div>
-          <div>
-            <div class="font-extrabold text-lg text-[#0b1046]">
-              Quick<span class="text-amber-500">2</span>Print
-            </div>
-            <div class="text-xs text-slate-500">Distributor portal</div>
-          </div>
-        </div>
-        <div
-          class="text-xs uppercase tracking-widest text-slate-400 font-bold mb-3"
-        >
-          Workspace
-        </div>
-        <nav class="navs space-y-2">
-          <button class="nav active" data-page="overview">
-            <i data-lucide="layout-dashboard"></i>Overview</button
-          ><button class="nav" data-page="retailers">
-            <i data-lucide="store"></i>My retailers</button
-          ><button class="nav" data-page="commission">
+    <div class="ink" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="topbar">
+      <img src="./logo.png" alt="Quick2Print" />
+      <button
+        id="menuBtn"
+        class="btn light"
+        type="button"
+        aria-label="Open menu"
+        aria-controls="side"
+        aria-expanded="false"
+      >
+        <i data-lucide="menu"></i>
+      </button>
+    </div>
+    <div class="scrim" id="scrim"></div>
+    <div class="shell">
+      <aside class="side" id="side">
+        <div class="brand"><img src="./logo.png" alt="Quick2Print" /></div>
+        <p class="sec">Workspace</p>
+        <nav class="navs" aria-label="Workspace">
+          <button class="nav active" data-page="overview" aria-current="page">
+            <i data-lucide="layout-dashboard"></i>Overview
+          </button>
+          <button class="nav" data-page="retailers">
+            <i data-lucide="store"></i>My retailers
+          </button>
+          <button class="nav" data-page="commission">
             <i data-lucide="wallet"></i>Commission
           </button>
         </nav>
-        <div class="mt-8 p-4 rounded-2xl bg-white/10">
-          <div class="text-xs text-slate-300">Selected distributor</div>
-          <div id="profileName" class="font-extrabold mt-1">Choose account</div>
-          <div id="profileCode" class="text-xs text-slate-300 mt-1">—</div>
-          <button id="changeAccount" class="btn light w-full mt-4">
-            Change account
-          </button>
+        <div class="me">
+          <span>Signed in as</span>
+          <strong id="profileName">Distributor</strong>
+          <span id="profileCode">—</span>
+          <small>Quick2Print partner network</small>
         </div>
-        <p class="text-xs text-slate-400 mt-8">Quick2Print partner network</p>
       </aside>
-      <main class="main flex-1 p-7 lg:p-9 min-w-0">
-        <header class="flex flex-wrap items-center justify-between gap-4 mb-7">
+
+      <main class="main">
+        <header class="head">
           <div>
-            <div
-              class="text-xs uppercase tracking-widest text-indigo-600 font-extrabold"
-            >
-              Partner workspace
-            </div>
-            <h1
-              id="pageTitle"
-              class="text-3xl font-extrabold text-[#0b1046] mt-1"
-            >
-              Distributor overview
-            </h1>
-            <p class="muted mt-2">
+            <h1 id="pageTitle">Distributor overview</h1>
+            <p class="muted">
               Create retailers, track network activity, and review commissions
               by date.
             </p>
           </div>
-          <button id="refreshBtn" class="btn light">
-            <i data-lucide="refresh-cw" class="w-4 h-4"></i>Refresh data
-          </button>
+          <div class="actions">
+            <button id="refreshBtn" class="btn light" type="button">
+              <i data-lucide="refresh-cw"></i>Refresh data
+            </button>
+            <button
+              id="q2pLogout"
+              class="btn out"
+              type="button"
+              title="Log out of Quick2Print"
+            >
+              <i data-lucide="log-out"></i>Logout
+            </button>
+          </div>
         </header>
         <div
           id="notice"
-          class="hidden mb-5 rounded-xl p-4 text-sm font-semibold"
+          class="notice hidden"
+          role="status"
+          aria-live="polite"
         ></div>
+
         <section id="page-overview" class="page">
-          <div
-            class="grid stats grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6"
-          >
-            <div class="card p-5">
-              <div class="flex justify-between">
-                <span class="muted text-sm font-semibold">My retailers</span
-                ><i data-lucide="store" class="text-indigo-600"></i>
+          <div class="stats">
+            <div class="card stat" style="--c: var(--cyan)">
+              <div class="top">
+                <span>My retailers</span
+                ><span class="ic"><i data-lucide="store"></i></span>
               </div>
-              <div id="kRetailers" class="text-3xl font-extrabold mt-4">—</div>
-              <div class="text-xs muted mt-2">
-                Retailer accounts linked to you
-              </div>
+              <b id="kRetailers">—</b
+              ><small>Retailer accounts linked to you</small>
             </div>
-            <div class="card p-5">
-              <div class="flex justify-between">
-                <span class="muted text-sm font-semibold"
-                  >Paid subscriptions</span
-                ><i data-lucide="check-circle" class="text-emerald-600"></i>
+            <div class="card stat" style="--c: var(--mag)">
+              <div class="top">
+                <span>Paid subscriptions</span
+                ><span class="ic"><i data-lucide="circle-check"></i></span>
               </div>
-              <div id="kPaid" class="text-3xl font-extrabold mt-4">—</div>
-              <div class="text-xs muted mt-2">Within selected date range</div>
+              <b id="kPaid">—</b><small>Within selected date range</small>
             </div>
-            <div class="card p-5">
-              <div class="flex justify-between">
-                <span class="muted text-sm font-semibold"
-                  >Subscription revenue</span
-                ><i data-lucide="indian-rupee" class="text-sky-600"></i>
+            <div class="card stat" style="--c: var(--sun)">
+              <div class="top">
+                <span>Subscription revenue</span
+                ><span class="ic"><i data-lucide="indian-rupee"></i></span>
               </div>
-              <div id="kRevenue" class="text-3xl font-extrabold mt-4">
-                ₹0.00
-              </div>
-              <div class="text-xs muted mt-2">Paid subscription amount</div>
+              <b id="kRevenue">₹0.00</b><small>Paid subscription amount</small>
             </div>
-            <div class="card p-5">
-              <div class="flex justify-between">
-                <span class="muted text-sm font-semibold"
-                  >Commission earned</span
-                ><i data-lucide="wallet" class="text-amber-600"></i>
+            <div class="card stat" style="--c: var(--ink)">
+              <div class="top">
+                <span>Commission earned</span
+                ><span class="ic"><i data-lucide="wallet"></i></span>
               </div>
-              <div id="kCommission" class="text-3xl font-extrabold mt-4">
-                ₹0.00
-              </div>
-              <div class="text-xs muted mt-2">From commission ledger</div>
+              <b id="kCommission">₹0.00</b><small>From commission ledger</small>
             </div>
           </div>
-          <div class="card p-6 mb-6">
-            <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+
+          <div class="card pad gap">
+            <div class="cardhead" style="padding: 0 0 16px">
               <div>
-                <h2 class="text-lg font-extrabold text-[#0b1046]">
-                  Date range
-                </h2>
-                <p class="text-sm muted">
+                <h2>Date range</h2>
+                <p class="muted">
                   Filter work and commission using your selected dates.
                 </p>
               </div>
-              <div class="flex flex-wrap gap-3">
-                <label class="text-xs font-bold text-slate-600"
-                  >FROM<input
-                    id="dateFrom"
-                    type="date"
-                    class="field mt-1" /></label
-                ><label class="text-xs font-bold text-slate-600"
-                  >TO<input id="dateTo" type="date" class="field mt-1" /></label
-                ><button id="applyDates" class="btn primary self-end">
+              <div class="dates">
+                <label class="fld"
+                  >From<input id="dateFrom" type="date" class="field"
+                /></label>
+                <label class="fld"
+                  >To<input id="dateTo" type="date" class="field"
+                /></label>
+                <button id="applyDates" class="btn primary" type="button">
                   Apply dates
                 </button>
               </div>
             </div>
-            <div class="text-xs muted">
+            <p class="note" style="margin: 0">
               Commission totals use saved
               <code>commission_ledger</code> entries. Subscription revenue is
               not the same as commission.
-            </div>
+            </p>
           </div>
-          <div class="card">
-            <div class="p-5 flex flex-wrap justify-between items-center gap-3">
+
+          <div class="card gap">
+            <div class="cardhead">
               <div>
-                <h2 class="font-extrabold text-[#0b1046]">
-                  Recent retailer activity
-                </h2>
-                <p class="text-sm muted mt-1">
+                <h2>Recent retailer activity</h2>
+                <p class="muted">
                   Subscriptions linked to your retailer accounts.
                 </p>
               </div>
-              <button class="btn light" data-goto="retailers">
+              <button class="btn light" type="button" data-goto="retailers">
                 Manage retailers
               </button>
             </div>
@@ -343,27 +889,24 @@
                 </thead>
                 <tbody id="activityRows">
                   <tr>
-                    <td colspan="5" class="muted">
-                      Select a distributor account to load data.
-                    </td>
+                    <td colspan="5" class="muted">Loading your data…</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
-          <div class="card mt-6">
-            <div class="p-5 flex flex-wrap justify-between items-center gap-3">
+
+          <div class="card">
+            <div class="cardhead">
               <div>
-                <h2 class="font-extrabold text-[#0b1046]">
-                  Monthly retailer work activity
-                </h2>
-                <p class="text-sm muted mt-1">
+                <h2>Monthly retailer work activity</h2>
+                <p class="muted">
                   Month-wise paid subscriptions and revenue for each retailer,
                   based on available subscription records.
                 </p>
               </div>
-              <button id="monthlyRefreshBtn" class="btn light">
-                <i data-lucide="refresh-cw" class="w-4 h-4"></i>Refresh activity
+              <button id="monthlyRefreshBtn" class="btn light" type="button">
+                <i data-lucide="refresh-cw"></i>Refresh activity
               </button>
             </div>
             <div class="tablewrap">
@@ -380,80 +923,82 @@
                 </thead>
                 <tbody id="monthlyActivityRows">
                   <tr>
-                    <td colspan="6" class="muted">
-                      Select a distributor account to load monthly activity.
-                    </td>
+                    <td colspan="6" class="muted">Loading monthly activity…</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
         </section>
+
         <section id="page-retailers" class="page hidden">
-          <div class="card p-6 mb-6">
-            <div class="flex flex-wrap justify-between items-start gap-4 mb-5">
+          <div class="card pad gap">
+            <div class="cardhead" style="padding: 0 0 18px">
               <div>
-                <h2 class="text-xl font-extrabold text-[#0b1046]">
-                  Create retailer account
-                </h2>
-                <p class="muted text-sm mt-1">
+                <h2>Create retailer account</h2>
+                <p class="muted">
                   Add a retailer directly under your distributor account.
                 </p>
               </div>
               <span class="badge">Retailer onboarding</span>
             </div>
-            <form
-              id="retailerForm"
-              class="grid grid-cols-1 md:grid-cols-2 gap-5"
-            >
-              <label class="text-sm font-bold text-slate-700"
+            <form id="retailerForm" class="form">
+              <label class="fld"
                 >Retailer full name *<input
-                  class="field mt-2"
+                  class="field"
                   name="retailer_full_name"
                   required
                   maxlength="150"
-                  autocomplete="name" /></label
-              ><label class="text-sm font-bold text-slate-700"
+                  autocomplete="name"
+              /></label>
+              <label class="fld"
                 >Mobile number *<input
-                  class="field mt-2"
+                  class="field"
                   name="mobile"
                   required
                   inputmode="tel"
                   maxlength="20"
-                  autocomplete="tel" /></label
-              ><label class="text-sm font-bold text-slate-700"
+                  autocomplete="tel"
+              /></label>
+              <label class="fld"
                 >Email address<input
-                  class="field mt-2"
+                  class="field"
                   name="email"
                   type="email"
-                  autocomplete="email" /></label
-              ><label class="text-sm font-bold text-slate-700"
+                  autocomplete="email"
+              /></label>
+              <label class="fld"
                 >Address<input
-                  class="field mt-2"
+                  class="field"
                   name="address"
-                  autocomplete="street-address" /></label
-              ><label class="text-sm font-bold text-slate-700"
+                  autocomplete="street-address"
+              /></label>
+              <label class="fld"
                 >City<input
-                  class="field mt-2"
+                  class="field"
                   name="city"
-                  autocomplete="address-level2" /></label
-              ><label class="text-sm font-bold text-slate-700"
-                >District<input class="field mt-2" name="district" /></label
-              ><label class="text-sm font-bold text-slate-700"
+                  autocomplete="address-level2"
+              /></label>
+              <label class="fld"
+                >District<input class="field" name="district"
+              /></label>
+              <label class="fld"
                 >State<input
-                  class="field mt-2"
+                  class="field"
                   name="state"
-                  autocomplete="address-level1" /></label
-              ><label class="text-sm font-bold text-slate-700"
+                  autocomplete="address-level1"
+              /></label>
+              <label class="fld"
                 >PIN code<input
-                  class="field mt-2"
+                  class="field"
                   name="pincode"
                   inputmode="numeric"
                   maxlength="10"
-                  autocomplete="postal-code" /></label
-              ><label class="text-sm font-bold text-slate-700"
+                  autocomplete="postal-code"
+              /></label>
+              <label class="fld"
                 >Assigned distributor *<select
-                  class="field mt-2"
+                  class="field"
                   name="assigned_distributor_id"
                   id="assignedDistributorSelect"
                   required
@@ -461,13 +1006,14 @@
                   <option value="">Select active distributor</option>
                 </select></label
               >
-              <div class="md:col-span-2 flex flex-wrap gap-3">
+              <div class="wide">
                 <button class="btn primary" type="submit">
-                  <i data-lucide="user-plus" class="w-4 h-4"></i>Create retailer</button
-                ><button class="btn light" type="reset">Clear form</button>
+                  <i data-lucide="user-plus"></i>Create retailer
+                </button>
+                <button class="btn light" type="reset">Clear form</button>
               </div>
             </form>
-            <p class="text-xs muted mt-4">
+            <p class="note">
               The retailer full name is saved to both required fields (<code
                 >owner_name</code
               >
@@ -477,18 +1023,22 @@
             </p>
           </div>
           <div class="card">
-            <div class="p-5 flex justify-between items-center gap-3">
+            <div class="cardhead">
               <div>
-                <h2 class="font-extrabold text-[#0b1046]">My retailers</h2>
-                <p class="text-sm muted">
+                <h2>My retailers</h2>
+                <p class="muted">
                   Only retailers assigned to this distributor.
                 </p>
               </div>
-              <input
-                id="retailerSearch"
-                class="field max-w-xs"
-                placeholder="Search retailers…"
-              />
+              <label class="search"
+                ><span class="sr">Search retailers</span
+                ><input
+                  id="retailerSearch"
+                  class="field"
+                  style="margin: 0"
+                  type="search"
+                  placeholder="Search retailers…"
+              /></label>
             </div>
             <div class="tablewrap">
               <table>
@@ -507,34 +1057,29 @@
             </div>
           </div>
         </section>
+
         <section id="page-commission" class="page hidden">
-          <div class="card p-6 mb-6">
-            <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="card pad gap">
+            <div class="cardhead" style="padding: 0">
               <div>
-                <h2 class="text-xl font-extrabold text-[#0b1046]">
-                  Commission statement
-                </h2>
-                <p class="muted text-sm mt-1">
+                <h2>Commission statement</h2>
+                <p class="muted">
                   Commission entries for the selected date range.
                 </p>
               </div>
-              <div class="text-right">
-                <div class="text-xs muted">TOTAL COMMISSION</div>
-                <div
-                  id="commissionTotal"
-                  class="text-3xl font-extrabold text-emerald-700"
-                >
-                  ₹0.00
-                </div>
+              <div class="total">
+                <span>Total commission</span><b id="commissionTotal">₹0.00</b>
               </div>
             </div>
           </div>
           <div class="card">
-            <div class="p-5">
-              <h3 class="font-extrabold text-[#0b1046]">Commission ledger</h3>
-              <p class="text-sm muted mt-1">
-                Shows the ledger records attributed to this distributor.
-              </p>
+            <div class="cardhead">
+              <div>
+                <h3>Commission ledger</h3>
+                <p class="muted">
+                  Shows the ledger records attributed to this distributor.
+                </p>
+              </div>
             </div>
             <div class="tablewrap">
               <table>
@@ -551,80 +1096,45 @@
               </table>
             </div>
           </div>
-          <p class="text-xs muted mt-4">
+          <p class="note">
             If commission shows ₹0.00 despite sales, ensure your backend inserts
             distributor earnings into <code>commission_ledger</code> with this
             distributor's ID and commission amount.
           </p>
         </section>
-        <footer class="text-xs muted mt-8">
+
+        <footer class="foot">
           Quick2Print Distributor Dashboard · Public-key browser access only.
           Supabase RLS and grants control data access.
         </footer>
       </main>
     </div>
-    <div
-      id="accountModal"
-      class="fixed inset-0 bg-slate-950/50 z-50 grid place-items-center p-4"
-    >
-      <div class="card w-full max-w-xl p-6">
-        <div class="flex justify-between items-start gap-3">
-          <div>
-            <h2 class="text-2xl font-extrabold text-[#0b1046]">
-              Select distributor account
-            </h2>
-            <p class="muted text-sm mt-2">
-              Choose the distributor profile this dashboard should manage.
-            </p>
-          </div>
-          <span
-            class="w-11 h-11 rounded-xl bg-indigo-50 grid place-items-center text-indigo-700"
-            ><i data-lucide="users"></i
-          ></span>
-        </div>
-        <div class="grid md:grid-cols-2 gap-4 mt-6">
-          <label class="text-xs font-extrabold text-slate-600 md:col-span-2"
-            >SUPABASE PROJECT URL<input
-              id="sbUrl"
-              class="field mt-2"
-              value="https://cujyptlcmayipjekoqvq.supabase.co" /></label
-          ><label class="text-xs font-extrabold text-slate-600 md:col-span-2"
-            >PUBLISHABLE KEY<input
-              id="sbKey"
-              class="field mt-2"
-              value="sb_publishable_Umq1hMXB-MWXf5IlTAHAmA_2tKS3V6v" /></label
-          ><label class="text-xs font-extrabold text-slate-600 md:col-span-2"
-            >DISTRIBUTOR ACCOUNT<select id="accountSelect" class="field mt-2">
-              <option value="">Load distributor accounts first</option>
-            </select></label
-          >
-        </div>
-        <div class="flex flex-wrap gap-3 mt-5">
-          <button id="loadAccounts" class="btn light">Load accounts</button
-          ><button id="useAccount" class="btn primary">Open dashboard</button>
-        </div>
-        <p id="accountError" class="text-sm text-rose-600 mt-3"></p>
-        <p class="text-xs muted mt-4">
-          No Supabase Auth screen is used. Use only a publishable key and
-          restrict database access with appropriate RLS policies.
-        </p>
-      </div>
-    </div>
+
     <script>
       (() => {
-        const $ = (id) => document.getElementById(id),
-          esc = (v) =>
-            String(v ?? "").replace(
-              /[&<>"']/g,
-              (c) =>
-                ({
-                  "&": "&amp;",
-                  "<": "&lt;",
-                  ">": "&gt;",
-                  '"': "&quot;",
-                  "'": "&#39;",
-                })[c],
-            );
+        // Supabase configuration (public project URL + publishable key, kept in code, never in browser storage).
+        const SUPABASE_URL = "https://cujyptlcmayipjekoqvq.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_Umq1hMXB-MWXf5IlTAHAmA_2tKS3V6v";
+
+        const auth = window.q2pLoggedIn;
+        if (!auth) return; // login guard already redirecting to index.html
+
+        const $ = (id) => document.getElementById(id);
+        const esc = (v) =>
+          String(v ?? "").replace(
+            /[&<>"']/g,
+            (c) =>
+              ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+              })[c],
+          );
+        const icons = () => {
+          if (window.lucide) lucide.createIcons();
+        };
         let sb = null,
           distributor = null,
           retailers = [],
@@ -641,25 +1151,27 @@
               return o[k];
           return "";
         };
+        const isActive = (r) =>
+          String(r.account_status || "active").toLowerCase() === "active";
+        const badge = (r) =>
+          `<span class="badge${isActive(r) ? "" : " off"}">${esc(r.account_status || "active")}</span>`;
+        const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
         function setLoading(btn, on, label) {
           if (!btn) return;
           if (on) {
             if (!btn.dataset.originalHtml)
               btn.dataset.originalHtml = btn.innerHTML;
             btn.disabled = true;
-            btn.classList.add("opacity-70", "cursor-wait");
             btn.innerHTML =
-              '<span class="inline-flex items-center gap-2"><span class="q2p-spinner"></span>' +
-              esc(label || "Loading…") +
-              "</span>";
+              '<span class="spin"></span>' + esc(label || "Loading…");
           } else {
             btn.disabled = false;
-            btn.classList.remove("opacity-70", "cursor-wait");
             if (btn.dataset.originalHtml) {
               btn.innerHTML = btn.dataset.originalHtml;
               delete btn.dataset.originalHtml;
             }
-            if (window.lucide) lucide.createIcons();
+            icons();
           }
         }
         async function withLoading(btn, label, fn) {
@@ -673,34 +1185,68 @@
         const notify = (msg, ok = false) => {
           const n = $("notice");
           n.textContent = msg;
-          n.className =
-            "mb-5 rounded-xl p-4 text-sm font-semibold " +
-            (ok
-              ? "bg-emerald-50 text-emerald-800"
-              : "bg-rose-50 text-rose-800");
-          window.scrollTo({ top: 0, behavior: "smooth" });
+          n.className = "notice " + (ok ? "ok" : "err");
+          window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
         };
         const hideNotice = () => {
-          $("notice").className =
-            "hidden mb-5 rounded-xl p-4 text-sm font-semibold";
+          $("notice").className = "notice hidden";
         };
+
+        // KPI count-up (instant when reduced motion is on)
+        function tween(el, to, fmt) {
+          const from = Number(el.dataset.v || 0);
+          el.dataset.v = to;
+          if (reduced || from === to) {
+            el.textContent = fmt(to);
+            return;
+          }
+          const t0 = performance.now();
+          const f = (t) => {
+            const p = Math.min(1, (t - t0) / 700),
+              e = 1 - Math.pow(1 - p, 3);
+            el.textContent = fmt(from + (to - from) * e);
+            if (p < 1) requestAnimationFrame(f);
+          };
+          requestAnimationFrame(f);
+        }
+
+        // Navigation + mobile drawer
+        const side = $("side"),
+          scrim = $("scrim"),
+          menuBtn = $("menuBtn");
+        function drawer(open) {
+          side.classList.toggle("open", open);
+          scrim.classList.toggle("show", open);
+          menuBtn.setAttribute("aria-expanded", open);
+          menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+        }
+        menuBtn.onclick = () => drawer(!side.classList.contains("open"));
+        scrim.onclick = () => drawer(false);
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") drawer(false);
+        });
+
         function showPage(name) {
           document
             .querySelectorAll(".page")
             .forEach((x) =>
               x.classList.toggle("hidden", x.id !== "page-" + name),
             );
-          document
-            .querySelectorAll(".nav")
-            .forEach((x) =>
-              x.classList.toggle("active", x.dataset.page === name),
-            );
+          document.querySelectorAll(".nav").forEach((x) => {
+            const on = x.dataset.page === name;
+            x.classList.toggle("active", on);
+            on
+              ? x.setAttribute("aria-current", "page")
+              : x.removeAttribute("aria-current");
+          });
           $("pageTitle").textContent =
             {
               overview: "Distributor overview",
               retailers: "My retailers",
               commission: "My commission",
             }[name] || "Dashboard";
+          drawer(false);
+          window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
         }
         document
           .querySelectorAll("[data-page]")
@@ -708,70 +1254,36 @@
         document
           .querySelectorAll("[data-goto]")
           .forEach((b) => (b.onclick = () => showPage(b.dataset.goto)));
-        function initClient() {
-          const url = $("sbUrl").value.trim(),
-            key = $("sbKey").value.trim();
-          if (!url || !key)
-            throw Error("Supabase URL and publishable key are required.");
-          sb = window.supabase.createClient(url, key);
-        }
-        async function loadAccounts() {
+
+        // Load the distributor that matches the authenticated login (no account switching)
+        async function loadDistributor() {
           try {
-            $("accountError").textContent = "";
-            initClient();
+            sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             const { data, error } = await sb
               .from("distributors")
-              .select(
-                "distributor_id,full_name,mobile,email,account_status,super_distributor_id",
-              )
-              .order("created_at", { ascending: false });
+              .select("*")
+              .eq("distributor_id", auth.id)
+              .single();
             if (error) throw error;
-            const active = (data || []).filter(
-              (d) => (d.account_status || "active").toLowerCase() === "active",
-            );
-            $("accountSelect").innerHTML =
-              '<option value="">Select your distributor account</option>' +
-              active
-                .map(
-                  (d) =>
-                    `<option value="${esc(d.distributor_id)}">${esc(d.full_name)} — ${esc(d.distributor_id)}${d.mobile ? " · " + esc(d.mobile) : ""}</option>`,
-                )
-                .join("");
-            if (!active.length)
-              $("accountError").textContent =
-                "No active distributor accounts found. Check table access and account_status.";
+            if (!isActive(data))
+              throw Error(
+                "This distributor account is not active. Contact Quick2Print support.",
+              );
+            distributor = data;
+            $("profileName").textContent = data.full_name || "Distributor";
+            $("profileCode").textContent = data.distributor_id;
+            $("assignedDistributorSelect").innerHTML =
+              `<option value="${esc(data.distributor_id)}">${esc(data.full_name || "Distributor")} — ${esc(data.distributor_id)}</option>`;
+            $("assignedDistributorSelect").value = data.distributor_id;
+            await refreshAll();
           } catch (e) {
-            $("accountError").textContent = e.message || String(e);
+            notify(
+              "Could not load your distributor account: " +
+                (e.message || String(e)),
+            );
           }
         }
-        $("loadAccounts").onclick = () =>
-          withLoading($("loadAccounts"), "Loading accounts…", loadAccounts);
-        $("changeAccount").onclick = () =>
-          $("accountModal").classList.remove("hidden");
-        $("useAccount").onclick = () =>
-          withLoading($("useAccount"), "Opening dashboard…", async () => {
-            try {
-              if (!sb) initClient();
-              const id = $("accountSelect").value;
-              if (!id) throw Error("Select a distributor account.");
-              const { data, error } = await sb
-                .from("distributors")
-                .select("*")
-                .eq("distributor_id", id)
-                .single();
-              if (error) throw error;
-              distributor = data;
-              $("accountModal").classList.add("hidden");
-              $("profileName").textContent = data.full_name || "Distributor";
-              $("profileCode").textContent = data.distributor_id;
-              const assigned = $("assignedDistributorSelect");
-              assigned.innerHTML = `<option value="${esc(data.distributor_id)}">${esc(data.full_name || "Distributor")} — ${esc(data.distributor_id)}</option>`;
-              assigned.value = data.distributor_id;
-              await refreshAll();
-            } catch (e) {
-              $("accountError").textContent = e.message || String(e);
-            }
-          });
+
         function range() {
           return { from: $("dateFrom").value, to: $("dateTo").value };
         }
@@ -781,9 +1293,6 @@
           const d = String(raw).slice(0, 10),
             r = range();
           return (!r.from || d >= r.from) && (!r.to || d <= r.to);
-        }
-        function retailerIdOf(s) {
-          return String(pick(s, ["retailer_id", "retailerId"]) || "");
         }
         function subBelongs(s) {
           const sid = String(
@@ -833,15 +1342,7 @@
                 subErr = e2.message;
               }
             }
-            try {
-              ledger = await safeSelect("commission_ledger");
-            } catch (e) {
-              ledger = [];
-              notify(
-                "Retailers loaded, but commission ledger could not be read: " +
-                  e.message,
-              );
-            }
+
             render();
             if (subErr)
               notify(
@@ -851,6 +1352,19 @@
             notify(e.message || String(e));
           }
         }
+        const AMT = [
+          "amount",
+          "payment_amount",
+          "amount_charged",
+          "total_amount",
+        ];
+        const CAMT = [
+          "commission_amount",
+          "amount",
+          "commission",
+          "amount_inr",
+        ];
+        const SDATE = ["created_at", "paid_at", "started_at", "createdAt"];
         function paidSubs() {
           return subs.filter(
             (s) =>
@@ -858,7 +1372,7 @@
                 pick(s, ["payment_status", "status"]) || "",
               ).toUpperCase() === "PAID" &&
               subBelongs(s) &&
-              inRange(s, ["created_at", "paid_at", "started_at", "createdAt"]),
+              inRange(s, SDATE),
           );
         }
         function myLedger() {
@@ -874,73 +1388,49 @@
               ]),
             );
         }
+        const empty = (cols, msg) =>
+          `<tr><td colspan="${cols}" class="muted">${msg}</td></tr>`;
+
         function render() {
           const paid = paidSubs(),
-            led = myLedger(),
-            rev = paid.reduce(
-              (a, s) =>
-                a +
-                Number(
-                  pick(s, [
-                    "amount",
-                    "payment_amount",
-                    "amount_charged",
-                    "total_amount",
-                  ]) || 0,
+            led = myLedger();
+          const rev = paid.reduce((a, s) => a + Number(pick(s, AMT) || 0), 0);
+          const com = led
+            .filter(
+              (x) =>
+                !["failed", "rejected", "cancelled", "canceled"].includes(
+                  String(x.status || "").toLowerCase(),
                 ),
-              0,
-            ),
-            com = led
-              .filter(
-                (x) =>
-                  !["failed", "rejected", "cancelled", "canceled"].includes(
-                    String(x.status || "").toLowerCase(),
-                  ),
-              )
-              .reduce(
-                (a, x) =>
-                  a +
-                  Number(
-                    pick(x, [
-                      "commission_amount",
-                      "amount",
-                      "commission",
-                      "amount_inr",
-                    ]) || 0,
-                  ),
-                0,
-              );
-          $("kRetailers").textContent = retailers.length;
-          $("kPaid").textContent = paid.length;
-          $("kRevenue").textContent = currency(rev);
-          $("kCommission").textContent = currency(com);
-          $("commissionTotal").textContent = currency(com);
+            )
+            .reduce((a, x) => a + Number(pick(x, CAMT) || 0), 0);
+          tween($("kRetailers"), retailers.length, (n) =>
+            String(Math.round(n)),
+          );
+          tween($("kPaid"), paid.length, (n) => String(Math.round(n)));
+          tween($("kRevenue"), rev, currency);
+          tween($("kCommission"), com, currency);
+          tween($("commissionTotal"), com, currency);
+
           const counts = {};
           paid.forEach((s) => {
             const id = String(pick(s, ["shop_id", "retailer_id"]) || "");
             counts[id] ??= { n: 0, amount: 0 };
             counts[id].n++;
-            counts[id].amount += Number(
-              pick(s, ["amount", "payment_amount", "amount_charged"]) || 0,
-            );
+            counts[id].amount += Number(pick(s, AMT.slice(0, 3)) || 0);
           });
           $("activityRows").innerHTML = retailers.length
             ? retailers
                 .map((r) => {
                   const id = String(pick(r, ["shop_id", "retailer_id"]) || "");
                   const c = counts[id] || { n: 0, amount: 0 };
-                  return `<tr><td class="font-bold">${esc(pick(r, ["shop_id", "retailer_id"]))}</td><td>${esc(r.shop_name || r.owner_name || "—")}</td><td><span class="badge" style="background:${String(r.account_status || "active").toLowerCase() === "active" ? "#ecfdf5" : "#fff7ed"};color:${String(r.account_status || "active").toLowerCase() === "active" ? "#047857" : "#c2410c"}">${esc(r.account_status || "active")}</span></td><td>${c.n}</td><td>${currency(c.amount)}</td></tr>`;
+                  return `<tr><td data-label="Shop ID" class="num">${esc(id)}</td><td data-label="Retailer">${esc(r.shop_name || r.owner_name || "—")}</td><td data-label="Status">${badge(r)}</td><td data-label="Subscriptions">${c.n}</td><td data-label="Paid amount">${currency(c.amount)}</td></tr>`;
                 })
                 .join("")
-            : '<tr><td colspan="5" class="muted">No retailers assigned to this distributor yet.</td></tr>';
+            : empty(5, "No retailers assigned to this distributor yet.");
+
           const monthlyMap = {};
           paid.forEach((sub) => {
-            const raw = pick(sub, [
-              "created_at",
-              "paid_at",
-              "started_at",
-              "createdAt",
-            ]);
+            const raw = pick(sub, SDATE);
             if (!raw) return;
             const month = String(raw).slice(0, 7);
             const sid = String(
@@ -953,43 +1443,35 @@
             );
             if (!r) return;
             const key = month + "|" + String(r.retailer_id);
-            if (!monthlyMap[key])
-              monthlyMap[key] = {
-                month,
-                retailer: r,
-                n: 0,
-                amount: 0,
-                latest: "",
-              };
+            monthlyMap[key] ??= {
+              month,
+              retailer: r,
+              n: 0,
+              amount: 0,
+              latest: "",
+            };
             monthlyMap[key].n++;
-            monthlyMap[key].amount += Number(
-              pick(sub, [
-                "amount",
-                "payment_amount",
-                "amount_charged",
-                "total_amount",
-              ]) || 0,
-            );
+            monthlyMap[key].amount += Number(pick(sub, AMT) || 0);
             if (String(raw) > monthlyMap[key].latest)
               monthlyMap[key].latest = String(raw).slice(0, 10);
           });
-          const monthlyRows = Object.values(monthlyMap).sort(
+          const nm = (r) => String(r.shop_name || r.owner_name);
+          const monthly = Object.values(monthlyMap).sort(
             (a, b) =>
               b.month.localeCompare(a.month) ||
-              String(
-                a.retailer.shop_name || a.retailer.owner_name,
-              ).localeCompare(
-                String(b.retailer.shop_name || b.retailer.owner_name),
-              ),
+              nm(a.retailer).localeCompare(nm(b.retailer)),
           );
-          $("monthlyActivityRows").innerHTML = monthlyRows.length
-            ? monthlyRows
+          $("monthlyActivityRows").innerHTML = monthly.length
+            ? monthly
                 .map(
                   (x) =>
-                    `<tr><td class="font-bold">${esc(new Date(x.month + "-01T12:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }))}</td><td>${esc(x.retailer.shop_name || x.retailer.owner_name || "—")}</td><td>${esc(x.retailer.shop_id || x.retailer.retailer_id || "—")}</td><td>${x.n}</td><td class="font-extrabold">${currency(x.amount)}</td><td>${esc(x.latest || "—")}</td></tr>`,
+                    `<tr><td data-label="Month" class="num">${esc(new Date(x.month + "-01T12:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }))}</td><td data-label="Retailer / Shop">${esc(x.retailer.shop_name || x.retailer.owner_name || "—")}</td><td data-label="Shop ID">${esc(x.retailer.shop_id || x.retailer.retailer_id || "—")}</td><td data-label="Paid subscriptions">${x.n}</td><td data-label="Paid amount" class="num">${currency(x.amount)}</td><td data-label="Latest activity">${esc(x.latest || "—")}</td></tr>`,
                 )
                 .join("")
-            : '<tr><td colspan="6" class="muted">No paid subscription activity found for the selected dates. Try another date range or refresh data.</td></tr>';
+            : empty(
+                6,
+                "No paid subscription activity found for the selected dates. Try another date range or refresh data.",
+              );
 
           const search = ($("retailerSearch").value || "").toLowerCase();
           const shown = retailers.filter((r) =>
@@ -999,30 +1481,37 @@
             ? shown
                 .map(
                   (r) =>
-                    `<tr><td class="font-bold">${esc(r.retailer_id)}</td><td><div class="font-bold">${esc(r.shop_name || "—")}</div><div class="muted">${esc(r.owner_name || "")}</div></td><td>${esc(r.mobile || "—")}</td><td>${esc([r.city, r.district, r.state, r.pincode].filter(Boolean).join(", ") || "—")}</td><td><span class="badge">${esc(r.account_status || "active")}</span></td><td>${esc(String(r.created_at || "").slice(0, 10) || "—")}</td></tr>`,
+                    `<tr><td data-label="Retailer ID" class="num">${esc(r.retailer_id)}</td><td data-label="Shop / Owner"><div class="num">${esc(r.shop_name || "—")}</div><div class="muted">${esc(r.owner_name || "")}</div></td><td data-label="Mobile">${esc(r.mobile || "—")}</td><td data-label="Location">${esc([r.city, r.district, r.state, r.pincode].filter(Boolean).join(", ") || "—")}</td><td data-label="Status">${badge(r)}</td><td data-label="Created">${esc(String(r.created_at || "").slice(0, 10) || "—")}</td></tr>`,
                 )
                 .join("")
-            : '<tr><td colspan="6" class="muted">No matching retailers.</td></tr>';
+            : empty(6, "No matching retailers.");
+
           $("commissionRows").innerHTML = led.length
             ? led
                 .map(
                   (x) =>
-                    `<tr><td>${esc(String(pick(x, ["created_at", "earned_at", "commission_date", "date"]) || "").slice(0, 10) || "—")}</td><td>${esc(pick(x, ["reference_id", "subscription_id", "order_id", "description", "ledger_id"]) || "—")}</td><td>${esc(pick(x, ["commission_type", "type", "source"]) || "Commission")}</td><td>${esc(x.status || "recorded")}</td><td class="font-extrabold">${currency(pick(x, ["commission_amount", "amount", "commission", "amount_inr"]))}</td></tr>`,
+                    `<tr><td data-label="Date">${esc(String(pick(x, ["created_at", "earned_at", "commission_date", "date"]) || "").slice(0, 10) || "—")}</td><td data-label="Reference">${esc(pick(x, ["reference_id", "subscription_id", "order_id", "description", "ledger_id"]) || "—")}</td><td data-label="Type">${esc(pick(x, ["commission_type", "type", "source"]) || "Commission")}</td><td data-label="Status">${esc(x.status || "recorded")}</td><td data-label="Commission" class="num">${currency(pick(x, CAMT))}</td></tr>`,
                 )
                 .join("")
-            : '<tr><td colspan="5" class="muted">₹0.00 — no commission ledger entries for this distributor and date range.</td></tr>';
+            : empty(
+                5,
+                "₹0.00 — no commission ledger entries for this distributor and date range.",
+              );
         }
+
         $("retailerForm").onsubmit = async (e) => {
           e.preventDefault();
           if (!sb || !distributor) {
-            notify("Select a distributor account first.");
+            notify(
+              "Your distributor account is still loading. Try again in a moment.",
+            );
             return;
           }
           const form = e.currentTarget,
             submitBtn = form.querySelector("button[type=submit]"),
-            fd = new FormData(form),
-            fullName = String(fd.get("retailer_full_name") || "").trim(),
-            assignedId = String(fd.get("assigned_distributor_id") || "");
+            fd = new FormData(form);
+          const fullName = String(fd.get("retailer_full_name") || "").trim();
+          const assignedId = String(fd.get("assigned_distributor_id") || "");
           if (!fullName) {
             notify("Enter the retailer full name.");
             return;
@@ -1036,16 +1525,17 @@
             );
             return;
           }
+          const v = (k) => String(fd.get(k) || "").trim() || null;
           const payload = {
             shop_name: fullName,
             owner_name: fullName,
             mobile: String(fd.get("mobile") || "").trim(),
-            email: String(fd.get("email") || "").trim() || null,
-            address: String(fd.get("address") || "").trim() || null,
-            city: String(fd.get("city") || "").trim() || null,
-            district: String(fd.get("district") || "").trim() || null,
-            state: String(fd.get("state") || "").trim() || null,
-            pincode: String(fd.get("pincode") || "").trim() || null,
+            email: v("email"),
+            address: v("address"),
+            city: v("city"),
+            district: v("district"),
+            state: v("state"),
+            pincode: v("pincode"),
             assigned_distributor_id: assignedId,
           };
           try {
@@ -1079,15 +1569,16 @@
             "Refreshing activity…",
             refreshAll,
           );
+
         // Default range: current calendar month.
-        const now = new Date(),
-          start = new Date(now.getFullYear(), now.getMonth(), 1);
+        const pad = (n) => String(n).padStart(2, "0"),
+          now = new Date();
         $("dateFrom").value =
-          `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}`;
+          `${now.getFullYear()}-${pad(now.getMonth() + 1)}-01`;
         $("dateTo").value =
-          `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-        if (window.lucide) lucide.createIcons();
-        loadAccounts();
+          `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+        icons();
+        loadDistributor();
       })();
     </script>
   </body>

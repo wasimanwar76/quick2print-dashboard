@@ -3,115 +3,590 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#1b1464" />
     <title>Quick2Print | Partner Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+      :root {
+        --navy: #1b1464;
+        --navy-deep: #110c45;
+        --blue: #1d6fd8;
+        --cyan: #00aeef;
+        --yellow: #fbb615;
+        --magenta: #e4007c;
+        --ink: #0f172a;
+        --muted: #5b6478;
+        --line: #dfe5f1;
+        --surface: #ffffff;
+        --bg: #f4f7fe;
+      }
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
       body {
-        font-family: Inter, ui-sans-serif, system-ui;
-        background:
-          radial-gradient(circle at top right, #263b9b 0, transparent 38%),
-          linear-gradient(145deg, #070a2e, #0b1046);
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        color: var(--ink);
         min-height: 100vh;
+        min-height: 100dvh;
+        background:
+          radial-gradient(
+            900px 500px at 100% 0%,
+            rgba(0, 174, 239, 0.18),
+            transparent 60%
+          ),
+          radial-gradient(
+            700px 500px at 0% 100%,
+            rgba(251, 182, 21, 0.16),
+            transparent 60%
+          ),
+          radial-gradient(
+            600px 400px at 0% 0%,
+            rgba(228, 0, 124, 0.08),
+            transparent 60%
+          ),
+          var(--bg);
+        overflow-x: hidden;
+      }
+      h1,
+      .display {
+        font-family: Nunito, Inter, sans-serif;
+      }
+
+      /* Skip link */
+      .skip {
+        position: absolute;
+        left: 1rem;
+        top: -4rem;
+        background: var(--navy);
+        color: #fff;
+        padding: 0.6rem 1rem;
+        border-radius: 10px;
+        font-weight: 700;
+        z-index: 50;
+        transition: top 0.2s;
+      }
+      .skip:focus {
+        top: 1rem;
+      }
+
+      /* Layout */
+      .shell {
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+      @media (min-width: 1024px) {
+        .shell {
+          grid-template-columns: 1.05fr 1fr;
+        }
+      }
+
+      /* Brand panel */
+      .brand-panel {
+        position: relative;
+        display: none;
+        overflow: hidden;
+        color: #fff;
+        padding: 3.5rem;
+        background:
+          radial-gradient(
+            600px 400px at 85% 10%,
+            rgba(0, 174, 239, 0.35),
+            transparent 65%
+          ),
+          radial-gradient(
+            500px 400px at 10% 95%,
+            rgba(228, 0, 124, 0.25),
+            transparent 65%
+          ),
+          linear-gradient(155deg, var(--navy) 0%, var(--navy-deep) 100%);
+      }
+      @media (min-width: 1024px) {
+        .brand-panel {
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+      }
+      .logo-card {
+        background: #fff;
+        border-radius: 28px;
+        padding: 1.4rem 1.8rem;
+        box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.45);
+        display: inline-block;
+        max-width: 100%;
+        animation: float 7s ease-in-out infinite;
+      }
+      .logo-card img {
+        display: block;
+        width: min(420px, 100%);
+        height: auto;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+      .cmyk-ring {
+        position: absolute;
+        border-radius: 999px;
+        border: 14px solid;
+        opacity: 0.5;
+        pointer-events: none;
+      }
+      .r1 {
+        width: 420px;
+        height: 420px;
+        right: -140px;
+        bottom: -120px;
+        border-color: var(--cyan) var(--magenta) var(--yellow) var(--navy);
+        animation: spin 40s linear infinite;
+      }
+      .r2 {
+        width: 220px;
+        height: 220px;
+        left: -70px;
+        top: 38%;
+        border-color: var(--yellow) transparent var(--cyan) transparent;
+        animation: spin 28s linear infinite reverse;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .feature {
+        display: flex;
+        gap: 0.85rem;
+        align-items: flex-start;
+        opacity: 0;
+        transform: translateY(14px);
+        animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      }
+      .feature:nth-child(1) {
+        animation-delay: 0.15s;
+      }
+      .feature:nth-child(2) {
+        animation-delay: 0.3s;
+      }
+      .feature:nth-child(3) {
+        animation-delay: 0.45s;
+      }
+      .feature .dot {
+        flex: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+      }
+      @keyframes rise {
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* Form panel */
+      .form-panel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.25rem;
+      }
+      @media (min-width: 640px) {
+        .form-panel {
+          padding: 2.5rem;
+        }
+      }
+      .card {
+        width: 100%;
+        max-width: 28rem;
+        background: var(--surface);
+        border-radius: 28px;
+        padding: 1.75rem;
+        border: 1px solid rgba(27, 20, 100, 0.06);
+        box-shadow:
+          0 1px 2px rgba(15, 23, 42, 0.04),
+          0 30px 60px -30px rgba(27, 20, 100, 0.35);
+        position: relative;
+        overflow: hidden;
+        animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+      @media (min-width: 640px) {
+        .card {
+          padding: 2.5rem;
+        }
+      }
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 5px;
+        background: linear-gradient(
+          90deg,
+          var(--cyan) 0 25%,
+          var(--magenta) 25% 50%,
+          var(--yellow) 50% 75%,
+          var(--navy) 75% 100%
+        );
+      }
+      .mobile-logo {
+        display: block;
+        margin: 0.25rem auto 1.5rem;
+        width: min(250px, 78%);
+        height: auto;
+      }
+      @media (min-width: 1024px) {
+        .mobile-logo-wrap {
+          display: none;
+        }
+      }
+      .eyebrow {
+        font-size: 0.72rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-weight: 800;
+        color: var(--blue);
+      }
+
+      .field-wrap {
+        position: relative;
+        margin-top: 0.5rem;
       }
       .field {
         width: 100%;
-        border: 1px solid #dbe2f0;
-        border-radius: 12px;
-        padding: 13px 14px;
-        color: #0f172a;
+        border: 1.5px solid var(--line);
+        border-radius: 14px;
+        padding: 14px 16px;
+        font-size: 1rem;
+        color: var(--ink);
+        background: #fbfcff;
         outline: none;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s,
+          background 0.2s;
+      }
+      .field::placeholder {
+        color: #94a0b8;
+      }
+      .field:hover {
+        border-color: #c6d0e6;
       }
       .field:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px #6366f122;
+        border-color: var(--blue);
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(29, 111, 216, 0.15);
+      }
+      .field.has-toggle {
+        padding-right: 52px;
+      }
+      .toggle {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        color: var(--muted);
+        transition:
+          background 0.2s,
+          color 0.2s;
+      }
+      .toggle:hover {
+        background: #eef2fb;
+        color: var(--navy);
       }
       .btn {
         width: 100%;
-        padding: 13px;
-        border-radius: 12px;
-        background: linear-gradient(100deg, #00aeef, #4f46e5);
-        color: white;
+        padding: 14px;
+        border-radius: 14px;
+        background: linear-gradient(100deg, var(--cyan), var(--blue) 45%, #4f46e5);
+        color: #fff;
         font-weight: 800;
+        font-size: 1rem;
+        letter-spacing: 0.01em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 12px 24px -12px rgba(29, 111, 216, 0.8);
+        transition:
+          transform 0.15s,
+          box-shadow 0.2s,
+          filter 0.2s,
+          opacity 0.2s;
       }
-      .step {
-        display: none;
+      .btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 28px -14px rgba(29, 111, 216, 0.9);
+        filter: brightness(1.05);
       }
-      .step.active {
-        display: block;
+      .btn:active:not(:disabled) {
+        transform: translateY(0);
+      }
+      .btn:disabled {
+        opacity: 0.75;
+        cursor: progress;
+      }
+      .btn:disabled::before {
+        content: "";
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2.5px solid rgba(255, 255, 255, 0.4);
+        border-top-color: #fff;
+        animation: spin 0.8s linear infinite;
+      }
+      .link-btn {
+        width: 100%;
+        margin-top: 0.75rem;
+        padding: 0.6rem;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--muted);
+        border-radius: 10px;
+        transition:
+          color 0.2s,
+          background 0.2s;
+      }
+      .link-btn:hover {
+        color: var(--navy);
+        background: #f1f4fb;
+      }
+      .account-chip {
+        display: flex;
+        gap: 0.85rem;
+        align-items: center;
+        border-radius: 16px;
+        padding: 0.9rem 1rem;
+        margin-bottom: 1.1rem;
+        background: linear-gradient(135deg, #eef4ff, #fff7e0);
+        border: 1px solid #dfe8fb;
+      }
+      .account-chip .avatar {
+        flex: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: linear-gradient(135deg, var(--navy), var(--blue));
+      }
+      .step.enter {
+        animation: slide 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      @keyframes slide {
+        from {
+          opacity: 0;
+          transform: translateX(18px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      #error {
+        animation: shake 0.4s;
+      }
+      @keyframes shake {
+        20%,
+        60% {
+          transform: translateX(-5px);
+        }
+        40%,
+        80% {
+          transform: translateX(5px);
+        }
+      }
+      :focus-visible {
+        outline: 3px solid var(--yellow);
+        outline-offset: 2px;
+      }
+      .field:focus-visible {
+        outline: none;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.001ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.001ms !important;
+        }
       }
     </style>
   </head>
-  <body class="flex items-center justify-center p-4 text-slate-900">
-    <main class="w-full max-w-md rounded-3xl bg-white p-7 sm:p-9 shadow-2xl">
-      <div class="flex items-center gap-3 mb-8">
-        <div
-          class="w-14 h-14 rounded-2xl bg-indigo-600 text-white grid place-items-center font-black text-lg"
-        >
-          Q2P
-        </div>
-        <div>
-          <div class="text-2xl font-black text-[#0b1046]">
-            Quick<span class="text-amber-500">2</span>Print
+  <body>
+    <a href="#main" class="skip">Skip to login form</a>
+    <div class="shell">
+      <!-- Brand panel (tablet landscape / desktop) -->
+      <aside class="brand-panel" aria-label="Quick2Print">
+        <div class="cmyk-ring r1" aria-hidden="true"></div>
+        <div class="cmyk-ring r2" aria-hidden="true"></div>
+        <div class="relative">
+          <div class="logo-card">
+            <img
+              src="logo.png"
+              alt="Quick2Print logo"
+              width="420"
+              height="150"
+              onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'display',style:'font-weight:900;font-size:2.4rem;color:#1b1464;padding:.3rem .5rem',innerHTML:'Quick<span style=&quot;color:#fbb615&quot;>2</span>print'}))"
+            />
           </div>
-          <div class="text-sm text-slate-500">Partner & Admin Login</div>
         </div>
-      </div>
-      <div class="mb-6">
-        <p
-          class="text-xs uppercase tracking-[.2em] font-extrabold text-indigo-600"
-        >
-          Account access
-        </p>
-        <h1 class="text-2xl font-black mt-2">Welcome back</h1>
-        <p class="text-sm text-slate-500 mt-2">
-          Enter your account ID, then your registered mobile number as password.
-        </p>
-      </div>
-      <div id="stepId">
-        <label class="text-sm font-bold">Account ID</label
-        ><input
-          id="partnerId"
-          class="field mt-2"
-          placeholder="Retailer / Distributor / Admin ID"
-          autocomplete="username"
-        /><button id="continueBtn" class="btn mt-4">Continue</button>
-      </div>
-      <div id="stepPassword" class="hidden">
-        <div class="rounded-xl bg-indigo-50 p-3 mb-4">
-          <div class="text-xs text-indigo-600 font-bold">ACCOUNT TYPE</div>
+        <div class="relative max-w-md">
+          <h2 class="display text-4xl font-black leading-tight">
+            Print smarter.<br />Partner faster.
+          </h2>
+          <p class="mt-4 text-white/75 leading-relaxed">
+            One secure place for retailers, distributors and super distributors
+            to manage their Quick2Print business.
+          </p>
+          <ul class="mt-8 space-y-4 text-sm">
+            <li class="feature">
+              <span class="dot" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbb615" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM20 14v.01M14 20h3M20 20v.01"/></svg>
+              </span>
+              <span><strong class="block text-base">QR-powered ordering</strong><span class="text-white/70">Scan, upload and print in moments.</span></span>
+            </li>
+            <li class="feature">
+              <span class="dot" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00aeef" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+              </span>
+              <span><strong class="block text-base">Live business dashboards</strong><span class="text-white/70">Track orders and earnings at a glance.</span></span>
+            </li>
+            <li class="feature">
+              <span class="dot" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff4fa3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+              </span>
+              <span><strong class="block text-base">Role-based access</strong><span class="text-white/70">Separate views for every partner level.</span></span>
+            </li>
+          </ul>
+        </div>
+        <p class="relative text-xs text-white/50">&copy; Quick2Print. All rights reserved.</p>
+      </aside>
+
+      <!-- Form panel -->
+      <main id="main" class="form-panel">
+        <section class="card" aria-labelledby="loginTitle">
+          <div class="mobile-logo-wrap">
+            <img
+              class="mobile-logo"
+              src="logo.png"
+              alt="Quick2Print logo"
+              width="250"
+              height="90"
+              onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'display',style:'font-weight:900;font-size:2rem;color:#1b1464;text-align:center;margin-bottom:1.25rem',innerHTML:'Quick<span style=&quot;color:#fbb615&quot;>2</span>print'}))"
+            />
+          </div>
+
+          <div class="mb-6">
+            <p class="eyebrow">Partner &amp; Admin Login</p>
+            <h1 id="loginTitle" class="text-3xl font-black mt-2 text-[#1b1464]">
+              Welcome back
+            </h1>
+            <p class="text-sm text-slate-500 mt-2 leading-relaxed">
+              Enter your account ID, then your registered mobile number as
+              password.
+            </p>
+          </div>
+
+          <div id="stepId" class="step enter">
+            <label for="partnerId" class="text-sm font-bold text-slate-800"
+              >Account ID</label
+            >
+            <div class="field-wrap">
+              <input
+                id="partnerId"
+                class="field"
+                placeholder="Retailer / Distributor / Admin ID"
+                autocomplete="username"
+                autocapitalize="off"
+                spellcheck="false"
+              />
+            </div>
+            <button id="continueBtn" class="btn mt-5">
+              Continue
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+
+          <div id="stepPassword" class="step hidden">
+            <div class="account-chip">
+              <div class="avatar" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+              </div>
+              <div class="min-w-0">
+                <div class="text-[11px] text-indigo-600 font-extrabold tracking-widest">ACCOUNT TYPE</div>
+                <div id="accountLabel" class="font-extrabold text-[#1b1464] truncate"></div>
+                <div id="roleLabel" class="text-sm text-slate-500 truncate"></div>
+              </div>
+            </div>
+            <label for="password" class="text-sm font-bold text-slate-800"
+              >Mobile number / Password</label
+            >
+            <div class="field-wrap">
+              <input
+                id="password"
+                type="password"
+                inputmode="numeric"
+                class="field has-toggle"
+                placeholder="Enter mobile number"
+                autocomplete="current-password"
+              />
+              <button
+                type="button"
+                id="togglePw"
+                class="toggle"
+                aria-label="Show password"
+                aria-pressed="false"
+              >
+                <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <button id="loginBtn" class="btn mt-5">Login</button>
+            <button id="backBtn" class="link-btn">Use a different ID</button>
+          </div>
+
           <div
-            id="accountLabel"
-            class="font-extrabold text-[#0b1046] mt-1"
+            id="error"
+            role="alert"
+            aria-live="assertive"
+            class="hidden mt-5 rounded-xl bg-rose-50 border border-rose-100 text-rose-700 p-3 text-sm font-semibold"
           ></div>
-          <div id="roleLabel" class="text-sm text-slate-500"></div>
-        </div>
-        <label class="text-sm font-bold">Mobile number / Password</label
-        ><input
-          id="password"
-          type="password"
-          inputmode="numeric"
-          class="field mt-2"
-          placeholder="Enter mobile number"
-          autocomplete="current-password"
-        /><button id="loginBtn" class="btn mt-4">Login</button
-        ><button
-          id="backBtn"
-          class="w-full mt-3 py-2 text-sm font-bold text-slate-500"
-        >
-          Use a different ID
-        </button>
-      </div>
-      <div
-        id="error"
-        role="alert"
-        class="hidden mt-4 rounded-xl bg-rose-50 text-rose-700 p-3 text-sm font-semibold"
-      ></div>
-      <p class="text-xs leading-5 text-slate-400 mt-7">
-        Use the mobile number saved in your partner record. Admin access uses
-        the configured admin credentials.
-      </p>
-    </main>
+
+          <p class="text-xs leading-5 text-slate-400 mt-7">
+            Use the mobile number saved in your partner record. Admin access
+            uses the configured admin credentials.
+          </p>
+        </section>
+      </main>
+    </div>
+
     <script>
       const SB_URL = "https://cujyptlcmayipjekoqvq.supabase.co";
       const SB_KEY = "sb_publishable_Umq1hMXB-MWXf5IlTAHAmA_2tKS3V6v";
@@ -156,8 +631,11 @@
       let account = null;
       const $ = (id) => document.getElementById(id);
       function err(msg) {
-        $("error").textContent = msg;
-        $("error").classList.remove("hidden");
+        const el = $("error");
+        el.classList.add("hidden");
+        el.textContent = msg;
+        void el.offsetWidth; // restart shake animation
+        el.classList.remove("hidden");
       }
       function clearErr() {
         $("error").textContent = "";
@@ -174,6 +652,7 @@
         const id = $("partnerId").value.trim();
         if (!id) {
           err("Enter your account ID.");
+          $("partnerId").focus();
           return;
         }
         if (id.toLowerCase() === ADMIN_ID) {
@@ -217,7 +696,8 @@
           err(e.message || "Unable to verify account ID.");
         } finally {
           $("continueBtn").disabled = false;
-          $("continueBtn").textContent = "Continue";
+          $("continueBtn").innerHTML =
+            'Continue <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
         }
       }
       function showPassword() {
@@ -227,6 +707,9 @@
           : account.row[account.cfg.idColumn];
         $("stepId").classList.add("hidden");
         $("stepPassword").classList.remove("hidden");
+        $("stepPassword").classList.remove("enter");
+        void $("stepPassword").offsetWidth;
+        $("stepPassword").classList.add("enter");
         $("password").value = "";
         $("password").focus();
       }
@@ -239,6 +722,7 @@
         const password = $("password").value.trim();
         if (!password) {
           err("Enter your password/mobile number.");
+          $("password").focus();
           return;
         }
         $("loginBtn").disabled = true;
@@ -295,9 +779,27 @@
         account = null;
         $("stepPassword").classList.add("hidden");
         $("stepId").classList.remove("hidden");
+        $("stepId").classList.remove("enter");
+        void $("stepId").offsetWidth;
+        $("stepId").classList.add("enter");
         $("partnerId").focus();
         clearErr();
       });
+      // Show / hide password
+      $("togglePw").addEventListener("click", () => {
+        const show = $("password").type === "password";
+        $("password").type = show ? "text" : "password";
+        $("togglePw").setAttribute("aria-pressed", String(show));
+        $("togglePw").setAttribute(
+          "aria-label",
+          show ? "Hide password" : "Show password",
+        );
+        $("password").focus();
+      });
+      // Clear error as the user types
+      ["partnerId", "password"].forEach((id) =>
+        $(id).addEventListener("input", clearErr),
+      );
       (function () {
         try {
           const a = JSON.parse(
