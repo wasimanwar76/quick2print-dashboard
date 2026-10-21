@@ -1180,17 +1180,14 @@
               <label class="lbl"
                 >Subscriptions
                 <select id="tableSubs" class="field">
-                  <option value="shop_subscriptions" selected>
-                    shop_subscriptions
-                  </option>
-                  <option value="subscriptions">subscriptions</option>
+                  <option value="payments" selected>payments</option>
                 </select>
               </label>
               <label class="lbl"
                 >Commission ledger
                 <select id="tableLedger" class="field">
-                  <option value="commission_ledger" selected>
-                    commission_ledger
+                  <option value="shops" selected>
+                    shops (onboarding records)
                   </option>
                 </select>
               </label>
@@ -1685,9 +1682,10 @@
                     max-width: 75ch;
                   "
                 >
-                  Record finalized amounts in <code>commission_ledger</code> and
-                  link each row to your Super Distributor ID. Gross subscription
-                  totals are shown separately from earned partner commission.
+                  Record finalized amounts in
+                  <code>shops (calculated commission)</code> and link each row
+                  to your Super Distributor ID. Gross subscription totals are
+                  shown separately from earned partner commission.
                 </p>
               </div>
             </div>
@@ -1977,8 +1975,8 @@
           super: "super_distributors",
           dist: "distributors",
           retail: "retailers",
-          subs: "shop_subscriptions",
-          ledger: "commission_ledger",
+          subs: "payments",
+          ledger: "shops",
         }),
       });
       function getTables() {
@@ -2117,12 +2115,8 @@
             subs = [];
             throw e;
           }
-          try {
-            ledger = await loadTable(t.ledger);
-          } catch (e) {
-            ledger = [];
-            msg("Commission ledger unavailable: " + e.message, true);
-          }
+          // Commission is derived from existing public.shops records; no shops (calculated commission) table is required.
+          ledger = await loadTable(t.ledger);
           ledger = ledger.filter(
             (x) =>
               String(

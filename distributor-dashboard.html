@@ -816,7 +816,7 @@
             </div>
             <div class="card stat" style="--c: var(--mag)">
               <div class="top">
-                <span>Paid subscriptions</span
+                <span>QR codes onboarded</span
                 ><span class="ic"><i data-lucide="circle-check"></i></span>
               </div>
               <b id="kPaid">—</b><small>Within selected date range</small>
@@ -833,35 +833,9 @@
                 <span>Commission earned</span
                 ><span class="ic"><i data-lucide="wallet"></i></span>
               </div>
-              <b id="kCommission">₹0.00</b><small>From commission ledger</small>
+              <b id="kCommission">₹0.00</b
+              ><small>Calculated from monthly QR onboarding</small>
             </div>
-          </div>
-
-          <div class="card pad gap">
-            <div class="cardhead" style="padding: 0 0 16px">
-              <div>
-                <h2>Date range</h2>
-                <p class="muted">
-                  Filter work and commission using your selected dates.
-                </p>
-              </div>
-              <div class="dates">
-                <label class="fld"
-                  >From<input id="dateFrom" type="date" class="field"
-                /></label>
-                <label class="fld"
-                  >To<input id="dateTo" type="date" class="field"
-                /></label>
-                <button id="applyDates" class="btn primary" type="button">
-                  Apply dates
-                </button>
-              </div>
-            </div>
-            <p class="note" style="margin: 0">
-              Commission totals use saved
-              <code>commission_ledger</code> entries. Subscription revenue is
-              not the same as commission.
-            </p>
           </div>
 
           <div class="card gap">
@@ -1060,36 +1034,90 @@
 
         <section id="page-commission" class="page hidden">
           <div class="card pad gap">
-            <div class="cardhead" style="padding: 0">
+            <div class="cardhead" style="padding: 0 0 16px">
               <div>
                 <h2>Commission statement</h2>
                 <p class="muted">
-                  Commission entries for the selected date range.
+                  Commission is calculated from qualifying shop records in
+                  public.shops. Select dates to review monthly totals; QR counts
+                  and bonus eligibility reset at the start of each calendar
+                  month.
                 </p>
               </div>
-              <div class="total">
-                <span>Total commission</span><b id="commissionTotal">₹0.00</b>
+              <div class="dates">
+                <label class="fld"
+                  >From<input id="dateFrom" type="date" class="field"
+                /></label>
+                <label class="fld"
+                  >To<input id="dateTo" type="date" class="field"
+                /></label>
+                <button id="applyDates" class="btn primary" type="button">
+                  Apply dates
+                </button>
               </div>
+            </div>
+            <p class="note" style="margin: 0">
+              Live data source: Supabase public.shops. Subscription revenue uses
+              paid records from public.payments when the payment is linked to
+              your distributor. No browser cache is used for calculations.
+            </p>
+          </div>
+          <div
+            class="card pad gap"
+            style="background: #eef2ff; border: 1px solid #dbe4ff"
+          >
+            <h3 id="commissionOverviewTitle">Selected period overview</h3>
+            <div
+              class="stats"
+              style="
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+              "
+            >
+              <div>
+                <small>Monthly QR codes</small><b id="commissionQrCount">0</b>
+              </div>
+              <div><small>QR slab</small><b id="commissionSlab">—</b></div>
+              <div>
+                <small>Commission</small><b id="commissionAmount">₹0.00</b>
+              </div>
+              <div><small>Bonus</small><b id="commissionBonus">₹0.00</b></div>
+            </div>
+            <p class="note" style="margin: 0">
+              Monthly bonus milestones: 250, 500, 750, 1,000 and 1,100 QR codes.
+              Bonus remains locked below 250; each calendar month starts from
+              zero. The 1,001–1,099 range uses the 751–1,000 commission rate but
+              does not unlock the 1,100+ bonus tier.
+            </p>
+            <div class="total">
+              <span>Commission + bonus</span><b id="commissionTotal">₹0.00</b>
             </div>
           </div>
           <div class="card">
             <div class="cardhead">
               <div>
-                <h3>Commission ledger</h3>
+                <h3>Monthly slab calculation</h3>
                 <p class="muted">
-                  Shows the ledger records attributed to this distributor.
+                  Each row is calculated independently by calendar month and
+                  plan. The monthly QR total selects the distributor rate tier;
+                  bonuses are applied only when that month reaches an eligible
+                  milestone.
                 </p>
               </div>
+              <button id="exportCommissionCsv" class="btn light" type="button">
+                <i data-lucide="download"></i> Export CSV
+              </button>
             </div>
             <div class="tablewrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Reference</th>
-                    <th>Type</th>
-                    <th>Status</th>
+                    <th>Month</th>
+                    <th>Plan</th>
+                    <th>QR count</th>
+                    <th>Slab</th>
                     <th>Commission</th>
+                    <th>Bonus</th>
+                    <th>Total</th>
                   </tr>
                 </thead>
                 <tbody id="commissionRows"></tbody>
@@ -1097,9 +1125,8 @@
             </div>
           </div>
           <p class="note">
-            If commission shows ₹0.00 despite sales, ensure your backend inserts
-            distributor earnings into <code>commission_ledger</code> with this
-            distributor's ID and commission amount.
+            Calculated values are estimates from current public.shops records.
+            This dashboard does not create or delete tables or issue payouts.
           </p>
         </section>
 
@@ -1138,8 +1165,8 @@
         let sb = null,
           distributor = null,
           retailers = [],
-          subs = [],
-          ledger = [];
+          shops = [],
+          payments = [];
         const currency = (n) =>
           new Intl.NumberFormat("en-IN", {
             style: "currency",
@@ -1294,25 +1321,26 @@
             r = range();
           return (!r.from || d >= r.from) && (!r.to || d <= r.to);
         }
-        function subBelongs(s) {
-          const sid = String(
-            pick(s, ["shop_id", "retailer_id", "retailerId"]) || "",
+        function shopBelongs(shop) {
+          const retailerId = String(
+            pick(shop, [
+              "retailer_id",
+              "retailerId",
+              "onboarding_partner_id",
+              "partner_id",
+            ]) || "",
           );
-          return retailers.some(
-            (r) =>
-              String(r.retailer_id) === sid ||
-              String(pick(r, ["shop_id", "shopId"]) || "") === sid,
+          const assigned = String(
+            pick(shop, ["distributor_id", "assigned_distributor_id"]) || "",
           );
-        }
-        function ledgerBelongs(x) {
-          const id = String(distributor?.distributor_id || "");
-          return [
-            "distributor_id",
-            "recipient_id",
-            "partner_id",
-            "account_id",
-            "beneficiary_id",
-          ].some((k) => String(x[k] ?? "") === id);
+          return (
+            assigned === String(distributor?.distributor_id || "") ||
+            retailers.some(
+              (r) =>
+                String(r.retailer_id || "") === retailerId ||
+                String(r.shop_id || "") === retailerId,
+            )
+          );
         }
         async function safeSelect(table) {
           const { data, error } = await sb.from(table).select("*").limit(5000);
@@ -1326,28 +1354,17 @@
             const allR = await safeSelect("retailers");
             retailers = allR.filter(
               (r) =>
-                String(r.assigned_distributor_id || "") ===
+                String(r.assigned_distributor_id || r.distributor_id || "") ===
                 String(distributor.distributor_id),
             );
-            let subErr = "";
+            shops = await safeSelect("shops");
             try {
-              subs = await safeSelect("shop_subscriptions");
-            } catch (e) {
-              subErr = e.message;
-              subs = [];
-              try {
-                subs = await safeSelect("subscriptions");
-                subErr = "";
-              } catch (e2) {
-                subErr = e2.message;
-              }
+              payments = await safeSelect("payments");
+            } catch (_) {
+              payments = [];
             }
-
+            shops = shops.filter(shopBelongs);
             render();
-            if (subErr)
-              notify(
-                "Retailers loaded. Subscription data is unavailable: " + subErr,
-              );
           } catch (e) {
             notify(e.message || String(e));
           }
@@ -1357,122 +1374,340 @@
           "payment_amount",
           "amount_charged",
           "total_amount",
+          "plan_amount",
         ];
-        const CAMT = [
-          "commission_amount",
-          "amount",
-          "commission",
-          "amount_inr",
+        const SDATE = [
+          "assign_date",
+          "created_at",
+          "createdAt",
+          "onboarded_at",
         ];
-        const SDATE = ["created_at", "paid_at", "started_at", "createdAt"];
-        function paidSubs() {
-          return subs.filter(
-            (s) =>
-              String(
-                pick(s, ["payment_status", "status"]) || "",
-              ).toUpperCase() === "PAID" &&
-              subBelongs(s) &&
-              inRange(s, SDATE),
+        function inRange(row, keys) {
+          const raw = pick(row, keys);
+          if (!raw) return false;
+          const d = String(raw).slice(0, 10),
+            r = range();
+          return (!r.from || d >= r.from) && (!r.to || d <= r.to);
+        }
+        function paymentIsPaid(p) {
+          return (
+            String(
+              pick(p, ["payment_status", "status", "paymentStatus"]) || "",
+            ).toUpperCase() === "PAID"
           );
         }
-        function myLedger() {
-          return ledger
-            .filter(ledgerBelongs)
-            .filter((x) =>
-              inRange(x, [
+        function paymentDate(p) {
+          return pick(p, [
+            "paid_at",
+            "payment_date",
+            "created_at",
+            "createdAt",
+            "updated_at",
+          ]);
+        }
+        function paymentShopKey(p) {
+          return String(
+            pick(p, [
+              "shop_id",
+              "shopId",
+              "retailer_id",
+              "retailerId",
+              "merchant_id",
+              "customer_id",
+            ]) || "",
+          ).replace(/^SHOP[_-]?/i, "");
+        }
+        function paymentBelongsToDistributor(p) {
+          const assigned = String(
+            pick(p, ["distributor_id", "assigned_distributor_id"]) || "",
+          );
+          if (
+            assigned &&
+            assigned === String(distributor?.distributor_id || "")
+          )
+            return true;
+          const key = paymentShopKey(p);
+          if (!key) return false;
+          return (
+            shops.some((s) =>
+              [
+                s.shop_id,
+                s.retailer_id,
+                s.retailerId,
+                s.onboarding_partner_id,
+                s.partner_id,
+                s.shop_name,
+              ].some(
+                (v) =>
+                  v != null && String(v).replace(/^SHOP[_-]?/i, "") === key,
+              ),
+            ) ||
+            retailers.some((r) =>
+              [r.shop_id, r.retailer_id, r.retailerId].some(
+                (v) =>
+                  v != null && String(v).replace(/^SHOP[_-]?/i, "") === key,
+              ),
+            )
+          );
+        }
+        function paidPaymentsInRange() {
+          return payments.filter(
+            (p) =>
+              paymentIsPaid(p) &&
+              inRange(p, [
+                "paid_at",
+                "payment_date",
                 "created_at",
-                "earned_at",
-                "commission_date",
-                "date",
                 "createdAt",
-              ]),
-            );
+                "updated_at",
+              ]) &&
+              paymentBelongsToDistributor(p),
+          );
+        }
+        function planPrice(row) {
+          const raw = String(
+            pick(row, [
+              "plan_id",
+              "plan_name",
+              "plan",
+              "subscription_plan",
+              "amount",
+              "price",
+            ]) || "",
+          ).toLowerCase();
+          if (/(759|pro|year|12.?month)/.test(raw)) return 759;
+          if (/(444|business|6.?month)/.test(raw)) return 444;
+          if (/(249|smart|3.?month)/.test(raw)) return 249;
+          if (/(99|starter|1.?month)/.test(raw)) return 99;
+          return 0;
+        }
+        const DIST_RULES = [
+          {
+            max: 250,
+            label: "1–250",
+            rates: { 99: 8, 249: 15, 444: 22, 759: 36 },
+            bonuses: { 99: 800, 249: 1700, 444: 2800, 759: 5000 },
+          },
+          {
+            max: 500,
+            label: "251–500",
+            rates: { 99: 10, 249: 18, 444: 27, 759: 45 },
+            bonuses: { 99: 1700, 249: 3500, 444: 6200, 759: 9000 },
+          },
+          {
+            max: 750,
+            label: "501–750",
+            rates: { 99: 12, 249: 22, 444: 32, 759: 60 },
+            bonuses: { 99: 2600, 249: 5300, 444: 9000, 759: 13000 },
+          },
+          {
+            max: 1099,
+            label: "751–1,000 / 1,001–1,099 bonus pending",
+            rates: { 99: 14, 249: 26, 444: 37, 759: 72 },
+            bonuses: { 99: 3500, 249: 6500, 444: 12000, 759: 17000 },
+          },
+          {
+            max: Infinity,
+            label: "1,100+",
+            rates: { 99: 17, 249: 31, 444: 44, 759: 85 },
+            bonuses: { 99: 4500, 249: 9500, 444: 16000, 759: 22000 },
+          },
+        ];
+        function monthlyCommissionRows() {
+          const selected = shops.filter((s) => inRange(s, SDATE));
+          const byMonth = new Map();
+          selected.forEach((shop) => {
+            const raw = pick(shop, SDATE);
+            if (!raw) return;
+            const month = String(raw).slice(0, 7);
+            if (!byMonth.has(month)) byMonth.set(month, []);
+            byMonth.get(month).push(shop);
+          });
+          const rows = [];
+          let qrTotal = 0;
+          let overallSlab = null;
+          let nextMilestone = 250;
+          for (const [month, monthShops] of [...byMonth.entries()].sort(
+            (a, b) => a[0].localeCompare(b[0]),
+          )) {
+            const count = monthShops.length;
+            qrTotal += count;
+            const slab =
+              DIST_RULES.find((x) => count <= x.max) ||
+              DIST_RULES[DIST_RULES.length - 1];
+            overallSlab = slab;
+            const eligibleBonus =
+              count >= 250 && (count <= 1000 || count >= 1100);
+            const grouped = new Map();
+            monthShops.forEach((shop) => {
+              const price = planPrice(shop);
+              if (!price) return;
+              if (!grouped.has(price)) grouped.set(price, { price, count: 0 });
+              grouped.get(price).count++;
+            });
+            for (const g of grouped.values()) {
+              rows.push({
+                month,
+                price: g.price,
+                count: g.count,
+                monthQrCount: count,
+                slab: slab.label,
+                commission: g.count * slab.rates[g.price],
+                bonus: eligibleBonus ? slab.bonuses[g.price] : 0,
+                bonusStatus:
+                  count < 250
+                    ? `Locked: ${250 - count} more QR needed`
+                    : count >= 1001 && count < 1100
+                      ? `Bonus pending until 1,100 QR`
+                      : `Eligible at ${count >= 1100 ? "1,100+" : count >= 1000 ? "1,000+" : count >= 750 ? "750+" : count >= 500 ? "500+" : "250+"} QR this month`,
+              });
+            }
+          }
+          const currentCount = byMonth.size
+            ? [...byMonth.values()].at(-1).length
+            : 0;
+          const activeCount = byMonth.size
+            ? [...byMonth.values()][[...byMonth.keys()].sort().length - 1]
+                .length
+            : 0;
+          const latestMonth = [...byMonth.keys()].sort().pop();
+          const latestQr = latestMonth ? byMonth.get(latestMonth).length : 0;
+          const latestSlab =
+            DIST_RULES.find((x) => latestQr <= x.max) ||
+            DIST_RULES[DIST_RULES.length - 1];
+          const next =
+            [250, 500, 750, 1000, 1100].find((m) => latestQr < m) || null;
+          return { qrTotal, slab: latestSlab, milestone: next, rows };
         }
         const empty = (cols, msg) =>
           `<tr><td colspan="${cols}" class="muted">${msg}</td></tr>`;
 
         function render() {
-          const paid = paidSubs(),
-            led = myLedger();
-          const rev = paid.reduce((a, s) => a + Number(pick(s, AMT) || 0), 0);
-          const com = led
-            .filter(
-              (x) =>
-                !["failed", "rejected", "cancelled", "canceled"].includes(
-                  String(x.status || "").toLowerCase(),
-                ),
-            )
-            .reduce((a, x) => a + Number(pick(x, CAMT) || 0), 0);
+          const selectedShops = shops.filter((s) => inRange(s, SDATE));
+          const calc = monthlyCommissionRows();
+          const com = calc.rows.reduce((a, r) => a + r.commission, 0);
+          const bonus = calc.rows.reduce((a, r) => a + r.bonus, 0);
+          const paidPayments = paidPaymentsInRange();
+          const rev = paidPayments.reduce(
+            (a, p) => a + Number(pick(p, AMT) || 0),
+            0,
+          );
           tween($("kRetailers"), retailers.length, (n) =>
             String(Math.round(n)),
           );
-          tween($("kPaid"), paid.length, (n) => String(Math.round(n)));
+          tween($("kPaid"), selectedShops.length, (n) => String(Math.round(n)));
           tween($("kRevenue"), rev, currency);
-          tween($("kCommission"), com, currency);
-          tween($("commissionTotal"), com, currency);
-
+          tween($("kCommission"), com + bonus, currency);
+          tween($("commissionTotal"), com + bonus, currency);
+          if ($("commissionQrCount"))
+            $("commissionQrCount").textContent = String(calc.qrTotal);
+          if ($("commissionSlab"))
+            $("commissionSlab").textContent = calc.slab.label + " QR";
+          if ($("commissionAmount"))
+            $("commissionAmount").textContent = currency(com);
+          if ($("commissionBonus"))
+            $("commissionBonus").textContent = currency(bonus);
+          if ($("commissionOverviewTitle"))
+            $("commissionOverviewTitle").textContent =
+              (range().from || "Selected") +
+              " to " +
+              (range().to || "today") +
+              " overview";
           const counts = {};
-          paid.forEach((s) => {
-            const id = String(pick(s, ["shop_id", "retailer_id"]) || "");
-            counts[id] ??= { n: 0, amount: 0 };
-            counts[id].n++;
-            counts[id].amount += Number(pick(s, AMT.slice(0, 3)) || 0);
+          selectedShops.forEach((s) => {
+            const id = String(
+              pick(s, [
+                "retailer_id",
+                "retailerId",
+                "onboarding_partner_id",
+                "partner_id",
+              ]) || "",
+            );
+            counts[id] = (counts[id] || 0) + 1;
           });
           $("activityRows").innerHTML = retailers.length
             ? retailers
                 .map((r) => {
-                  const id = String(pick(r, ["shop_id", "retailer_id"]) || "");
-                  const c = counts[id] || { n: 0, amount: 0 };
-                  return `<tr><td data-label="Shop ID" class="num">${esc(id)}</td><td data-label="Retailer">${esc(r.shop_name || r.owner_name || "—")}</td><td data-label="Status">${badge(r)}</td><td data-label="Subscriptions">${c.n}</td><td data-label="Paid amount">${currency(c.amount)}</td></tr>`;
+                  const id = String(r.shop_id || r.retailer_id || "");
+                  const n = counts[id] || 0;
+                  return `<tr><td data-label="Shop ID" class="num">${esc(id)}</td><td data-label="Retailer">${esc(r.shop_name || r.owner_name || "—")}</td><td data-label="Status">${badge(r)}</td><td data-label="QR onboarded">${n}</td><td data-label="Paid amount">—</td></tr>`;
                 })
                 .join("")
             : empty(5, "No retailers assigned to this distributor yet.");
-
           const monthlyMap = {};
-          paid.forEach((sub) => {
-            const raw = pick(sub, SDATE);
+          shops.forEach((s) => {
+            const raw = pick(s, SDATE);
             if (!raw) return;
             const month = String(raw).slice(0, 7);
-            const sid = String(
-              pick(sub, ["shop_id", "retailer_id", "retailerId"]) || "",
+            const rid = String(
+              pick(s, [
+                "retailer_id",
+                "retailerId",
+                "onboarding_partner_id",
+                "partner_id",
+              ]) || "",
             );
             const r = retailers.find(
               (x) =>
-                String(x.retailer_id) === sid ||
-                String(pick(x, ["shop_id", "shopId"]) || "") === sid,
+                String(x.retailer_id || "") === rid ||
+                String(x.shop_id || "") === rid,
             );
             if (!r) return;
-            const key = month + "|" + String(r.retailer_id);
+            const key = month + "|" + rid;
             monthlyMap[key] ??= {
               month,
               retailer: r,
               n: 0,
-              amount: 0,
               latest: "",
+              paid: 0,
+              paidCount: 0,
             };
             monthlyMap[key].n++;
-            monthlyMap[key].amount += Number(pick(sub, AMT) || 0);
             if (String(raw) > monthlyMap[key].latest)
               monthlyMap[key].latest = String(raw).slice(0, 10);
           });
-          const nm = (r) => String(r.shop_name || r.owner_name);
-          const monthly = Object.values(monthlyMap).sort(
-            (a, b) =>
-              b.month.localeCompare(a.month) ||
-              nm(a.retailer).localeCompare(nm(b.retailer)),
+          // Attribute paid payment records to the matching retailer/shop and payment month.
+          paidPayments.forEach((p) => {
+            const raw = paymentDate(p);
+            if (!raw) return;
+            const month = String(raw).slice(0, 7);
+            const keyId = paymentShopKey(p);
+            const r = retailers.find((x) =>
+              [x.shop_id, x.retailer_id, x.retailerId].some(
+                (v) =>
+                  v != null && String(v).replace(/^SHOP[_-]?/i, "") === keyId,
+              ),
+            );
+            if (!r) return;
+            const rid = String(r.retailer_id || r.shop_id || "");
+            const key = month + "|" + rid;
+            monthlyMap[key] ??= {
+              month,
+              retailer: r,
+              n: 0,
+              latest: String(raw).slice(0, 10),
+              paid: 0,
+              paidCount: 0,
+            };
+            monthlyMap[key].paid += Number(pick(p, AMT) || 0);
+            monthlyMap[key].paidCount++;
+            if (String(raw).slice(0, 10) > monthlyMap[key].latest)
+              monthlyMap[key].latest = String(raw).slice(0, 10);
+          });
+          const monthly = Object.values(monthlyMap).sort((a, b) =>
+            b.month.localeCompare(a.month),
           );
           $("monthlyActivityRows").innerHTML = monthly.length
             ? monthly
                 .map(
                   (x) =>
-                    `<tr><td data-label="Month" class="num">${esc(new Date(x.month + "-01T12:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }))}</td><td data-label="Retailer / Shop">${esc(x.retailer.shop_name || x.retailer.owner_name || "—")}</td><td data-label="Shop ID">${esc(x.retailer.shop_id || x.retailer.retailer_id || "—")}</td><td data-label="Paid subscriptions">${x.n}</td><td data-label="Paid amount" class="num">${currency(x.amount)}</td><td data-label="Latest activity">${esc(x.latest || "—")}</td></tr>`,
+                    `<tr><td data-label="Month" class="num">${esc(new Date(x.month + "-01T12:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }))}</td><td data-label="Retailer / Shop">${esc(x.retailer.shop_name || x.retailer.owner_name || "—")}</td><td data-label="Shop ID">${esc(x.retailer.shop_id || x.retailer.retailer_id || "—")}</td><td data-label="Paid subscriptions">${x.paidCount}</td><td data-label="Paid amount">${currency(x.paid)}</td><td data-label="Latest activity">${esc(x.latest || "—")}</td></tr>`,
                 )
                 .join("")
             : empty(
                 6,
-                "No paid subscription activity found for the selected dates. Try another date range or refresh data.",
+                "No subscription or payment activity found for the selected dates.",
               );
-
           const search = ($("retailerSearch").value || "").toLowerCase();
           const shown = retailers.filter((r) =>
             JSON.stringify(r).toLowerCase().includes(search),
@@ -1481,21 +1716,20 @@
             ? shown
                 .map(
                   (r) =>
-                    `<tr><td data-label="Retailer ID" class="num">${esc(r.retailer_id)}</td><td data-label="Shop / Owner"><div class="num">${esc(r.shop_name || "—")}</div><div class="muted">${esc(r.owner_name || "")}</div></td><td data-label="Mobile">${esc(r.mobile || "—")}</td><td data-label="Location">${esc([r.city, r.district, r.state, r.pincode].filter(Boolean).join(", ") || "—")}</td><td data-label="Status">${badge(r)}</td><td data-label="Created">${esc(String(r.created_at || "").slice(0, 10) || "—")}</td></tr>`,
+                    `<tr><td data-label="Retailer ID" class="num">${esc(r.retailer_id || "—")}</td><td data-label="Shop / Owner"><div class="num">${esc(r.shop_name || "—")}</div><div class="muted">${esc(r.owner_name || "")}</div></td><td data-label="Mobile">${esc(r.mobile || r.mobile_number || "—")}</td><td data-label="Location">${esc([r.city, r.district, r.state, r.pincode].filter(Boolean).join(", ") || "—")}</td><td data-label="Status">${badge(r)}</td><td data-label="Created">${esc(String(r.created_at || "").slice(0, 10) || "—")}</td></tr>`,
                 )
                 .join("")
             : empty(6, "No matching retailers.");
-
-          $("commissionRows").innerHTML = led.length
-            ? led
+          $("commissionRows").innerHTML = calc.rows.length
+            ? calc.rows
                 .map(
-                  (x) =>
-                    `<tr><td data-label="Date">${esc(String(pick(x, ["created_at", "earned_at", "commission_date", "date"]) || "").slice(0, 10) || "—")}</td><td data-label="Reference">${esc(pick(x, ["reference_id", "subscription_id", "order_id", "description", "ledger_id"]) || "—")}</td><td data-label="Type">${esc(pick(x, ["commission_type", "type", "source"]) || "Commission")}</td><td data-label="Status">${esc(x.status || "recorded")}</td><td data-label="Commission" class="num">${currency(pick(x, CAMT))}</td></tr>`,
+                  (r) =>
+                    `<tr><td data-label="Month">${esc(r.month)}</td><td data-label="Plan">₹${r.price}</td><td data-label="QR count">${r.count} plan QR / ${r.monthQrCount} monthly QR</td><td data-label="Slab">${esc(r.slab)}</td><td data-label="Commission" class="num">${currency(r.commission)}</td><td data-label="Bonus" class="num">${currency(r.bonus)}<div class="muted">${esc(r.bonusStatus)}</div></td><td data-label="Total" class="num">${currency(r.commission + r.bonus)}</td></tr>`,
                 )
                 .join("")
             : empty(
-                5,
-                "₹0.00 — no commission ledger entries for this distributor and date range.",
+                7,
+                `No recognized plan QR records for ${calc.qrTotal} QR codes in this date range.`,
               );
         }
 
@@ -1561,6 +1795,48 @@
           withLoading($("applyDates"), "Applying…", async () => {
             render();
           });
+        if ($("exportCommissionCsv"))
+          $("exportCommissionCsv").onclick = () => {
+            const calc = monthlyCommissionRows();
+            const rows = [
+              [
+                "Month",
+                "Plan",
+                "Plan QR count",
+                "Monthly QR count",
+                "Slab",
+                "Commission",
+                "Bonus",
+                "Bonus status",
+                "Total",
+              ],
+              ...calc.rows.map((r) => [
+                r.month,
+                r.price,
+                r.count,
+                r.monthQrCount,
+                r.slab,
+                r.commission,
+                r.bonus,
+                r.bonusStatus,
+                r.commission + r.bonus,
+              ]),
+            ];
+            const csv = rows
+              .map((row) =>
+                row
+                  .map((v) => '"' + String(v ?? "").replace(/"/g, '""') + '"')
+                  .join(","),
+              )
+              .join("\r\n");
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "distributor-commission.csv";
+            a.click();
+            URL.revokeObjectURL(url);
+          };
         $("refreshBtn").onclick = () =>
           withLoading($("refreshBtn"), "Refreshing…", refreshAll);
         $("monthlyRefreshBtn").onclick = () =>

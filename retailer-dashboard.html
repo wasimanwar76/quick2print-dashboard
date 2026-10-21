@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#1b1464" />
-    <title>Quick2Print | Retailer Dashboard</title>
+    <title>Quick2Print | Onboarding Partner Dashboard</title>
     <link rel="icon" type="image/png" href="./logo.png" />
     <!-- Quick2Print login guard: direct dashboard access requires a valid login session. -->
     <style>
@@ -37,9 +37,6 @@
         font: 700 16px system-ui;
       }
     </style>
-
-    <script src="./block.js"></script>
-
     <script>
       (function () {
         document.documentElement.classList.add("q2p-auth-pending");
@@ -69,9 +66,16 @@
           const b = document.createElement("button");
           b.id = "q2pLogout";
           b.type = "button";
-          b.textContent = "Logout";
+          b.innerHTML =
+            '<span aria-hidden="true">↪</span> <span>Log out</span>';
           b.title = "Log out of Quick2Print";
           b.addEventListener("click", () => {
+            if (
+              !window.confirm(
+                "Log out of your Quick2Print onboarding partner account?",
+              )
+            )
+              return;
             sessionStorage.removeItem("q2p_partner_auth");
             location.replace("index.html");
           });
@@ -728,7 +732,7 @@
         <div
           class="acct mt-8 p-4 rounded-2xl bg-white/10 border border-white/10"
         >
-          <div class="text-xs text-slate-300">Retailer account</div>
+          <div class="text-xs text-slate-300">Onboarding Partner account</div>
           <div id="profileName" class="font-extrabold mt-1 break-words">
             Choose account
           </div>
@@ -747,7 +751,7 @@
               class="text-xs uppercase tracking-widest font-extrabold"
               style="color: var(--blue)"
             >
-              Retailer workspace
+              Onboarding Partner workspace
             </div>
             <h1
               id="pageTitle"
@@ -755,7 +759,7 @@
               style="color: var(--navy)"
               tabindex="-1"
             >
-              Retailer overview
+              Onboarding Partner overview
             </h1>
             <p class="muted mt-2">
               Track today's work, shops, subscriptions and recorded commissions.
@@ -813,7 +817,7 @@
               </div>
               <div id="kShops" class="text-3xl font-extrabold mt-4">—</div>
               <div class="text-xs muted mt-2">
-                Shop records linked to this retailer
+                Shop records linked to this onboarding partner
               </div>
             </div>
             <div class="card kpi p-5" style="--accent: #10b981">
@@ -848,45 +852,14 @@
               <div class="text-xs muted mt-2">From commission ledger</div>
             </div>
           </div>
-          <div class="card p-6 mb-6">
-            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <div>
-                <h2 class="text-lg font-extrabold" style="color: var(--navy)">
-                  Date range
-                </h2>
-                <p class="text-sm muted">Filter work and commission by date.</p>
-              </div>
-              <div class="flex flex-wrap gap-3">
-                <label class="text-xs font-bold text-slate-600" for="dateFrom"
-                  >FROM<input
-                    id="dateFrom"
-                    type="date"
-                    class="field mt-1" /></label
-                ><label class="text-xs font-bold text-slate-600" for="dateTo"
-                  >TO<input id="dateTo" type="date" class="field mt-1" /></label
-                ><button
-                  id="applyDates"
-                  class="btn primary self-end"
-                  type="button"
-                >
-                  Apply dates
-                </button>
-              </div>
-            </div>
-            <p class="text-xs muted">
-              Commission shown here is read from
-              <code>commission_ledger</code> / <code>payout_commissions</code>.
-              This dashboard does not display an estimated amount as a paid
-              commission.
-            </p>
-          </div>
           <div class="card">
             <div class="p-5">
               <h2 class="font-extrabold" style="color: var(--navy)">
                 Today's work activity
               </h2>
               <p class="text-sm muted mt-1">
-                Recent subscription activity attached to your retailer account.
+                Recent subscription activity attached to your onboarding partner
+                account.
               </p>
             </div>
             <div
@@ -908,7 +881,7 @@
                 <tbody id="todayRows">
                   <tr>
                     <td colspan="5" class="muted">
-                      Loading authenticated retailer data…
+                      Loading authenticated onboarding partner data…
                     </td>
                   </tr>
                 </tbody>
@@ -950,7 +923,7 @@
                     >Required for both onboarding and subscription sale. The
                     payment ID is checked against the separate Supabase
                     project’s shop_subscriptions table; only confirmed paid
-                    records can be assigned to this retailer.</span
+                    records can be assigned to this onboarding partner.</span
                   ></label
                 >
                 <div
@@ -969,9 +942,9 @@
                   <i data-lucide="save" class="w-4 h-4"></i>Save work
                 </button>
                 <p class="text-xs muted">
-                  Retailer/shop and subscription tables must permit inserts
-                  under your database policies. Duplicate mobile numbers are
-                  rejected by the database.
+                  Onboarding partner/shop and subscription tables must permit
+                  inserts under your database policies. Duplicate mobile numbers
+                  are rejected by the database.
                 </p>
               </form>
             </div>
@@ -1026,14 +999,43 @@
                   My shops
                 </h2>
                 <p class="text-sm muted mt-1">
-                  Shops linked to the authenticated retailer account.
+                  Shops linked to the authenticated onboarding partner account.
                 </p>
               </div>
               <div class="flex flex-wrap items-end gap-2">
-                <label class="text-sm font-bold">Month<select id="shopMonth" class="field mt-1" aria-label="Filter shops by month"></select></label>
-                <label class="text-sm font-bold">Year<select id="shopYear" class="field mt-1" aria-label="Filter shops by year"></select></label>
-                <label class="text-sm font-bold">Status<select id="shopStatusFilter" class="field mt-1" aria-label="Filter shops by subscription status"><option value="all">All statuses</option><option value="active">Active</option><option value="expired">Expired</option></select></label>
-                <input id="shopSearch" class="field" style="max-width: 220px" placeholder="Search shops" aria-label="Search shops" type="search" />
+                <label class="text-sm font-bold"
+                  >Month<select
+                    id="shopMonth"
+                    class="field mt-1"
+                    aria-label="Filter shops by month"
+                  ></select
+                ></label>
+                <label class="text-sm font-bold"
+                  >Year<select
+                    id="shopYear"
+                    class="field mt-1"
+                    aria-label="Filter shops by year"
+                  ></select
+                ></label>
+                <label class="text-sm font-bold"
+                  >Status<select
+                    id="shopStatusFilter"
+                    class="field mt-1"
+                    aria-label="Filter shops by subscription status"
+                  >
+                    <option value="all">All statuses</option>
+                    <option value="active">Active</option>
+                    <option value="expired">Expired</option>
+                  </select></label
+                >
+                <input
+                  id="shopSearch"
+                  class="field"
+                  style="max-width: 220px"
+                  placeholder="Search shops"
+                  aria-label="Search shops"
+                  type="search"
+                />
               </div>
             </div>
             <div
@@ -1054,7 +1056,9 @@
                 </thead>
                 <tbody id="shopRows">
                   <tr>
-                    <td colspan="5" class="muted">Loading authenticated retailer…</td>
+                    <td colspan="5" class="muted">
+                      Loading authenticated onboarding partner…
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -1070,13 +1074,15 @@
               </div>
             </div>
             <div class="card kpi p-5" style="--accent: var(--magenta)">
-              <div class="muted text-sm font-semibold">Pending / recorded</div>
+              <div class="muted text-sm font-semibold">
+                Calculated commission
+              </div>
               <div id="commissionPending" class="text-3xl font-extrabold mt-3">
                 ₹0.00
               </div>
             </div>
             <div class="card kpi p-5" style="--accent: #10b981">
-              <div class="muted text-sm font-semibold">Payouts recorded</div>
+              <div class="muted text-sm font-semibold">Calculated bonus</div>
               <div id="payoutTotal" class="text-3xl font-extrabold mt-3">
                 ₹0.00
               </div>
@@ -1088,8 +1094,42 @@
                 <h2 class="text-xl font-extrabold" style="color: var(--navy)">
                   Commission statement
                 </h2>
-                <p class="text-sm muted mt-1">View recorded commissions for a selected month and year.</p>
-                <div class="flex flex-wrap gap-2 mt-3"><label class="text-sm font-bold">Month <select id="commissionMonth" class="field mt-1" aria-label="Commission month"></select></label><label class="text-sm font-bold">Year <select id="commissionYear" class="field mt-1" aria-label="Commission year"></select></label><button id="applyCommissionPeriod" class="btn light self-end" type="button">Apply period</button></div>
+                <p class="text-sm muted mt-1">
+                  Monthly commission is calculated from your shops in
+                  public.shops using the uploaded Quick2Print commission slabs.
+                  The current month and year are selected by default; earlier
+                  months remain available from the first recorded shop onward.
+                </p>
+                <div class="flex flex-wrap gap-2 mt-3">
+                  <label class="text-sm font-bold"
+                    >Month
+                    <select
+                      id="commissionMonth"
+                      class="field mt-1"
+                      aria-label="Commission month"
+                    ></select></label
+                  ><label class="text-sm font-bold"
+                    >Year
+                    <select
+                      id="commissionYear"
+                      class="field mt-1"
+                      aria-label="Commission year"
+                    ></select></label
+                  ><button
+                    id="applyCommissionPeriod"
+                    class="btn light self-end"
+                    type="button"
+                  >
+                    Apply period
+                  </button>
+                </div>
+                <div
+                  id="commissionOverview"
+                  class="mt-4 rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-sm text-indigo-950"
+                  aria-live="polite"
+                >
+                  Loading monthly commission calculation…
+                </div>
               </div>
               <button id="exportCommission" class="btn light" type="button">
                 <i data-lucide="download" class="w-4 h-4"></i>Export CSV
@@ -1106,16 +1146,16 @@
                   <tr>
                     <th scope="col">Date</th>
                     <th scope="col">Reference</th>
-                    <th scope="col">Commission type</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Amount</th>
+                    <th scope="col">Plan</th>
+                    <th scope="col">Monthly QR tier</th>
+                    <th scope="col">Commission</th>
                     <th scope="col">Bonus</th>
                   </tr>
                 </thead>
                 <tbody id="commissionRows">
                   <tr>
                     <td colspan="6" class="muted">
-                      No commission records loaded.
+                      Select a month to calculate commission.
                     </td>
                   </tr>
                 </tbody>
@@ -1125,7 +1165,21 @@
         </section>
       </main>
     </div>
-    <div id="accountModal" class="fixed inset-0 z-50 bg-[#080d36]/60 backdrop-blur-sm flex items-center justify-center p-4" role="status" aria-live="polite"><div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"><h2 class="text-xl font-extrabold" style="color:var(--navy)">Loading retailer dashboard</h2><p id="accountError" class="muted mt-3">Checking your authenticated retailer session…</p></div></div>
+    <div
+      id="accountModal"
+      class="fixed inset-0 z-50 bg-[#080d36]/60 backdrop-blur-sm flex items-center justify-center p-4"
+      role="status"
+      aria-live="polite"
+    >
+      <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl">
+        <h2 class="text-xl font-extrabold" style="color: var(--navy)">
+          Loading onboarding partner dashboard
+        </h2>
+        <p id="accountError" class="muted mt-3">
+          Checking your authenticated onboarding partner session…
+        </p>
+      </div>
+    </div>
     <script>
       (() => {
         "use strict";
@@ -1135,6 +1189,8 @@
           SB_KEY = "sb_publishable_Umq1hMXB-MWXf5IlTAHAmA_2tKS3V6v",
           SUBS_URL = "https://gepkipszweqhftwaejbu.supabase.co",
           SUBS_KEY = "sb_publishable_forPZqB40NrPCFGQsdqeZw_4QTxOgBH";
+        // Supabase public tables are the source of truth. Table rows are fetched from
+        // Supabase into memory for rendering only; never persist table data in browser cache/storage.
         let sb = null,
           subsSb = null,
           retailer = null,
@@ -1225,8 +1281,19 @@
           if (error) throw error;
           return data || [];
         }
+        function localDateString(date = new Date()) {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          return `${year}-${month}-${day}`;
+        }
         function dateRange() {
-          return { from: $("dateFrom").value, to: $("dateTo").value };
+          // Date-range controls were removed from the dashboard UI. Treat absent
+          // controls as an unbounded range instead of dereferencing null.value.
+          return {
+            from: $("dateFrom")?.value || "",
+            to: $("dateTo")?.value || "",
+          };
         }
         function dateOf(
           row,
@@ -1276,17 +1343,44 @@
         async function loadAccounts() {
           try {
             const auth = window.q2pLoggedIn;
-            if (!auth || auth.role !== "retailer" || !auth.id) { sessionStorage.removeItem("q2p_partner_auth"); location.replace("index.html"); return; }
+            if (!auth || auth.role !== "retailer" || !auth.id) {
+              sessionStorage.removeItem("q2p_partner_auth");
+              location.replace("index.html");
+              return;
+            }
             if (!sb) init();
-            const { data, error } = await sb.from("retailers").select("*").eq("retailer_id", String(auth.id)).maybeSingle();
+            const { data, error } = await sb
+              .from("retailers")
+              .select("*")
+              .eq("retailer_id", String(auth.id))
+              .maybeSingle();
             if (error) throw error;
-            if (!data) throw Error("The logged-in retailer ID was not found in public.retailers.");
+            if (!data)
+              throw Error(
+                "The logged-in onboarding partner ID was not found in public.retailers.",
+              );
             retailer = data;
-            $("profileName").textContent = data.owner_name || data.retailer_name || data.shop_name || data.retailer_id;
+            $("profileName").textContent =
+              data.owner_name ||
+              data.retailer_name ||
+              data.shop_name ||
+              data.retailer_id;
             $("profileCode").textContent = data.retailer_id;
             $("accountModal").classList.add("hidden");
             await refreshAll();
-          } catch (e) { $("accountError").textContent = e.message || String(e); setTimeout(() => location.replace("index.html"), 2500); }
+            // Keep every dashboard section synchronized with Supabase while open.
+            // refreshAll guards against overlapping runs and refreshes shops,
+            // subscriptions, commissions, payouts, and plans together.
+            if (!window.q2pRetailerAutoRefresh) {
+              window.q2pRetailerAutoRefresh = window.setInterval(() => {
+                if (document.visibilityState === "visible" && sb && retailer)
+                  refreshAll();
+              }, 60000);
+            }
+          } catch (e) {
+            $("accountError").textContent = e.message || String(e);
+            setTimeout(() => location.replace("index.html"), 2500);
+          }
         }
         async function optional(table) {
           try {
@@ -1296,8 +1390,10 @@
             return [];
           }
         }
+        let fullRefreshInProgress = false;
         async function refreshAll() {
-          if (!sb || !retailer) return;
+          if (!sb || !retailer || fullRefreshInProgress) return;
+          fullRefreshInProgress = true;
           hideNotice();
           try {
             const allShops = await optional("shops");
@@ -1314,10 +1410,28 @@
                   String(retailer.retailer_id),
             );
             let s = await optional("subscriptions");
-            const expiredRows = s.filter(x => String(x.subscription_status || "").toLowerCase() === "active" && x.subscription_expiry && new Date(x.subscription_expiry).getTime() < Date.now());
+            const expiredRows = s.filter(
+              (x) =>
+                String(x.subscription_status || "").toLowerCase() ===
+                  "active" &&
+                x.subscription_expiry &&
+                new Date(x.subscription_expiry).getTime() < Date.now(),
+            );
             for (const row of expiredRows) {
-              const upd = await sb.from("subscriptions").update({subscription_status:"expired", updated_at:new Date().toISOString()}).eq("subscription_id",row.subscription_id).eq("subscription_status","active");
-              if (upd.error) console.warn("Could not mark subscription expired:",upd.error.message); else row.subscription_status = "expired";
+              const upd = await sb
+                .from("subscriptions")
+                .update({
+                  subscription_status: "expired",
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("subscription_id", row.subscription_id)
+                .eq("subscription_status", "active");
+              if (upd.error)
+                console.warn(
+                  "Could not mark subscription expired:",
+                  upd.error.message,
+                );
+              else row.subscription_status = "expired";
             }
             if (!s.length) {
               try {
@@ -1333,9 +1447,36 @@
             payouts = (await optional("commission_payouts")).filter(belongs);
             if (!payouts.length) payouts = p2.filter(belongs);
             plans = await optional("plans");
+            // Ensure month/year filters can reach the first recorded onboarding month, not just the last six years.
+            const yearSelect = $("commissionYear");
+            if (yearSelect) {
+              const dates = shops
+                .map((x) => dateOf(x, ["assign_date", "created_at"]))
+                .filter(Boolean)
+                .map((d) => Number(d.slice(0, 4)))
+                .filter(Number.isFinite);
+              const firstYear = dates.length
+                ? Math.min(...dates)
+                : new Date().getFullYear();
+              const currentYear = new Date().getFullYear();
+              const selectedYear = yearSelect.value || String(currentYear);
+              yearSelect.innerHTML = Array.from(
+                { length: Math.max(1, currentYear - firstYear + 1) },
+                (_, i) => String(currentYear - i),
+              )
+                .map((y) => `<option value="${y}">${y}</option>`)
+                .join("");
+              yearSelect.value =
+                Number(selectedYear) >= firstYear &&
+                Number(selectedYear) <= currentYear
+                  ? selectedYear
+                  : String(currentYear);
+            }
             render();
           } catch (e) {
             notice(e.message || String(e));
+          } finally {
+            fullRefreshInProgress = false;
           }
         }
         function paidSubs() {
@@ -1347,13 +1488,248 @@
               inRange(s, ["created_at", "paid_at", "started_at", "createdAt"]),
           );
         }
+        // Commission rules transcribed from the uploaded commission workbook (Retailer / Sheet3).
+        // Slab is based on the total qualifying shops onboarded by this partner in the selected month.
+        const COMMISSION_RULES = [
+          {
+            min: 1,
+            max: 25,
+            label: "1–25 QR",
+            plans: {
+              99: { rate: 15, bonus: 350 },
+              249: { rate: 25, bonus: 800 },
+              444: { rate: 35, bonus: 1600 },
+              759: { rate: 50, bonus: 3500 },
+            },
+          },
+          {
+            min: 26,
+            max: 50,
+            label: "26–50 QR",
+            plans: {
+              99: { rate: 20, bonus: 750 },
+              249: { rate: 30, bonus: 2000 },
+              444: { rate: 45, bonus: 3500 },
+              759: { rate: 65, bonus: 6000 },
+            },
+          },
+          {
+            min: 51,
+            max: 100,
+            label: "51–100 QR",
+            plans: {
+              99: { rate: 25, bonus: 1200 },
+              249: { rate: 38, bonus: 3000 },
+              444: { rate: 55, bonus: 5200 },
+              759: { rate: 75, bonus: 9000 },
+            },
+          },
+          {
+            min: 101,
+            max: 150,
+            label: "101–150 QR",
+            plans: {
+              99: { rate: 30, bonus: 1600 },
+              249: { rate: 45, bonus: 4200 },
+              444: { rate: 65, bonus: 6500 },
+              759: { rate: 90, bonus: 11000 },
+            },
+          },
+          {
+            min: 151,
+            max: 219,
+            label: "151–219 QR",
+            plans: {
+              99: { rate: 35, bonus: 2000 },
+              249: { rate: 50, bonus: 5300 },
+              444: { rate: 80, bonus: 8500 },
+              759: { rate: 100, bonus: 14000 },
+            },
+          },
+          {
+            min: 220,
+            max: Infinity,
+            label: "220+ QR",
+            plans: {
+              99: { rate: 40, bonusPerQr: 12 },
+              249: { rate: 60, bonusPerQr: 15 },
+              444: { rate: 85, bonusPerQr: 20 },
+              759: { rate: 115, bonusPerQr: 35 },
+            },
+          },
+        ];
+        function planPrice(row) {
+          const raw = String(
+            pick(row, [
+              "plan_id",
+              "plan_name",
+              "plan",
+              "amount",
+              "payment_amount",
+              "amount_charged",
+            ]) || "",
+          ).toLowerCase();
+          for (const price of ["99", "249", "444", "759"]) {
+            if (
+              new RegExp(`(^|\\D)${price}(\\D|$)`).test(raw) ||
+              (price === "99" && /starter|1.?month|monthly/.test(raw)) ||
+              (price === "249" && /smart|3.?month/.test(raw)) ||
+              (price === "444" && /business|6.?month/.test(raw)) ||
+              (price === "759" && /pro|12.?month|year/.test(raw))
+            )
+              return price;
+          }
+          const amount = Number(
+            pick(row, [
+              "amount",
+              "payment_amount",
+              "amount_charged",
+              "total_amount",
+            ]) || 0,
+          );
+          return [99, 249, 444, 759].includes(amount) ? String(amount) : "";
+        }
+        function selectedMonthShops() {
+          const month =
+            $("commissionMonth")?.value ||
+            String(new Date().getMonth() + 1).padStart(2, "0");
+          const year =
+            $("commissionYear")?.value || String(new Date().getFullYear());
+          return shops.filter((shop) => {
+            if (
+              String(pick(shop, ["retailer_id"]) || "") !==
+              String(retailer?.retailer_id || "")
+            )
+              return false;
+            const date = dateOf(shop, ["assign_date", "created_at"]);
+            const status = String(
+              pick(shop, ["shop_status"]) || "active",
+            ).toLowerCase();
+            // Only active/valid shop records count toward onboarding slabs; suspended/inactive records do not.
+            return (
+              date &&
+              date.slice(0, 4) === year &&
+              date.slice(5, 7) === month &&
+              !["inactive", "suspended"].includes(status)
+            );
+          });
+        }
+        // Bonus eligibility is evaluated independently for each selected month.
+        // The monthly count resets naturally because selectedMonthShops() filters by month/year.
+        const BONUS_MILESTONES = [25, 50, 100, 150, 200, 220];
+        function bonusMilestoneFor(count, slab) {
+          // Each workbook slab earns its bonus only after its milestone is completed.
+          const required = slab
+            ? {
+                "1–25 QR": 25,
+                "26–50 QR": 50,
+                "51–100 QR": 100,
+                "101–150 QR": 150,
+                "151–219 QR": 200,
+                "220+ QR": 220,
+              }[slab.label] || Infinity
+            : Infinity;
+          let reached = 0;
+          for (const milestone of BONUS_MILESTONES)
+            if (count >= milestone) reached = milestone;
+          return {
+            reached,
+            next:
+              BONUS_MILESTONES.find((milestone) => count < milestone) || null,
+            required,
+            eligible: Boolean(slab) && count >= required,
+          };
+        }
+        function calculatedCommission() {
+          const monthShops = selectedMonthShops();
+          const count = monthShops.length;
+          const slab =
+            COMMISSION_RULES.find((r) => count >= r.min && count <= r.max) ||
+            null;
+          const bonusMilestone = bonusMilestoneFor(count, slab);
+          const byPlan = new Map();
+          for (const shop of monthShops) {
+            const price = planPrice(shop) || "unknown";
+            if (!byPlan.has(price)) byPlan.set(price, []);
+            byPlan.get(price).push(shop);
+          }
+          const rows = [];
+          let commission = 0,
+            bonus = 0;
+          for (const [price, planShops] of byPlan) {
+            const rule = slab && slab.plans[price];
+            if (!rule) {
+              rows.push({
+                price,
+                count: planShops.length,
+                slab: slab?.label || "No qualifying QR yet",
+                rate: 0,
+                commission: 0,
+                bonus: 0,
+                shops: planShops,
+                note:
+                  price === "unknown"
+                    ? "Plan not matched to ₹99/₹249/₹444/₹759"
+                    : "No slab applies",
+              });
+              continue;
+            }
+            const c = planShops.length * rule.rate;
+            // Commission accrues for the selected month; slab bonus unlocks only
+            // when its milestone (25, 50, 100, 150, 200 or 220 QR) is completed.
+            const b = bonusMilestone.eligible
+              ? rule.bonusPerQr
+                ? count * rule.bonusPerQr
+                : rule.bonus
+              : 0;
+            commission += c;
+            bonus += b;
+            rows.push({
+              price,
+              count: planShops.length,
+              slab: slab.label,
+              rate: rule.rate,
+              commission: c,
+              bonus: b,
+              shops: planShops,
+              note: bonusMilestone.eligible
+                ? ""
+                : `Bonus locked until ${bonusMilestone.required === Infinity ? "a qualifying milestone" : bonusMilestone.required + " QR"} this month`,
+            });
+          }
+          return {
+            monthShops,
+            count,
+            slab,
+            rows,
+            commission,
+            bonus,
+            total: commission + bonus,
+            bonusMilestone,
+          };
+        }
         function rangedLedger() {
-          const month = $("commissionMonth")?.value || "", year = $("commissionYear")?.value || "";
-          return ledger.filter(x => { const d = dateOf(x, ["created_at", "earned_at", "commission_date", "date"]); if (month && year && d) return d.slice(0,4) === year && d.slice(5,7) === month; return inRange(x,["created_at","earned_at","commission_date","date"]); });
+          const month = $("commissionMonth")?.value || "";
+          const year = $("commissionYear")?.value || "";
+          return ledger.filter((x) => {
+            const d = dateOf(x, [
+              "created_at",
+              "earned_at",
+              "commission_date",
+              "date",
+            ]);
+            return (
+              !month ||
+              !year ||
+              !d ||
+              (d.slice(0, 4) === year && d.slice(5, 7) === month)
+            );
+          });
         }
         function render() {
           const paid = paidSubs(),
             led = rangedLedger(),
+            calculated = calculatedCommission(),
             revenue = paid.reduce(
               (a, s) =>
                 a +
@@ -1389,102 +1765,178 @@
                   ),
                 0,
               ),
-            today = new Date().toISOString().slice(0, 10),
-            todays = subs.filter(
-              (s) =>
-                dateOf(s, ["created_at", "paid_at", "started_at"]) === today &&
-                ownShop(s),
+            today = localDateString(),
+            // Today's work means shops assigned to this onboarding partner today, using
+            // the local calendar date stored in public.shops.assign_date.
+            todays = shops.filter(
+              (shop) =>
+                ownShop(shop) && dateOf(shop, ["assign_date"]) === today,
             );
           $("kShops").textContent = shops.length;
           $("kToday").textContent = todays.length;
           $("kRevenue").textContent = currency(revenue);
-          $("kCommission").textContent = currency(com);
-          $("commissionTotal").textContent = currency(com);
-          $("commissionPending").textContent = currency(
-            led
-              .filter((x) =>
-                String(pick(x, ["commission_status", "status"]) || "pending")
-                  .toLowerCase()
-                  .includes("pending"),
-              )
-              .reduce(
-                (a, x) =>
-                  a +
-                  Number(
-                    pick(x, ["commission_amount", "amount", "commission"]) || 0,
-                  ),
-                0,
-              ),
-          );
-          $("payoutTotal").textContent = currency(
-            payouts
-              .filter((x) =>
-                inRange(x, ["created_at", "paid_at", "payout_date"]),
-              )
-              .reduce(
-                (a, x) =>
-                  a +
-                  Number(
-                    pick(x, ["amount", "payout_amount", "commission_amount"]) ||
-                      0,
-                  ),
-                0,
-              ),
-          );
-          const activity = subs
-            .filter(ownShop)
-            .filter((s) => inRange(s, ["created_at", "paid_at", "started_at"]))
+          $("kCommission").textContent = currency(calculated.total);
+          $("commissionTotal").textContent = currency(calculated.total);
+          $("commissionPending").textContent = currency(calculated.commission);
+          $("payoutTotal").textContent = currency(calculated.bonus);
+          const activity = todays
+            .slice()
             .sort((a, b) =>
-              dateOf(b, ["created_at", "paid_at"]).localeCompare(
-                dateOf(a, ["created_at", "paid_at"]),
+              String(pick(b, ["assign_date"]) || "").localeCompare(
+                String(pick(a, ["assign_date"]) || ""),
               ),
             )
             .slice(0, 100);
           $("todayRows").innerHTML = activity.length
             ? activity
-                .map(
-                  (s) =>
-                    `<tr><td>${esc(dateOf(s, ["created_at", "paid_at", "started_at"]) || "—")}</td><td class="font-bold">${esc(pick(s, ["shop_id", "subscription_id", "order_id"]) || "—")}</td><td>${esc(pick(s, ["plan_name", "plan_id", "plan"]) || "—")}</td><td><span class="badge">${esc(pick(s, ["payment_status", "status"]) || "recorded")}</span></td><td class="font-extrabold">${currency(pick(s, ["amount", "payment_amount", "amount_charged", "total_amount"]))}</td></tr>`,
-                )
+                .map((shop) => {
+                  const id = String(pick(shop, ["shop_id", "id"]) || "—");
+                  const related = subs
+                    .filter(
+                      (sub) =>
+                        String(pick(sub, ["shop_id", "shopId"]) || "") === id,
+                    )
+                    .sort((a, b) =>
+                      String(
+                        pick(b, ["subscription_start", "created_at"]) || "",
+                      ).localeCompare(
+                        String(
+                          pick(a, ["subscription_start", "created_at"]) || "",
+                        ),
+                      ),
+                    );
+                  const latest = related[0] || null;
+                  return `<tr><td>${esc(dateOf(shop, ["assign_date"]) || "—")}</td><td class="font-bold">${esc(id)}</td><td>${esc(pick(shop, ["plan_id"]) || pick(latest, ["plan_name", "plan_id", "plan"]) || "—")}</td><td><span class="badge">${esc(pick(shop, ["subscription_status"]) || pick(latest, ["subscription_status", "payment_status", "status"]) || pick(shop, ["shop_status"]) || "assigned")}</span></td><td class="font-extrabold">${currency(pick(latest, ["amount", "payment_amount", "amount_charged", "total_amount"]))}</td></tr>`;
+                })
                 .join("")
-            : '<tr><td colspan="5" class="muted">No subscription work found for this retailer in the selected dates.</td></tr>';
+            : '<tr><td colspan="5" class="muted">No shops were assigned to this onboarding partner today.</td></tr>';
           const shopMonth = $("shopMonth")?.value || "";
           const shopYear = $("shopYear")?.value || "";
           const statusFilter = $("shopStatusFilter")?.value || "all";
           const searchText = ($("shopSearch")?.value || "").toLowerCase();
-          const filteredShops = shops.filter(shop => {
-            const shopId = String(pick(shop,["shop_id","id"]) || "");
-            const related = subs.filter(x => String(pick(x,["shop_id","shopId"]) || "") === shopId)
-              .sort((a,b) => String(pick(b,["subscription_start","created_at"]) || "").localeCompare(String(pick(a,["subscription_start","created_at"]) || "")));
+          const filteredShops = shops.filter((shop) => {
+            const shopId = String(pick(shop, ["shop_id", "id"]) || "");
+            const related = subs
+              .filter(
+                (x) => String(pick(x, ["shop_id", "shopId"]) || "") === shopId,
+              )
+              .sort((a, b) =>
+                String(
+                  pick(b, ["subscription_start", "created_at"]) || "",
+                ).localeCompare(
+                  String(pick(a, ["subscription_start", "created_at"]) || ""),
+                ),
+              );
             const latest = related[0] || null;
-            const rawStatus = String(pick(latest,["subscription_status","status"]) || pick(shop,["shop_status","status","account_status"]) || "unknown").toLowerCase();
-            const effectiveStatus = rawStatus === "active" && pick(latest,["subscription_expiry"]) && new Date(latest.subscription_expiry).getTime() < Date.now() ? "expired" : rawStatus;
-            const date = dateOf(latest || shop,["subscription_start","started_at","created_at","createdAt"]);
-            const periodMatch = !shopMonth || !shopYear || (!!date && date.slice(0,4) === shopYear && date.slice(5,7) === shopMonth);
-            const statusMatch = statusFilter === "all" || effectiveStatus === statusFilter;
-            const searchMatch = JSON.stringify({...shop, subscription:latest}).toLowerCase().includes(searchText);
+            const rawStatus = String(
+              pick(shop, ["subscription_status"]) ||
+                pick(latest, [
+                  "subscription_status",
+                  "status",
+                  "payment_status",
+                ]) ||
+                pick(shop, ["shop_status", "status", "account_status"]) ||
+                "unknown",
+            ).toLowerCase();
+            const effectiveStatus =
+              rawStatus === "active" &&
+              (pick(shop, ["subscription_expiry"]) ||
+                pick(latest, ["subscription_expiry"])) &&
+              new Date(
+                pick(shop, ["subscription_expiry"]) ||
+                  pick(latest, ["subscription_expiry"]),
+              ).getTime() < Date.now()
+                ? "expired"
+                : rawStatus;
+            const date = dateOf(latest || shop, [
+              "subscription_start",
+              "started_at",
+              "created_at",
+              "createdAt",
+            ]);
+            const periodMatch =
+              !shopMonth ||
+              !shopYear ||
+              (!!date &&
+                date.slice(0, 4) === shopYear &&
+                date.slice(5, 7) === shopMonth);
+            const statusMatch =
+              statusFilter === "all" || effectiveStatus === statusFilter;
+            const searchMatch = JSON.stringify({
+              ...shop,
+              subscription: latest,
+            })
+              .toLowerCase()
+              .includes(searchText);
             return periodMatch && statusMatch && searchMatch;
           });
           $("shopRows").innerHTML = filteredShops.length
-            ? filteredShops.map((shop) => {
-                const shopId = String(pick(shop,["shop_id","id"]) || "");
-                const related = subs.filter(x => String(pick(x,["shop_id","shopId"]) || "") === shopId)
-                  .sort((a,b) => String(pick(b,["subscription_start","created_at"]) || "").localeCompare(String(pick(a,["subscription_start","created_at"]) || "")));
-                const latest = related[0] || null;
-                const rawStatus = String(pick(latest,["subscription_status","status"]) || pick(shop,["shop_status","status","account_status"]) || "unknown").toLowerCase();
-                const effectiveStatus = rawStatus === "active" && pick(latest,["subscription_expiry"]) && new Date(latest.subscription_expiry).getTime() < Date.now() ? "expired" : rawStatus;
-                const badgeClass = effectiveStatus === "active" ? "badge" : effectiveStatus === "expired" ? "badge" : "badge";
-                return `<tr><td class="font-bold">${esc(shopId || "—")}</td><td>${esc(pick(shop,["shop_name","name"]) || "—")}</td><td>${esc(pick(latest,["plan_id","plan_name"]) || "—")}</td><td><span class="${badgeClass}">${esc(effectiveStatus)}</span></td><td>${esc(dateOf(latest,["subscription_expiry"]) || "—")}</td></tr>`;
-              }).join("")
+            ? filteredShops
+                .map((shop) => {
+                  const shopId = String(pick(shop, ["shop_id", "id"]) || "");
+                  const related = subs
+                    .filter(
+                      (x) =>
+                        String(pick(x, ["shop_id", "shopId"]) || "") === shopId,
+                    )
+                    .sort((a, b) =>
+                      String(
+                        pick(b, ["subscription_start", "created_at"]) || "",
+                      ).localeCompare(
+                        String(
+                          pick(a, ["subscription_start", "created_at"]) || "",
+                        ),
+                      ),
+                    );
+                  const latest = related[0] || null;
+                  const rawStatus = String(
+                    pick(shop, ["subscription_status"]) ||
+                      pick(latest, [
+                        "subscription_status",
+                        "status",
+                        "payment_status",
+                      ]) ||
+                      pick(shop, ["shop_status", "status", "account_status"]) ||
+                      "unknown",
+                  ).toLowerCase();
+                  const effectiveStatus =
+                    rawStatus === "active" &&
+                    (pick(shop, ["subscription_expiry"]) ||
+                      pick(latest, ["subscription_expiry"])) &&
+                    new Date(
+                      pick(shop, ["subscription_expiry"]) ||
+                        pick(latest, ["subscription_expiry"]),
+                    ).getTime() < Date.now()
+                      ? "expired"
+                      : rawStatus;
+                  const badgeClass =
+                    effectiveStatus === "active"
+                      ? "badge"
+                      : effectiveStatus === "expired"
+                        ? "badge"
+                        : "badge";
+                  return `<tr><td class="font-bold">${esc(shopId || "—")}</td><td>${esc(pick(shop, ["shop_name", "name"]) || "—")}</td><td>${esc(pick(shop, ["plan_id"]) || pick(latest, ["plan_id", "plan_name"]) || "—")}</td><td><span class="${badgeClass}">${esc(effectiveStatus)}</span></td><td>${esc(dateOf(shop, ["subscription_expiry"]) || dateOf(latest, ["subscription_expiry", "expires_at", "expiry_date"]) || "—")}</td></tr>`;
+                })
+                .join("")
             : '<tr><td colspan="5" class="muted">No shops match the selected month, year, status, or search. Try changing the filters.</td></tr>';
-          $("commissionRows").innerHTML = led.length
-            ? led
+          const ov = $("commissionOverview");
+          if (ov) {
+            const monthLabel = new Date(
+              Number($("commissionYear")?.value || new Date().getFullYear()),
+              Number($("commissionMonth")?.value || new Date().getMonth() + 1) -
+                1,
+              1,
+            ).toLocaleString("en-IN", { month: "long", year: "numeric" });
+            ov.innerHTML = `<div class="font-extrabold text-base">${esc(monthLabel)} overview</div><div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3"><div><div class="text-xs opacity-75">Qualifying shops</div><div class="text-xl font-extrabold">${calculated.count}</div></div><div><div class="text-xs opacity-75">QR slab</div><div class="text-xl font-extrabold">${esc(calculated.slab?.label || "No slab")}</div></div><div><div class="text-xs opacity-75">Commission</div><div class="text-xl font-extrabold">${currency(calculated.commission)}</div></div><div><div class="text-xs opacity-75">Bonus</div><div class="text-xl font-extrabold">${currency(calculated.bonus)}</div></div></div><p class="mt-3 text-xs opacity-80">Monthly bonus eligibility: ${calculated.bonusMilestone.reached ? `last milestone reached: ${calculated.bonusMilestone.reached.toLocaleString("en-IN")} QR` : "locked until the next slab milestone"}${calculated.bonusMilestone.next ? `; next milestone: ${calculated.bonusMilestone.next.toLocaleString("en-IN")} QR` : calculated.bonusMilestone.reached >= 1100 ? "; 1,100+ milestone reached" : ""}. QR count and bonus eligibility reset every month. Existing plan-specific bonus amounts follow the uploaded workbook and unlock only after the selected month's slab milestone: 25, 50, 100, 150, 200 or 220 QR. QR count and bonus eligibility reset every month. This is a display estimate; it does not create or pay a commission ledger entry.</p>`;
+          }
+          $("commissionRows").innerHTML = calculated.rows.length
+            ? calculated.rows
                 .map(
                   (x) =>
-                    `<tr><td>${esc(dateOf(x, ["created_at", "earned_at", "commission_date", "date"]) || "—")}</td><td>${esc(pick(x, ["reference_id", "subscription_id", "payment_id", "order_id", "commission_id"]) || "—")}</td><td>${esc(pick(x, ["commission_type", "type", "source"]) || "Commission")}</td><td>${esc(pick(x, ["commission_status", "status"]) || "recorded")}</td><td class="font-extrabold">${currency(pick(x, ["commission_amount", "amount", "commission", "amount_inr"]))}</td><td>${currency(pick(x, ["bonus_amount", "bonus"]))}</td></tr>`,
+                    `<tr><td>${esc($("commissionYear")?.value || new Date().getFullYear())}-${esc($("commissionMonth")?.value || String(new Date().getMonth() + 1).padStart(2, "0"))}</td><td>${esc(x.count)} shop(s)</td><td>${esc(x.price === "unknown" ? "Unknown plan" : "₹" + x.price)}</td><td>${esc(x.slab)}</td><td class="font-extrabold">${currency(x.commission)}</td><td>${currency(x.bonus)}${x.note ? `<div class="text-xs muted">${esc(x.note)}</div>` : ""}</td></tr>`,
                 )
                 .join("")
-            : '<tr><td colspan="6" class="muted">₹0.00 — no matching commission ledger records. Commission is not estimated in the UI.</td></tr>';
+            : '<tr><td colspan="6" class="muted">No qualifying shops were found for this month. Commission starts calculating from the first recorded onboarding month.</td></tr>';
         }
         function showPage(name) {
           document
@@ -1498,51 +1950,66 @@
             );
           $("pageTitle").textContent =
             {
-              overview: "Retailer overview",
+              overview: "Onboarding Partner overview",
               work: "Today’s work",
               commission: "Commission statement",
               shops: "My shops",
-            }[name] || "Retailer dashboard";
+            }[name] || "Onboarding Partner dashboard";
         }
         document
           .querySelectorAll("[data-page]")
           .forEach((b) => (b.onclick = () => showPage(b.dataset.page)));
-        $("refreshBtn").onclick = () =>
-          withLoading($("refreshBtn"), "Refreshing…", refreshAll);
-        $("applyDates").onclick = () =>
-          withLoading($("applyDates"), "Applying…", async () => render());
-        $("shopSearch").addEventListener("input", render);
-        $("exportCommission").onclick = () => {
-          const rows = [
-            ["date", "reference", "type", "status", "amount", "bonus"],
-            ...rangedLedger().map((x) => [
-              dateOf(x),
-              pick(x, [
-                "reference_id",
-                "subscription_id",
-                "payment_id",
-                "order_id",
+        if ($("refreshBtn"))
+          $("refreshBtn").onclick = () =>
+            withLoading($("refreshBtn"), "Refreshing…", refreshAll);
+        $("shopSearch")?.addEventListener("input", render);
+        if ($("exportCommission"))
+          $("exportCommission").onclick = () => {
+            const calc = calculatedCommission();
+            const rows = [
+              [
+                "month",
+                "year",
+                "qualifying_monthly_qr_count",
+                "qr_slab",
+                "plan",
+                "shops_in_plan",
+                "commission_rate_per_qr",
+                "commission",
+                "bonus",
+                "total",
+                "note",
+              ],
+              ...calc.rows.map((x) => [
+                $("commissionMonth")?.value || "",
+                $("commissionYear")?.value || "",
+                calc.count,
+                x.slab,
+                x.price,
+                x.count,
+                x.rate,
+                x.commission,
+                x.bonus,
+                x.commission + x.bonus,
+                x.note,
               ]),
-              pick(x, ["commission_type", "type", "source"]),
-              pick(x, ["commission_status", "status"]),
-              pick(x, ["commission_amount", "amount", "commission"]),
-              pick(x, ["bonus_amount", "bonus"]),
-            ]),
-          ];
-          const csv = rows
-            .map((r) =>
-              r
-                .map((v) => '"' + String(v ?? "").replace(/"/g, '""') + '"')
-                .join(","),
-            )
-            .join("\r\n");
-          const a = document.createElement("a");
-          a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-          a.download = "quick2print-retailer-commission.csv";
-          a.click();
-          URL.revokeObjectURL(a.href);
-        };
-        $("workDate").value = new Date().toISOString().slice(0, 10);
+            ];
+            const csv = rows
+              .map((r) =>
+                r
+                  .map((v) => '"' + String(v ?? "").replace(/"/g, '""') + '"')
+                  .join(","),
+              )
+              .join("\r\n");
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(
+              new Blob([csv], { type: "text/csv;charset=utf-8;" }),
+            );
+            a.download = `quick2print-commission-${$("commissionYear")?.value || new Date().getFullYear()}-${$("commissionMonth")?.value || "month"}.csv`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+          };
+        if ($("workDate")) $("workDate").value = localDateString();
         const workTypeSelect = document.querySelector(
           '#workForm [name="work_type"]',
         );
@@ -1588,12 +2055,16 @@
                 ". Only confirmed paid payments can be used.",
             );
           const rawSource = pick(sub, ["source"]);
-          const source = String(rawSource ?? "").trim().toLowerCase();
-          if (source !== "direct")
+          const source = String(rawSource ?? "")
+            .trim()
+            .toLowerCase();
+          // Allow safe retries only when this exact retailer already owns the assignment.
+          const alreadyAssigned = source === retailerId.trim().toLowerCase();
+          if (source !== "direct" && !alreadyAssigned)
             throw Error(
               source
-                ? `Payment verified, but this payment is not available for direct retailer assignment. Current source: "${source}". Only payments whose source is exactly "direct" can be used. No shop or subscription record was changed.`
-                : `Payment verified, but its source is blank. Only payments explicitly marked source = "direct" can be used. No shop or subscription record was changed.`
+                ? `This payment has already been assigned to "${rawSource}". To prevent duplicate or cross-partner assignment, it cannot be assigned to "${retailerId}". Verify the exact onboarding partner ID with your administrator.`
+                : `This payment has no assignment source. For safety, only a payment explicitly marked "direct" can be newly assigned. Please ask your administrator to review this payment record.`,
             );
           const shopId = String(pick(sub, ["shop_id", "shopId"]) || "").trim();
           if (!shopId)
@@ -1601,8 +2072,10 @@
               "The matched shop_subscriptions record has no shop_id.",
             );
           if (!retailerId)
-            throw Error("The authenticated retailer account has no retailer_id.");
-          return { sub, shopId, retailerId, status };
+            throw Error(
+              "The authenticated onboarding partner account has no retailer_id.",
+            );
+          return { sub, shopId, retailerId, status, alreadyAssigned };
         }
         async function ensureLocalShop(sub, shopId, retailerId) {
           let { data: shop, error } = await sb
@@ -1667,6 +2140,8 @@
             retailer_id: retailerId,
             assigned_distributor_id: distributorId,
             shop_status: "active",
+            assign_date: localDateString(),
+            updated_at: new Date().toISOString(),
           };
           const ins = await sb
             .from("shops")
@@ -1681,236 +2156,586 @@
             );
           return ins.data;
         }
-        $("workForm").onsubmit = async (e) => {
-          e.preventDefault();
-          if (!sb || !retailer) {
-            notice("Open a retailer account first.");
-            return;
-          }
-          const form = e.currentTarget,
-            btn = form.querySelector("button[type=submit]"),
-            fd = new FormData(form),
-            type = fd.get("work_type");
-          try {
-            await withLoading(btn, "Verifying payment…", async () => {
-              const paymentId = String(
-                fd.get("cashfree_payment_id") || "",
-              ).trim();
-              const { sub, shopId, retailerId, status } =
-                await lookupVerifiedCashfreePayment(paymentId);
-              let savedSubscription = null;
-              let shop;
-              if (type === "shop") {
-                shop = await ensureLocalShop(sub, shopId, retailerId);
-              } else {
-                // Subscriptions must reference an existing shop, but subscription sales do not create/update shops.
-                const shopResult = await sb.from("shops").select("shop_id, shop_name, retailer_id").eq("shop_id", shopId).maybeSingle();
-                if (shopResult.error) throw Error("Payment verified, but the existing shop could not be checked: " + shopResult.error.message);
-                if (!shopResult.data) throw Error("Payment verified, but shop " + shopId + " does not exist in public.shops. Create/link the shop through onboarding first; no subscription row was changed.");
-                if (shopResult.data.retailer_id !== retailerId) throw Error("Payment verified, but shop " + shopId + " belongs to a different retailer. No subscription row was changed.");
-                shop = shopResult.data;
-              }
-              if (type === "subscription") {
-                const planId = String(pick(sub, ["plan_id"]) || "").trim();
-                if (!planId)
-                  throw Error(
-                    "The verified payment record has no plan_id, required by public.subscriptions.",
-                  );
-                const distributorId = String(
-                  pick(retailer, [
-                    "assigned_distributor_id",
-                    "distributor_id_at_sale",
-                  ]) || "",
+        if ($("workForm"))
+          $("workForm").onsubmit = async (e) => {
+            e.preventDefault();
+            if (!sb || !retailer) {
+              notice("Open a retailer account first.");
+              return;
+            }
+            const form = e.currentTarget,
+              btn = form.querySelector("button[type=submit]"),
+              fd = new FormData(form),
+              type = fd.get("work_type");
+            try {
+              await withLoading(btn, "Verifying payment…", async () => {
+                const paymentId = String(
+                  fd.get("cashfree_payment_id") || "",
                 ).trim();
-                if (!distributorId)
-                  throw Error(
-                    "This retailer has no assigned_distributor_id. Assign a distributor before recording a subscription.",
-                  );
-                // Schema verified from the user's database export:
-                // payments.provider_payment_id stores the external Cashfree ID;
-                // payments.payment_id is the internal UUID referenced by subscriptions.
-                const paymentLookup = await sb
-                  .from("payments")
-                  .select("payment_id, shop_id, retailer_id, payment_status")
-                  .eq("provider_payment_id", paymentId)
-                  .maybeSingle();
-                if (paymentLookup.error) {
-                  throw Error(
-                    "Could not look up public.payments by provider_payment_id: " +
-                      paymentLookup.error.message,
-                  );
-                }
-                let paymentUuid = paymentLookup.data?.payment_id || null;
-                if (paymentLookup.data) {
-                  if (paymentLookup.data.shop_id !== shopId) {
-                    throw Error(
-                      "The Cashfree payment exists in public.payments but belongs to shop " +
-                        paymentLookup.data.shop_id + ", not " + shopId + ". No subscription was changed.",
-                    );
-                  }
-                  if (paymentLookup.data.retailer_id !== retailerId) {
-                    throw Error(
-                      "The Cashfree payment exists in public.payments but is assigned to a different retailer. No subscription was changed.",
-                    );
-                  }
-                  const mainStatus = String(paymentLookup.data.payment_status || "").trim().toLowerCase();
-                  if (!["paid", "success", "successful", "completed"].includes(mainStatus)) {
-                    throw Error(
-                      "The payment row in public.payments is not confirmed paid (status: " +
-                        (mainStatus || "unknown") + "). No subscription was changed.",
-                    );
-                  }
-                }
-                if (!paymentUuid) {
-                  throw Error(
-                    "The Cashfree payment ID was verified in shop_subscriptions, but it could not be matched to a UUID payment_id in the main project's public.payments table. No subscription was created or updated. Ensure public.payments stores this Cashfree ID in one of the supported reference columns and retry."
-                  );
-                }
-                {
-                  const usedPayment = await sb.from("subscriptions")
-                    .select("subscription_id, shop_id, retailer_id, subscription_status")
-                    .eq("payment_id", paymentUuid)
+                const { sub, shopId, retailerId, status, alreadyAssigned } =
+                  await lookupVerifiedCashfreePayment(paymentId);
+                let savedSubscription = null;
+                let shop;
+                if (type === "shop") {
+                  shop = await ensureLocalShop(sub, shopId, retailerId);
+                } else {
+                  // Subscriptions must reference an existing shop, but subscription sales do not create/update shops.
+                  const shopResult = await sb
+                    .from("shops")
+                    .select("shop_id, shop_name, retailer_id")
+                    .eq("shop_id", shopId)
                     .maybeSingle();
-                  if (usedPayment.error) throw Error("Payment verified, but duplicate-payment protection could not be checked: " + usedPayment.error.message);
-                  if (usedPayment.data) throw Error("This payment has already been recorded in public.subscriptions for shop " + usedPayment.data.shop_id + " (status: " + usedPayment.data.subscription_status + "). It cannot be reused. No duplicate subscription was created.");
+                  if (shopResult.error)
+                    throw Error(
+                      "Payment verified, but the existing shop could not be checked: " +
+                        shopResult.error.message,
+                    );
+                  if (!shopResult.data)
+                    throw Error(
+                      "Payment verified, but shop " +
+                        shopId +
+                        " does not exist in public.shops. Create/link the shop through onboarding first; no subscription row was changed.",
+                    );
+                  if (shopResult.data.retailer_id !== retailerId)
+                    throw Error(
+                      "Payment verified, but shop " +
+                        shopId +
+                        " belongs to a different retailer. No subscription row was changed.",
+                    );
+                  shop = shopResult.data;
                 }
-                const payload = {
-                  shop_id: shopId,
-                  retailer_id: retailerId,
-                  distributor_id_at_sale: distributorId,
-                  plan_id: planId,
-                  payment_id: paymentUuid,
-                  subscription_start:
+                if (type === "subscription") {
+                  const planId = String(pick(sub, ["plan_id"]) || "").trim();
+                  if (!planId)
+                    throw Error(
+                      "The verified payment record has no plan_id, required by public.subscriptions.",
+                    );
+                  const distributorId = String(
+                    pick(retailer, [
+                      "assigned_distributor_id",
+                      "distributor_id_at_sale",
+                    ]) || "",
+                  ).trim();
+                  if (!distributorId)
+                    throw Error(
+                      "This retailer has no assigned_distributor_id. Assign a distributor before recording a subscription.",
+                    );
+                  // Schema verified from the user's database export:
+                  // payments.provider_payment_id stores the external Cashfree ID;
+                  // payments.payment_id is the internal UUID referenced by subscriptions.
+                  const paymentLookup = await sb
+                    .from("payments")
+                    .select("payment_id, shop_id, retailer_id, payment_status")
+                    .eq("provider_payment_id", paymentId)
+                    .maybeSingle();
+                  if (paymentLookup.error) {
+                    throw Error(
+                      "Could not look up public.payments by provider_payment_id: " +
+                        paymentLookup.error.message,
+                    );
+                  }
+                  let paymentUuid = paymentLookup.data?.payment_id || null;
+                  if (paymentLookup.data) {
+                    if (paymentLookup.data.shop_id !== shopId) {
+                      throw Error(
+                        "The Cashfree payment exists in public.payments but belongs to shop " +
+                          paymentLookup.data.shop_id +
+                          ", not " +
+                          shopId +
+                          ". No subscription was changed.",
+                      );
+                    }
+                    if (paymentLookup.data.retailer_id !== retailerId) {
+                      throw Error(
+                        "The Cashfree payment exists in public.payments but is assigned to a different retailer. No subscription was changed.",
+                      );
+                    }
+                    const mainStatus = String(
+                      paymentLookup.data.payment_status || "",
+                    )
+                      .trim()
+                      .toLowerCase();
+                    if (
+                      !["paid", "success", "successful", "completed"].includes(
+                        mainStatus,
+                      )
+                    ) {
+                      throw Error(
+                        "The payment row in public.payments is not confirmed paid (status: " +
+                          (mainStatus || "unknown") +
+                          "). No subscription was changed.",
+                      );
+                    }
+                  }
+                  if (!paymentUuid) {
+                    throw Error(
+                      "The Cashfree payment ID was verified in shop_subscriptions, but it could not be matched to a UUID payment_id in the main project's public.payments table. No subscription was created or updated. Ensure public.payments stores this Cashfree ID in one of the supported reference columns and retry.",
+                    );
+                  }
+                  {
+                    const usedPayment = await sb
+                      .from("subscriptions")
+                      .select(
+                        "subscription_id, shop_id, retailer_id, subscription_status",
+                      )
+                      .eq("payment_id", paymentUuid)
+                      .maybeSingle();
+                    if (usedPayment.error)
+                      throw Error(
+                        "Payment verified, but duplicate-payment protection could not be checked: " +
+                          usedPayment.error.message,
+                      );
+                    if (usedPayment.data)
+                      throw Error(
+                        "This payment has already been recorded in public.subscriptions for shop " +
+                          usedPayment.data.shop_id +
+                          " (status: " +
+                          usedPayment.data.subscription_status +
+                          "). It cannot be reused. No duplicate subscription was created.",
+                      );
+                  }
+                  const payload = {
+                    shop_id: shopId,
+                    retailer_id: retailerId,
+                    distributor_id_at_sale: distributorId,
+                    plan_id: planId,
+                    payment_id: paymentUuid,
+                    subscription_start:
+                      pick(sub, [
+                        "subscription_start",
+                        "started_at",
+                        "start_date",
+                      ]) || new Date().toISOString(),
+                    subscription_expiry: (() => {
+                      const expiry = pick(sub, [
+                        "subscription_expiry",
+                        "expires_at",
+                        "expiry_date",
+                      ]);
+                      if (expiry) return expiry;
+                      const months = Number(
+                        pick(sub, [
+                          "duration_months",
+                          "plan_duration_months",
+                          "duration",
+                        ]) || 0,
+                      );
+                      if (!Number.isFinite(months) || months < 1) return null;
+                      const start = new Date(
+                        pick(sub, [
+                          "subscription_start",
+                          "started_at",
+                          "start_date",
+                        ]) || new Date().toISOString(),
+                      );
+                      start.setMonth(start.getMonth() + months);
+                      return start.toISOString();
+                    })(),
+                    subscription_status: "active",
+                    updated_at: new Date().toISOString(),
+                  };
+                  const existing = await sb
+                    .from("subscriptions")
+                    .select("subscription_id")
+                    .eq("shop_id", shopId)
+                    .eq("retailer_id", retailerId)
+                    .eq("plan_id", planId)
+                    .limit(1)
+                    .maybeSingle();
+                  if (existing.error)
+                    throw Error(
+                      "Could not check existing subscriptions: " +
+                        existing.error.message,
+                    );
+                  if (existing.data) {
+                    const upd = await sb
+                      .from("subscriptions")
+                      .update(payload)
+                      .eq("subscription_id", existing.data.subscription_id)
+                      .select("*")
+                      .single();
+                    if (upd.error)
+                      throw Error(
+                        "Shop was linked, but saving public.subscriptions failed: " +
+                          upd.error.message,
+                      );
+                    savedSubscription = upd.data;
+                  } else {
+                    const ins = await sb
+                      .from("subscriptions")
+                      .insert(payload)
+                      .select("*")
+                      .single();
+                    if (ins.error)
+                      throw Error(
+                        "Shop was linked, but creating public.subscriptions failed: " +
+                          ins.error.message,
+                      );
+                    savedSubscription = ins.data;
+                  }
+                  const savedExpiry = pick(savedSubscription, [
+                    "subscription_expiry",
+                  ]);
+                  if (!savedSubscription || !savedSubscription.subscription_id)
+                    throw Error(
+                      "Subscription was not saved with a subscription_id; public.shops was not updated.",
+                    );
+                  if (!savedExpiry)
+                    throw Error(
+                      "Payment was verified, but no subscription expiry date was available. Add a valid expiry date or plan duration before completing this update.",
+                    );
+                  const shopUpdate = await sb
+                    .from("shops")
+                    .update({
+                      subscription_id: savedSubscription.subscription_id,
+                      plan_id: planId,
+                      payment_id: paymentUuid,
+                      subscription_start:
+                        pick(savedSubscription, ["subscription_start"]) ||
+                        payload.subscription_start,
+                      subscription_expiry: savedExpiry,
+                      subscription_status: "active",
+                      updated_at: new Date().toISOString(),
+                    })
+                    .eq("shop_id", shopId)
+                    .eq("retailer_id", retailerId)
+                    .select("*")
+                    .single();
+                  if (shopUpdate.error)
+                    throw Error(
+                      "Subscription was saved, but updating public.shops failed: " +
+                        shopUpdate.error.message,
+                    );
+                }
+                // For onboarding as well as subscription sales, persist verified payment/subscription
+                // state in the main project's public.shops table (not browser storage).
+                if (type === "shop") {
+                  const planId =
+                    String(pick(sub, ["plan_id"]) || "").trim() || null;
+                  const startValue =
                     pick(sub, [
                       "subscription_start",
                       "started_at",
                       "start_date",
-                    ]) || new Date().toISOString(),
-                  subscription_expiry: (() => {
-                    const expiry = pick(sub,["subscription_expiry","expires_at","expiry_date"]); if (expiry) return expiry;
-                    const months = Number(pick(sub,["duration_months","plan_duration_months","duration"]) || 0); if (!Number.isFinite(months) || months < 1) return null;
-                    const start = new Date(pick(sub,["subscription_start","started_at","start_date"]) || new Date().toISOString()); start.setMonth(start.getMonth()+months); return start.toISOString();
-                  })(),
-                  subscription_status: "active",
-                  updated_at: new Date().toISOString(),
-                };
-                const existing = await sb
-                  .from("subscriptions")
-                  .select("subscription_id")
-                  .eq("shop_id", shopId)
-                  .eq("retailer_id", retailerId)
-                  .eq("plan_id", planId)
-                  .limit(1)
-                  .maybeSingle();
-                if (existing.error)
-                  throw Error(
-                    "Could not check existing subscriptions: " +
-                      existing.error.message,
-                  );
-                if (existing.data) {
-                  const upd = await sb
-                    .from("subscriptions")
-                    .update(payload)
-                    .eq("subscription_id", existing.data.subscription_id)
+                    ]) || new Date().toISOString();
+                  let expiryValue = pick(sub, [
+                    "subscription_expiry",
+                    "expires_at",
+                    "expiry_date",
+                  ]);
+                  if (!expiryValue) {
+                    let months = Number(
+                      pick(sub, [
+                        "duration_months",
+                        "plan_duration_months",
+                        "duration",
+                      ]) || 0,
+                    );
+                    if (!months) {
+                      const planText = String(
+                        planId || pick(sub, ["plan_name", "plan"]) || "",
+                      ).toLowerCase();
+                      const amount = Number(
+                        pick(sub, [
+                          "amount",
+                          "payment_amount",
+                          "amount_charged",
+                          "total_amount",
+                        ]) || 0,
+                      );
+                      if (/12|annual|year|pro/.test(planText) || amount === 759)
+                        months = 12;
+                      else if (
+                        /6|half|business/.test(planText) ||
+                        amount === 444
+                      )
+                        months = 6;
+                      else if (
+                        /3|quarter|smart/.test(planText) ||
+                        amount === 249
+                      )
+                        months = 3;
+                      else if (
+                        /1|month|starter/.test(planText) ||
+                        amount === 99
+                      )
+                        months = 1;
+                    }
+                    if (Number.isFinite(months) && months > 0) {
+                      const d = new Date(startValue);
+                      d.setMonth(d.getMonth() + months);
+                      expiryValue = d.toISOString();
+                    }
+                  }
+                  if (!expiryValue) {
+                    throw Error(
+                      "Payment is verified, but the subscription expiry date is missing. Add subscription_expiry/expires_at or a valid plan duration to the payment record; the shop was not marked active without an expiry date.",
+                    );
+                  }
+                  const paymentRow = await sb
+                    .from("payments")
+                    .select("payment_id, payment_status, shop_id, retailer_id")
+                    .eq("provider_payment_id", paymentId)
+                    .maybeSingle();
+                  if (paymentRow.error)
+                    throw Error(
+                      "Payment is verified, but public.payments could not be checked: " +
+                        paymentRow.error.message,
+                    );
+                  if (paymentRow.data) {
+                    const ps = String(
+                      paymentRow.data.payment_status || "",
+                    ).toLowerCase();
+                    if (
+                      paymentRow.data.shop_id !== shopId ||
+                      paymentRow.data.retailer_id !== retailerId ||
+                      !["paid", "success", "successful", "completed"].includes(
+                        ps,
+                      )
+                    ) {
+                      throw Error(
+                        "Payment is verified externally, but the matching public.payments row is not confirmed paid for this shop and retailer. Please reconcile public.payments before retrying.",
+                      );
+                    }
+                  }
+                  const shopPatch = {
+                    plan_id: planId,
+                    payment_id: paymentRow.data?.payment_id || null,
+                    subscription_start: startValue,
+                    subscription_expiry: expiryValue,
+                    subscription_status: "active",
+                    shop_status: "active",
+                    updated_at: new Date().toISOString(),
+                  };
+                  if (sub.subscription_id)
+                    shopPatch.subscription_id = sub.subscription_id;
+                  const savedShop = await sb
+                    .from("shops")
+                    .update(shopPatch)
+                    .eq("shop_id", shopId)
+                    .eq("retailer_id", retailerId)
                     .select("*")
                     .single();
-                  if (upd.error)
+                  if (savedShop.error)
                     throw Error(
-                      "Shop was linked, but saving public.subscriptions failed: " +
-                        upd.error.message,
+                      "Payment verified, but saving subscription fields to public.shops failed: " +
+                        savedShop.error.message,
                     );
-                  savedSubscription = upd.data;
-                } else {
-                  const ins = await sb
-                    .from("subscriptions")
-                    .insert(payload)
-                    .select("*")
-                    .single();
-                  if (ins.error)
-                    throw Error(
-                      "Shop was linked, but creating public.subscriptions failed: " +
-                        ins.error.message,
-                    );
-                  savedSubscription = ins.data;
+                  shop = savedShop.data;
                 }
-              }
-              // Claim the payment row in the separate project only after the main-project operation succeeded.
-              const { data: updated, error: updateError } = await subsSb
-                .from("shop_subscriptions")
-                .update({ source: retailerId })
-                .eq("subscription_id", sub.subscription_id)
-                .eq("cashfree_payment_id", paymentId)
-                .eq("source", "direct")
-                .select("*")
-                .maybeSingle();
-              if (updateError)
-                throw Error(
-                  (savedSubscription
-                    ? "Main subscriptions row saved. "
-                    : "Shop onboarding saved. ") +
-                    "However, assigning source in the separate shop_subscriptions project failed: " +
-                    updateError.message,
+
+                // Assign source in the separate project after the dashboard write.
+                // A zero-row UPDATE can mean the source was already changed, or RLS
+                // silently filtered the row. Re-read the exact row to distinguish these.
+                const assignmentContext = savedSubscription
+                  ? "The subscription was saved in the retailer dashboard, but "
+                  : "The shop was saved in the retailer dashboard, but ";
+                let confirmedSource = alreadyAssigned ? retailerId : null;
+                if (!alreadyAssigned) {
+                  const { data: updated, error: updateError } = await subsSb
+                    .from("shop_subscriptions")
+                    .update({
+                      source: retailerId,
+                      updated_at: new Date().toISOString(),
+                    })
+                    .eq("subscription_id", sub.subscription_id)
+                    .eq("cashfree_payment_id", paymentId)
+                    .eq("source", "direct")
+                    .select("subscription_id, source")
+                    .maybeSingle();
+
+                  if (updateError) {
+                    throw Error(
+                      assignmentContext +
+                        "the payment source could not be updated. Supabase returned: " +
+                        updateError.message +
+                        ". Check UPDATE privileges and the shop_subscriptions UPDATE policy.",
+                    );
+                  }
+
+                  confirmedSource = updated?.source || null;
+                  if (!updated) {
+                    // Re-query in case the assignment already succeeded in a prior attempt.
+                    const { data: currentRow, error: verifyError } =
+                      await subsSb
+                        .from("shop_subscriptions")
+                        .select("subscription_id, source")
+                        .eq("subscription_id", sub.subscription_id)
+                        .eq("cashfree_payment_id", paymentId)
+                        .maybeSingle();
+
+                    if (verifyError) {
+                      throw Error(
+                        assignmentContext +
+                          "the source update could not be confirmed because Supabase denied the verification read: " +
+                          verifyError.message +
+                          ". Check SELECT RLS for shop_subscriptions.",
+                      );
+                    }
+
+                    confirmedSource = currentRow?.source ?? null;
+                    if (String(confirmedSource || "").trim() !== retailerId) {
+                      if (!currentRow) {
+                        throw Error(
+                          assignmentContext +
+                            "the matching payment row was not returned after the update. Check that the dashboard and payment lookup use the same Supabase project and that SELECT/UPDATE policies permit this retailer.",
+                        );
+                      }
+                      if (
+                        String(confirmedSource || "")
+                          .trim()
+                          .toLowerCase() !== "direct"
+                      ) {
+                        throw Error(
+                          assignmentContext +
+                            `the payment is no longer available for assignment. Its current source is "${confirmedSource || "(blank)"}". No further changes were made.`,
+                        );
+                      }
+                      throw Error(
+                        assignmentContext +
+                          "Supabase still reports source = 'direct', so the UPDATE did not take effect. Check the UPDATE grant and RLS policy for public.shop_subscriptions.",
+                      );
+                    }
+                  }
+
+                  if (String(confirmedSource || "").trim() !== retailerId) {
+                    throw Error(
+                      assignmentContext +
+                        "the source assignment could not be verified. Please refresh and check the payment row before retrying.",
+                    );
+                  }
+                }
+                const info = [
+                  `Work type: ${type === "shop" ? "New shop / QR onboarding" : "Subscription sale"}`,
+                  `Cashfree payment ID: ${paymentId}`,
+                  `Shop ID: ${shopId}`,
+                  `Shop: ${pick(shop, ["shop_name", "name"]) || "—"}`,
+                  `Plan: ${pick(sub, ["plan_name", "plan_id", "plan"]) || "—"}`,
+                  `Amount: ${currency(pick(sub, ["amount", "payment_amount", "amount_charged"]))}`,
+                  `Payment status: ${pick(sub, ["payment_status", "status"]) || status}`,
+                  `Assigned retailer ID: ${retailerId}`,
+                  ...(savedSubscription
+                    ? [
+                        `Main subscription row: ${savedSubscription.subscription_id}`,
+                        `Subscription status: ${savedSubscription.subscription_status}`,
+                      ]
+                    : [
+                        "Onboarding: shop record verified/created in main project",
+                      ]),
+                ];
+                $("paymentLookupInfo").innerHTML = info
+                  .map((v) => `<div>${esc(v)}</div>`)
+                  .join("");
+                $("paymentLookupInfo").classList.remove("hidden");
+                notice(
+                  (type === "shop"
+                    ? "SUCCESS: Payment verified and shop subscription updated."
+                    : "SUCCESS: Payment verified and subscription updated.") +
+                    (savedSubscription
+                      ? " Expiry date: " +
+                        (dateOf(savedSubscription, ["subscription_expiry"]) ||
+                          "saved") +
+                        "."
+                      : " Expiry date saved to public.shops: " +
+                        (dateOf(shop, ["subscription_expiry"]) || "saved") +
+                        "."),
+                  true,
                 );
-              if (!updated)
-                throw Error(
-                  "The main-project record was saved, but source could not be assigned. Check UPDATE RLS policy for shop_subscriptions.",
+                $("workNotice").textContent =
+                  (type === "shop"
+                    ? "Shop onboarding completed successfully."
+                    : "Subscription recorded successfully.") +
+                  (alreadyAssigned
+                    ? " This verified payment was already assigned to your retailer account, so the existing assignment was retained."
+                    : " Payment verified and linked to your retailer account.");
+                $("workNotice").className =
+                  "mt-5 rounded-xl p-4 text-sm font-semibold bg-emerald-50 text-emerald-800";
+                // Targeted refresh: keep already-loaded ledger/payout/plan data and
+                // re-read only the two datasets changed by payment verification.
+                const [freshShops, freshSubs] = await Promise.all([
+                  optional("shops"),
+                  optional("subscriptions"),
+                ]);
+                shops = freshShops.filter(
+                  (shop) =>
+                    String(
+                      pick(shop, [
+                        "retailer_id",
+                        "owner_retailer_id",
+                        "created_by_retailer_id",
+                      ]) || "",
+                    ) === String(retailer.retailer_id),
                 );
-              const info = [
-                `Work type: ${type === "shop" ? "New shop / QR onboarding" : "Subscription sale"}`,
-                `Cashfree payment ID: ${paymentId}`,
-                `Shop ID: ${shopId}`,
-                `Shop: ${pick(shop, ["shop_name", "name"]) || "—"}`,
-                `Plan: ${pick(sub, ["plan_name", "plan_id", "plan"]) || "—"}`,
-                `Amount: ${currency(pick(sub, ["amount", "payment_amount", "amount_charged"]))}`,
-                `Payment status: ${pick(sub, ["payment_status", "status"]) || status}`,
-                `Assigned retailer ID: ${retailerId}`,
-                ...(savedSubscription
-                  ? [
-                      `Main subscription row: ${savedSubscription.subscription_id}`,
-                      `Subscription status: ${savedSubscription.subscription_status}`,
-                    ]
-                  : [
-                      "Onboarding: shop record verified/created in main project",
-                    ]),
-              ];
-              $("paymentLookupInfo").innerHTML = info
-                .map((v) => `<div>${esc(v)}</div>`)
-                .join("");
-              $("paymentLookupInfo").classList.remove("hidden");
+                if (freshSubs.length) {
+                  subs = freshSubs.filter(ownShop);
+                } else if (subsSb) {
+                  try {
+                    subs = (
+                      await safeSelectFrom(subsSb, "shop_subscriptions")
+                    ).filter(ownShop);
+                  } catch (e) {
+                    console.warn(
+                      "Could not refresh external subscription rows:",
+                      e.message,
+                    );
+                  }
+                } else {
+                  subs = freshSubs;
+                }
+                render();
+              });
+            } catch (err) {
+              notice("ERROR: " + (err.message || String(err)), false);
               $("workNotice").textContent =
-                type === "shop"
-                  ? "Payment verified. Shop onboarding saved and the payment source was assigned to your retailer ID."
-                  : "Payment verified. Shop and subscription saved in the main project, and payment source assigned to your retailer ID.";
+                "We couldn’t complete this request. " +
+                (err.message || String(err)) +
+                " No additional changes were made after the reported failure. If this continues, ask your administrator to verify the relevant table columns and Supabase SELECT, INSERT, and UPDATE permissions.";
               $("workNotice").className =
-                "mt-5 rounded-xl p-4 text-sm font-semibold bg-emerald-50 text-emerald-800";
-              await refreshAll();
-            });
-          } catch (err) {
-            $("workNotice").textContent =
-              "Could not complete: " +
-              (err.message || String(err)) +
-              " Check the exact table columns and SELECT/INSERT/UPDATE RLS policies.";
-            $("workNotice").className =
-              "mt-5 rounded-xl p-4 text-sm font-semibold bg-rose-50 text-rose-800";
-          }
-        };
-        const now = new Date(),
-          first = new Date(now.getFullYear(), now.getMonth(), 1);
-        $("dateFrom").value = first.toISOString().slice(0, 10);
-        $("dateTo").value = now.toISOString().slice(0, 10);
+                "mt-5 rounded-xl p-4 text-sm font-semibold bg-rose-50 text-rose-800";
+            }
+          };
         // My Shops period filters use the subscription's start/created date; no schema columns are invented.
-        const sm = $("shopMonth"), sy = $("shopYear");
+        const sm = $("shopMonth"),
+          sy = $("shopYear");
         if (sm && sy) {
           const now = new Date();
-          sm.innerHTML = Array.from({length:12}, (_,i) => `<option value="${String(i+1).padStart(2,"0")}">${new Date(2000,i,1).toLocaleString("en",{month:"long"})}</option>`).join("");
-          const years = Array.from({length:6}, (_,i) => String(now.getFullYear()-i));
-          sy.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
-          sm.value = String(now.getMonth()+1).padStart(2,"0"); sy.value = String(now.getFullYear());
-          [sm,sy,$("shopStatusFilter"),$("shopSearch")].filter(Boolean).forEach(el => el.addEventListener("change", render));
+          sm.innerHTML = Array.from(
+            { length: 12 },
+            (_, i) =>
+              `<option value="${String(i + 1).padStart(2, "0")}">${new Date(2000, i, 1).toLocaleString("en", { month: "long" })}</option>`,
+          ).join("");
+          const years = Array.from({ length: 6 }, (_, i) =>
+            String(now.getFullYear() - i),
+          );
+          sy.innerHTML = years
+            .map((y) => `<option value="${y}">${y}</option>`)
+            .join("");
+          sm.value = String(now.getMonth() + 1).padStart(2, "0");
+          sy.value = String(now.getFullYear());
+          [sm, sy, $("shopStatusFilter"), $("shopSearch")]
+            .filter(Boolean)
+            .forEach((el) => el.addEventListener("change", render));
           $("shopSearch")?.addEventListener("input", render);
         }
-        const cm = $("commissionMonth"), cy = $("commissionYear");
-        if (cm && cy) { const now = new Date(); cm.innerHTML = Array.from({length:12},(_,i)=>`<option value="${String(i+1).padStart(2,"0")}">${new Date(2000,i,1).toLocaleString("en",{month:"long"})}</option>`).join(""); cy.innerHTML = Array.from({length:6},(_,i)=>`<option value="${now.getFullYear()-i}">${now.getFullYear()-i}</option>`).join(""); cm.value=String(now.getMonth()+1).padStart(2,"0"); cy.value=String(now.getFullYear()); $("applyCommissionPeriod").addEventListener("click",()=>render()); }
+        const cm = $("commissionMonth"),
+          cy = $("commissionYear");
+        if (cm && cy) {
+          const now = new Date();
+          cm.innerHTML = Array.from(
+            { length: 12 },
+            (_, i) =>
+              `<option value="${String(i + 1).padStart(2, "0")}">${new Date(2000, i, 1).toLocaleString("en", { month: "long" })}</option>`,
+          ).join("");
+          cy.innerHTML = Array.from(
+            { length: 6 },
+            (_, i) =>
+              `<option value="${now.getFullYear() - i}">${now.getFullYear() - i}</option>`,
+          ).join("");
+          cm.value = String(now.getMonth() + 1).padStart(2, "0");
+          cy.value = String(now.getFullYear());
+          [cm, cy].forEach((el) => el.addEventListener("change", render));
+          $("applyCommissionPeriod")?.addEventListener("click", () => render());
+        }
         if (window.lucide) lucide.createIcons();
         loadAccounts();
       })();
@@ -1972,7 +2797,7 @@
         var modal = $("accountModal"),
           sel = $("accountSelect");
         function modalState() {
-          var open = !modal.classList.contains("hidden");
+          var open = !!modal && !modal.classList.contains("hidden");
           var main = $("main");
           if (main) {
             open
@@ -1984,10 +2809,11 @@
               sel.focus({ preventScroll: true });
             }, 60);
         }
-        new MutationObserver(modalState).observe(modal, {
-          attributes: true,
-          attributeFilter: ["class"],
-        });
+        if (modal)
+          new MutationObserver(modalState).observe(modal, {
+            attributes: true,
+            attributeFilter: ["class"],
+          });
         modalState();
         // Enter on the select opens the dashboard
         if (sel)
