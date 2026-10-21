@@ -1056,7 +1056,7 @@
             <span class="nav-icon">♙</span>Distributors
           </button>
           <button class="nav-btn" data-page="retailers">
-            <span class="nav-icon">♧</span>Retailers
+            <span class="nav-icon">♧</span>Onboarding Partners
           </button>
           <button class="nav-btn" data-page="performance">
             <span class="nav-icon">✦</span>Performance
@@ -1128,7 +1128,7 @@
                 <label class="sr-only" for="overviewMonthSelect"
                   >Select month</label
                 >
-                <select
+                <!-- <select
                   id="overviewMonthSelect"
                   class="field !w-auto"
                   aria-label="Select month"
@@ -1152,8 +1152,8 @@
                 <select
                   id="overviewYearSelect"
                   class="field !w-auto"
-                  aria-label="Select year"
-                ></select>
+                  aria-label="Select year" 
+                >--></select>
                 <input type="hidden" id="overviewDate" />
                 <button class="btn btn-light" onclick="refreshDashboard(this)">
                   ↻ Refresh
@@ -1205,7 +1205,7 @@
                   <table>
                     <thead>
                       <tr>
-                        <th>SHOP / RETAILER</th>
+                        <th>SHOP ID</th>
                         <th>PLAN</th>
                         <th>AMOUNT</th>
                         <th>SOURCE</th>
@@ -1220,7 +1220,9 @@
                 <div class="p-5 flex justify-between items-center">
                   <div>
                     <h3 class="font-extrabold">Distributor performance</h3>
-                    <p class="text-xs muted mt-1">Retailer and sales summary</p>
+                    <p class="text-xs muted mt-1">
+                      Onboarding partner and sales summary
+                    </p>
                   </div>
                   <button
                     class="btn btn-light"
@@ -1234,7 +1236,7 @@
                     <thead>
                       <tr>
                         <th>DISTRIBUTOR</th>
-                        <th>RETAILERS</th>
+                        <th>ONBOARDING PARTNERS</th>
                         <th>SALES</th>
                         <th>STATUS</th>
                       </tr>
@@ -1314,7 +1316,7 @@
                       <th>SUPER DISTRIBUTOR ID</th>
                       <th>NAME / CONTACT</th>
                       <th>DISTRIBUTORS</th>
-                      <th>RETAILERS</th>
+                      <th>ONBOARDING PARTNERS</th>
                       <th>PAID QR SUBSCRIPTIONS</th>
                       <th>EST. COMMISSION</th>
                       <th>VIEW COMMISSION</th>
@@ -1443,7 +1445,7 @@
                     <tr>
                       <th>DISTRIBUTOR ID</th>
                       <th>NAME / CONTACT</th>
-                      <th>RETAILERS</th>
+                      <th>ONBOARDING PARTNERS</th>
                       <th>SALES</th>
                       <th>COMMISSION</th>
                       <th>ONBOARDING</th>
@@ -1660,7 +1662,7 @@
                 <input
                   class="field !w-72"
                   id="commissionSearch"
-                  placeholder="Search payment, retailer, distributor..."
+                  placeholder="Search payment, onboarding partner, distributor..."
                   oninput="renderCommissions()"
                 /><select
                   class="field !w-48"
@@ -1674,13 +1676,39 @@
                   <option>On Hold</option>
                   <option>Reversed</option>
                 </select>
+                <select
+                  class="field !w-40"
+                  id="commissionPeriodType"
+                  onchange="renderCommissions()"
+                >
+                  <option value="month">Monthly view</option>
+                  <option value="year">Yearly view</option>
+                  <option value="all">All time</option>
+                </select>
+                <select
+                  class="field !w-48"
+                  id="commissionPartnerType"
+                  onchange="renderCommissions()"
+                >
+                  <option value="all">All partner types</option>
+                  <option value="distributor">Distributor</option>
+                  <option value="partner">Onboarding partner</option>
+                  <option value="super">Super distributor</option>
+                </select>
+                <input
+                  class="field !w-40"
+                  id="commissionPeriod"
+                  type="month"
+                  onchange="renderCommissions()"
+                  aria-label="Commission month or year"
+                />
               </div>
               <div class="table-wrap">
                 <table>
                   <thead>
                     <tr>
                       <th>PAYMENT / SHOP</th>
-                      <th>RETAILER</th>
+                      <th>ONBOARDING PARTNER</th>
                       <th>DISTRIBUTOR</th>
                       <th>PLAN</th>
                       <th>COMMISSION</th>
@@ -2273,7 +2301,7 @@
           <table>
             <thead>
               <tr>
-                <th>SHOP / RETAILER</th>
+                <th>SHOP / ONBOARDING PARTNER</th>
                 <th>PLAN</th>
                 <th>AMOUNT</th>
                 <th>SOURCE</th>
@@ -2306,6 +2334,7 @@
       let supabaseClient = null,
         supabaseConfig = null,
         dashboardSupabaseClient = null,
+        mainSupabaseClient = null,
         subscriptionSupabaseClient = null,
         subscriptionRows = [],
         liveMode = false;
@@ -2314,8 +2343,8 @@
       // business records to localStorage/sessionStorage. Use only a publishable
       // (browser-safe) Supabase key here, never a service-role key.
       const Q2P_SUPABASE_CONFIG = Object.freeze({
-        url: "https://gepkipszweqhftwaejbu.supabase.co",
-        key: "sb_publishable_forPZqB40NrPCFGQsdqeZw_4QTxOgBH",
+        url: "https://cujyptlcmayipjekoqvq.supabase.co",
+        key: "sb_publishable_Umq1hMXB-MWXf5IlTAHAmA_2tKS3V6v",
         tables: Object.freeze({
           distributors: "distributors",
           retailers: "retailers",
@@ -2336,7 +2365,7 @@
       // never in localStorage/sessionStorage. These are publishable browser keys.
       const Q2P_DASHBOARD_CONFIG = Object.freeze({
         url: "https://cujyptlcmayipjekoqvq.supabase.co",
-        key: "sb_publishable_Umq1hMXB-MWXf5IITAHAmA_2tKS3V6v",
+        key: "sb_publishable_Umq1hMXB-MWXf5IlTAHAmA_2tKS3V6v",
         tables: Object.freeze({
           distributors: "distributors",
           payments: "payments",
@@ -2348,9 +2377,18 @@
           superDistributorCommissionRules: "super_distributor_commission_rules",
         }),
       });
+      // Main project owns shop records and shop_subscriptions.
+      const Q2P_MAIN_CONFIG = Object.freeze({
+        url: "https://gepkipszweqhftwaejbu.supabase.co",
+        key: "sb_publishable_forPZqB40NrPCFGQsdqeZw_4QTxOgBH",
+        tables: Object.freeze({
+          shops: "shops",
+          subscriptions: "shop_subscriptions",
+        }),
+      });
       const Q2P_SUBSCRIPTIONS_CONFIG = Object.freeze({
-        url: Q2P_DASHBOARD_CONFIG.url,
-        key: Q2P_DASHBOARD_CONFIG.key,
+        url: Q2P_MAIN_CONFIG.url,
+        key: Q2P_MAIN_CONFIG.key,
         table: "shop_subscriptions",
         plansTable: Q2P_DASHBOARD_CONFIG.tables.plans,
       });
@@ -2390,6 +2428,19 @@
           },
         });
         supabaseConfig = { url, key, tables };
+        // Main project: shop and subscription data only.
+        mainSupabaseClient = window.supabase.createClient(
+          Q2P_MAIN_CONFIG.url,
+          Q2P_MAIN_CONFIG.key,
+          {
+            auth: {
+              persistSession: false,
+              autoRefreshToken: false,
+              detectSessionInUrl: false,
+            },
+          },
+        );
+        subscriptionSupabaseClient = mainSupabaseClient;
         // Keep the second project's client separate so the dashboard project
         // can be queried without putting configuration or records in browser cache.
         dashboardSupabaseClient = window.supabase.createClient(
@@ -2426,7 +2477,7 @@
         await loadSuperDistributors();
         setDbStatus(
           true,
-          "Connected to public.distributors, public.retailers, public.shops, public.payments and public.plans. Optional subscription and commission records are loaded only when the configured public tables are available.",
+          "Connected to Dashboard project partner/payment/plan tables and Main project shops/shop_subscriptions.",
         );
         toast("Supabase connected and data loaded.");
         renderAll();
@@ -2435,29 +2486,37 @@
         if (!supabaseClient || !supabaseConfig)
           throw new Error("Connect Supabase first.");
         const t = supabaseConfig.tables;
-        const read = async (name) => {
-          const { data: rows, error } = await supabaseClient
-            .from(name)
-            .select("*")
-            .limit(2000);
-          if (error) throw new Error(name + ": " + error.message);
-          return rows || [];
-        };
-        const readOptional = async (name) => {
-          const { data: rows, error } = await supabaseClient
+        const readFrom = async (client, name, optional = false) => {
+          if (!client) {
+            if (optional) return [];
+            throw new Error("Supabase client is not initialized for " + name);
+          }
+          const { data: rows, error } = await client
             .from(name)
             .select("*")
             .limit(2000);
           if (error) {
-            console.warn("Optional table read failed:", name, error.message);
-            return [];
+            if (optional) {
+              console.warn("Optional table read failed:", name, error.message);
+              return [];
+            }
+            throw new Error(name + ": " + error.message);
           }
           return rows || [];
         };
+        const read = (name) => readFrom(supabaseClient, name);
+        const readOptional = (name) => readFrom(supabaseClient, name, true);
+        const readMain = (name) => readFrom(mainSupabaseClient, name);
+        const readMainOptional = (name) =>
+          readFrom(mainSupabaseClient, name, true);
+        // Partner network, sales, plans and hierarchy shops are owned by the
+        // Dashboard project. The Main project remains the source for print-agent
+        // shop/subscription records; merge shops by shop_id without local caching.
         const [
           ds,
           rs,
-          shops,
+          dashboardShops,
+          mainShops,
           payments,
           subs,
           plans,
@@ -2465,31 +2524,57 @@
           commissions,
           payouts,
         ] = await Promise.all([
-          read(t.distributors),
-          (async () => {
-            if (!dashboardSupabaseClient) return read(t.retailers);
-            const { data: retailerRows, error: retailerError } =
-              await dashboardSupabaseClient
-                .from(Q2P_DASHBOARD_CONFIG.tables.retailers)
-                .select("*")
-                .limit(2000);
-            if (retailerError)
-              throw new Error(
-                "Dashboard project retailers: " + retailerError.message,
-              );
-            return retailerRows || [];
-          })(),
-          read(t.shops),
-          read(t.payments),
-          readOptional(t.subscriptions),
-          read(t.plans),
-          readOptional(t.rules),
-          readOptional(t.commissions),
-          readOptional(t.payouts),
+          readFrom(
+            dashboardSupabaseClient,
+            Q2P_DASHBOARD_CONFIG.tables.distributors,
+          ),
+          readFrom(
+            dashboardSupabaseClient,
+            Q2P_DASHBOARD_CONFIG.tables.retailers,
+          ),
+          readFrom(dashboardSupabaseClient, Q2P_DASHBOARD_CONFIG.tables.shops),
+          readMainOptional(Q2P_MAIN_CONFIG.tables.shops),
+          readFrom(
+            dashboardSupabaseClient,
+            Q2P_DASHBOARD_CONFIG.tables.payments,
+          ),
+          readMainOptional(Q2P_MAIN_CONFIG.tables.subscriptions),
+          readFrom(dashboardSupabaseClient, Q2P_DASHBOARD_CONFIG.tables.plans),
+          readFrom(
+            dashboardSupabaseClient,
+            Q2P_DASHBOARD_CONFIG.tables.superDistributorCommissionRules,
+            true,
+          ),
+          readFrom(
+            dashboardSupabaseClient,
+            "super_distributor_commission_records",
+            true,
+          ),
+          readFrom(
+            dashboardSupabaseClient,
+            Q2P_DASHBOARD_CONFIG.tables.payments,
+            true,
+          ),
         ]);
+        const shopsById = new Map();
+        // Dashboard hierarchy rows are authoritative for retailer/distributor
+        // attribution; main-project rows supply any print-agent-only fields.
+        for (const s of mainShops) shopsById.set(String(s.shop_id), s);
+        for (const s of dashboardShops)
+          shopsById.set(String(s.shop_id), {
+            ...(shopsById.get(String(s.shop_id)) || {}),
+            ...s,
+          });
+        const shops = [...shopsById.values()];
         data.distributors = ds.map((r) => ({
           id: r.distributor_id || "",
-          name: r.full_name || "",
+          name:
+            r.full_name ||
+            r.name ||
+            r.distributor_name ||
+            r.owner_name ||
+            r.distributor_id ||
+            "",
           mobile: r.mobile || "",
           email: r.email || "",
           city: r.city || "",
@@ -2508,7 +2593,13 @@
           );
           const shop = shops.find((s) => s.retailer_id === r.retailer_id);
           const subscription = subs
-            .filter((s) => s.retailer_id === r.retailer_id)
+            .filter(
+              (s) =>
+                (shop?.subscription_id &&
+                  String(s.subscription_id) === String(shop.subscription_id)) ||
+                s.retailer_id === r.retailer_id ||
+                (shop?.shop_id && s.shop_id === shop.shop_id),
+            )
             .sort(
               (a, b) =>
                 new Date(b.created_at || 0) - new Date(a.created_at || 0),
@@ -2517,7 +2608,13 @@
           return {
             id: r.retailer_id || "",
             shop: r.shop_name || "",
-            owner: r.owner_name || "",
+            owner:
+              r.owner_name ||
+              r.full_name ||
+              r.name ||
+              r.retailer_name ||
+              r.retailer_id ||
+              "",
             mobile: r.mobile || "",
             email: r.email || "",
             city: r.city || "",
@@ -2596,12 +2693,24 @@
             distributor: c.distributor_id || "",
             plan: plan?.plan_name || sub?.plan_id || "",
             commission: Number(c.commission_amount || 0),
+            distributorCommission: Number(
+              c.distributor_commission_amount || c.distributor_commission || 0,
+            ),
+            partnerCommission: Number(
+              c.onboarding_partner_commission_amount ||
+                c.retailer_commission_amount ||
+                c.partner_commission_amount ||
+                c.retailer_commission ||
+                0,
+            ),
             bonus: Number(c.bonus_amount || 0),
             status: normalizeCommissionStatus(c.commission_status),
+            date:
+              c.created_at || p?.created_at || sub?.subscription_start || "",
             _raw: c,
           };
         });
-        // Preserve only the UI's local audit cache; database audit rows are loaded separately if available.
+        // Audit rows are fetched from the configured public table; no browser cache is used.
         try {
           const { data: logs, error } = await supabaseClient
             .from(t.auditLogs)
@@ -2671,9 +2780,18 @@
           )?.id || ""
         );
       }
+      function clientForTable(table) {
+        if (
+          table === Q2P_MAIN_CONFIG.tables.shops ||
+          table === Q2P_MAIN_CONFIG.tables.subscriptions
+        )
+          return mainSupabaseClient;
+        return supabaseClient;
+      }
       async function sbInsert(table, row) {
-        if (!liveMode || !supabaseClient) return null;
-        const { data: result, error } = await supabaseClient
+        const client = clientForTable(table);
+        if (!liveMode || !client) return null;
+        const { data: result, error } = await client
           .from(table)
           .insert(row)
           .select()
@@ -2682,8 +2800,9 @@
         return result;
       }
       async function sbUpdate(table, idColumn, idValue, patch) {
-        if (!liveMode || !supabaseClient) return null;
-        const { data: result, error } = await supabaseClient
+        const client = clientForTable(table);
+        if (!liveMode || !client) return null;
+        const { data: result, error } = await client
           .from(table)
           .update(patch)
           .eq(idColumn, idValue)
@@ -2692,8 +2811,9 @@
         return result;
       }
       async function sbDelete(table, idColumn, idValue) {
-        if (!liveMode || !supabaseClient) return null;
-        const { error } = await supabaseClient
+        const client = clientForTable(table);
+        if (!liveMode || !client) return null;
+        const { error } = await client
           .from(table)
           .delete()
           .eq(idColumn, idValue);
@@ -3380,9 +3500,15 @@
           (w) => w.amount,
         );
         const approved = sum(
-          data.commissions.filter(
-            (c) => c.status === "Approved" || c.status === "Paid",
-          ),
+          data.commissions.filter((c) => {
+            const date = new Date(c.date || c._raw?.created_at || 0);
+            return (
+              (c.status === "Approved" || c.status === "Paid") &&
+              !Number.isNaN(date.getTime()) &&
+              `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}` ===
+                selectedMonth
+            );
+          }),
           (c) => c.commission + c.bonus,
         );
         const pending = sum(
@@ -3399,7 +3525,7 @@
         );
         const cards = [
           ["Distributors", data.distributors.length, "♙", "#e9e7ff"],
-          ["Retailers", data.retailers.length, "♧", "#e3f5ff"],
+          ["Onboarding Partners", data.retailers.length, "♧", "#e3f5ff"],
           ["Active Shops", activeShopIds.size, "⌂", "#e4f9ed"],
           ["Sales This Month", money(totalSales), "₹", "#fff3cc"],
           ["Direct Sales", directPaid.length, "↗", "#e4f9ed"],
@@ -4057,42 +4183,96 @@
           : '<div class="rounded-xl p-4 text-sm" style="background:#fff8dc;color:#805d00">No retailers are assigned to this distributor yet. Create a retailer and assign this distributor first.</div>';
       }
       function renderCommissions() {
-        let q = (
-            document.getElementById("commissionSearch")?.value || ""
-          ).toLowerCase(),
-          f = document.getElementById("commissionStatusFilter")?.value || "";
-        let rows = data.commissions.filter(
-          (c) =>
-            (!f || c.status === f) &&
-            (
-              c.paymentId +
-              " " +
-              c.shopId +
-              " " +
-              c.retailer +
-              " " +
-              c.distributor +
-              " " +
-              c.plan
-            )
-              .toLowerCase()
-              .includes(q),
-        );
-        let total = sum(data.commissions, (c) => c.commission + c.bonus),
-          pending = sum(
-            data.commissions.filter((c) => c.status === "Pending"),
-            (c) => c.commission + c.bonus,
-          ),
-          approved = sum(
-            data.commissions.filter((c) => c.status === "Approved"),
-            (c) => c.commission + c.bonus,
-          ),
-          paid = sum(
-            data.commissions.filter((c) => c.status === "Paid"),
-            (c) => c.commission + c.bonus,
+        const q = (
+          document.getElementById("commissionSearch")?.value || ""
+        ).toLowerCase();
+        const statusFilter =
+          document.getElementById("commissionStatusFilter")?.value || "";
+        const periodType =
+          document.getElementById("commissionPeriodType")?.value || "month";
+        const partnerType =
+          document.getElementById("commissionPartnerType")?.value || "all";
+        const periodValue =
+          document.getElementById("commissionPeriod")?.value || "";
+        const now = new Date();
+        const selectedPeriod =
+          periodValue ||
+          `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+        const getKind = (c) => {
+          const raw = c._raw || {};
+          if (
+            raw.super_distributor_id ||
+            raw.super_distributor_commission_amount ||
+            raw.super_distributor_commission
+          )
+            return "super";
+          if (raw.onboarding_partner_id || raw.retailer_id || c.retailer)
+            return "partner";
+          return "distributor";
+        };
+        const rows = data.commissions.filter((c) => {
+          const searchable =
+            `${c.paymentId || ""} ${c.shopId || ""} ${c.retailer || ""} ${c.distributor || ""} ${c.plan || ""}`.toLowerCase();
+          const date = c.date || c._raw?.created_at || c._raw?.paid_at || "";
+          const d = date ? new Date(date) : null;
+          const validDate = d && !Number.isNaN(d.getTime());
+          let periodMatch = periodType === "all";
+          if (periodType === "month")
+            periodMatch =
+              validDate &&
+              `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}` ===
+                selectedPeriod;
+          if (periodType === "year")
+            periodMatch =
+              validDate &&
+              String(d.getFullYear()) ===
+                (periodValue
+                  ? periodValue.slice(0, 4)
+                  : String(now.getFullYear()));
+          return (
+            (!statusFilter || c.status === statusFilter) &&
+            searchable.includes(q) &&
+            periodMatch &&
+            (partnerType === "all" || getKind(c) === partnerType)
           );
+        });
+        const total = sum(rows, (c) => c.commission + c.bonus);
+        const pending = sum(
+          rows.filter((c) => c.status === "Pending"),
+          (c) => c.commission + c.bonus,
+        );
+        const approved = sum(
+          rows.filter((c) => c.status === "Approved"),
+          (c) => c.commission + c.bonus,
+        );
+        const paid = sum(
+          rows.filter((c) => c.status === "Paid"),
+          (c) => c.commission + c.bonus,
+        );
+        const distributorEarn = sum(
+          rows,
+          (c) =>
+            c.distributorCommission ||
+            (getKind(c) === "distributor" ? c.commission : 0),
+        );
+        const partnerEarn = sum(
+          rows,
+          (c) =>
+            c.partnerCommission ||
+            (getKind(c) === "partner" ? c.commission : 0),
+        );
+        const superEarn = sum(rows, (c) =>
+          Number(
+            c._raw?.super_distributor_commission_amount ||
+              c._raw?.super_distributor_commission ||
+              (getKind(c) === "super" ? c.commission : 0),
+          ),
+        );
         document.getElementById("commissionStats").innerHTML = [
-          ["Total ledger", money(total)],
+          ["Total commission + bonus", money(total)],
+          ["Distributor earnings", money(distributorEarn)],
+          ["Onboarding partner earnings", money(partnerEarn)],
+          ["Super distributor earnings", money(superEarn)],
           ["Pending", money(pending)],
           ["Approved", money(approved)],
           ["Paid", money(paid)],
@@ -4106,9 +4286,13 @@
           rows
             .map(
               (c) =>
-                `<tr><td><b>${esc(c.paymentId)}</b><div class="tiny muted">${esc(c.shopId)}</div></td><td>${esc(retailerName(c.retailer))}</td><td>${esc(c.distributor)}</td><td>${esc(c.plan)}</td><td>${money(c.commission)}</td><td>${money(c.bonus)}</td><td>${statusBadge(c.status)}</td><td><div class="flex gap-1">${c.status === "Pending" ? `<button class="btn btn-light !px-2 !py-1" onclick="setCommission('${c.paymentId}','Approved')">Approve</button><button class="btn btn-light !px-2 !py-1" onclick="setCommission('${c.paymentId}','On Hold')">Hold</button>` : ""}${c.status === "Approved" ? `<button class="btn btn-primary !px-2 !py-1" onclick="setCommission('${c.paymentId}','Paid')">Mark paid</button>` : ""}</div></td></tr>`,
+                `<tr><td><b>${esc(c.paymentId || "—")}</b><div class="tiny muted">${esc(c.shopId || "—")}</div></td><td>${esc(retailerName(c.retailer))}</td><td>${esc(c.distributor || "—")}</td><td>${esc(c.plan || "—")}</td><td>${money(c.commission)}</td><td>${money(c.bonus)}</td><td>${statusBadge(c.status)}</td><td><div class="flex gap-1">${c.status === "Pending" ? `<button class="btn btn-light !px-2 !py-1" onclick="setCommission('${esc(c.paymentId)}','Approved')">Approve</button><button class="btn btn-light !px-2 !py-1" onclick="setCommission('${esc(c.paymentId)}','On Hold')">Hold</button>` : ""}${c.status === "Approved" ? `<button class="btn btn-primary !px-2 !py-1" onclick="setCommission('${esc(c.paymentId)}','Paid')">Mark paid</button>` : ""}</div></td></tr>`,
             )
-            .join("") || emptyRow(8);
+            .join("") ||
+          emptyRow(
+            8,
+            "No saved commission records match this period and partner type. Shop rows alone do not define a commission rate.",
+          );
       }
       function renderAudit() {
         document.getElementById("auditTable").innerHTML =
@@ -4527,7 +4711,7 @@
                 let shopRow = null;
                 if (!shopRow) {
                   const { data: existingShop, error: shopReadErr } =
-                    await supabaseClient
+                    await mainSupabaseClient
                       .from(shopsTable)
                       .select("*")
                       .eq("shop_id", v.shopId)
@@ -4537,7 +4721,7 @@
                 }
                 if (!shopRow) {
                   const { data: savedShop, error: shopErr } =
-                    await supabaseClient
+                    await mainSupabaseClient
                       .from(shopsTable)
                       .insert({
                         shop_id: v.shopId,
@@ -4596,25 +4780,26 @@
                   subExpiry = v.expiry
                     ? new Date(v.expiry).toISOString()
                     : null;
-                const { data: savedSub, error: subErr } = await supabaseClient
-                  .from(subsTable)
-                  .insert({
-                    shop_id: v.shopId,
-                    retailer_id: rr._raw.retailer_id,
-                    distributor_id_at_sale: dd._raw.distributor_id,
-                    plan_id: selectedPlan.plan_id,
-                    payment_id: savedPayment.payment_id,
-                    subscription_start: subStart,
-                    subscription_expiry: subExpiry,
-                    subscription_status:
-                      v.payment === "Success"
-                        ? "active"
-                        : v.subStatus === "Expired"
-                          ? "expired"
-                          : "pending",
-                  })
-                  .select()
-                  .single();
+                const { data: savedSub, error: subErr } =
+                  await mainSupabaseClient
+                    .from(subsTable)
+                    .insert({
+                      shop_id: v.shopId,
+                      retailer_id: rr._raw.retailer_id,
+                      distributor_id_at_sale: dd._raw.distributor_id,
+                      plan_id: selectedPlan.plan_id,
+                      payment_id: savedPayment.payment_id,
+                      subscription_start: subStart,
+                      subscription_expiry: subExpiry,
+                      subscription_status:
+                        v.payment === "Success"
+                          ? "active"
+                          : v.subStatus === "Expired"
+                            ? "expired"
+                            : "pending",
+                    })
+                    .select()
+                    .single();
                 if (subErr) throw subErr;
                 newW._raw = savedPayment;
                 newW.paymentUuid = savedPayment.payment_id;
@@ -4728,8 +4913,8 @@
               r.id,
               { assigned_distributor_id: choice },
             );
-            const { error } = await supabaseClient
-              .from(supabaseConfig.tables.shops)
+            const { error } = await mainSupabaseClient
+              .from(Q2P_MAIN_CONFIG.tables.shops)
               .update({ assigned_distributor_id: choice })
               .eq("retailer_id", r.id);
             if (error) throw error;
@@ -5101,13 +5286,15 @@
         try {
           if (!window.supabase?.createClient)
             throw new Error("Supabase JS library did not load.");
-          const client = window.supabase.createClient(c.url, c.key, {
-            auth: {
-              persistSession: false,
-              autoRefreshToken: false,
-              detectSessionInUrl: false,
-            },
-          });
+          const client =
+            mainSupabaseClient ||
+            window.supabase.createClient(c.url, c.key, {
+              auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+                detectSessionInUrl: false,
+              },
+            });
           const result = await client
             .from(c.table)
             .select("*")
