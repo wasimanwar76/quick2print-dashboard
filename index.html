@@ -324,7 +324,12 @@
         width: 100%;
         padding: 14px;
         border-radius: 14px;
-        background: linear-gradient(100deg, var(--cyan), var(--blue) 45%, #4f46e5);
+        background: linear-gradient(
+          100deg,
+          var(--cyan),
+          var(--blue) 45%,
+          #4f46e5
+        );
         color: #fff;
         font-weight: 800;
         font-size: 1rem;
@@ -456,7 +461,17 @@
               alt="Quick2Print logo"
               width="420"
               height="150"
-              onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'display',style:'font-weight:900;font-size:2.4rem;color:#1b1464;padding:.3rem .5rem',innerHTML:'Quick<span style=&quot;color:#fbb615&quot;>2</span>print'}))"
+              onerror="
+                this.replaceWith(
+                  Object.assign(document.createElement('div'), {
+                    className: 'display',
+                    style:
+                      'font-weight:900;font-size:2.4rem;color:#1b1464;padding:.3rem .5rem',
+                    innerHTML:
+                      'Quick<span style=&quot;color:#fbb615&quot;>2</span>print',
+                  }),
+                )
+              "
             />
           </div>
         </div>
@@ -471,25 +486,80 @@
           <ul class="mt-8 space-y-4 text-sm">
             <li class="feature">
               <span class="dot" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbb615" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM20 14v.01M14 20h3M20 20v.01"/></svg>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#fbb615"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM20 14v.01M14 20h3M20 20v.01"
+                  />
+                </svg>
               </span>
-              <span><strong class="block text-base">QR-powered ordering</strong><span class="text-white/70">Scan, upload and print in moments.</span></span>
+              <span
+                ><strong class="block text-base">QR-powered ordering</strong
+                ><span class="text-white/70"
+                  >Scan, upload and print in moments.</span
+                ></span
+              >
             </li>
             <li class="feature">
               <span class="dot" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00aeef" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#00aeef"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M3 3v18h18" />
+                  <path d="M7 15l4-4 3 3 5-6" />
+                </svg>
               </span>
-              <span><strong class="block text-base">Live business dashboards</strong><span class="text-white/70">Track orders and earnings at a glance.</span></span>
+              <span
+                ><strong class="block text-base"
+                  >Live business dashboards</strong
+                ><span class="text-white/70"
+                  >Track orders and earnings at a glance.</span
+                ></span
+              >
             </li>
             <li class="feature">
               <span class="dot" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff4fa3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#ff4fa3"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z" />
+                  <path d="M9 12l2 2 4-4" />
+                </svg>
               </span>
-              <span><strong class="block text-base">Role-based access</strong><span class="text-white/70">Separate views for every partner level.</span></span>
+              <span
+                ><strong class="block text-base">Role-based access</strong
+                ><span class="text-white/70"
+                  >Separate views for every partner level.</span
+                ></span
+              >
             </li>
           </ul>
         </div>
-        <p class="relative text-xs text-white/50">&copy; Quick2Print. All rights reserved.</p>
+        <p class="relative text-xs text-white/50">
+          &copy; Quick2Print. All rights reserved.
+        </p>
       </aside>
 
       <!-- Form panel -->
@@ -502,7 +572,17 @@
               alt="Quick2Print logo"
               width="250"
               height="90"
-              onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'display',style:'font-weight:900;font-size:2rem;color:#1b1464;text-align:center;margin-bottom:1.25rem',innerHTML:'Quick<span style=&quot;color:#fbb615&quot;>2</span>print'}))"
+              onerror="
+                this.replaceWith(
+                  Object.assign(document.createElement('div'), {
+                    className: 'display',
+                    style:
+                      'font-weight:900;font-size:2rem;color:#1b1464;text-align:center;margin-bottom:1.25rem',
+                    innerHTML:
+                      'Quick<span style=&quot;color:#fbb615&quot;>2</span>print',
+                  }),
+                )
+              "
             />
           </div>
 
@@ -533,19 +613,53 @@
             </div>
             <button id="continueBtn" class="btn mt-5">
               Continue
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
             </button>
           </div>
 
           <div id="stepPassword" class="step hidden">
             <div class="account-chip">
               <div class="avatar" aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+                </svg>
               </div>
               <div class="min-w-0">
-                <div class="text-[11px] text-indigo-600 font-extrabold tracking-widest">ACCOUNT TYPE</div>
-                <div id="accountLabel" class="font-extrabold text-[#1b1464] truncate"></div>
-                <div id="roleLabel" class="text-sm text-slate-500 truncate"></div>
+                <div
+                  class="text-[11px] text-indigo-600 font-extrabold tracking-widest"
+                >
+                  ACCOUNT TYPE
+                </div>
+                <div
+                  id="accountLabel"
+                  class="font-extrabold text-[#1b1464] truncate"
+                ></div>
+                <div
+                  id="roleLabel"
+                  class="text-sm text-slate-500 truncate"
+                ></div>
               </div>
             </div>
             <label for="password" class="text-sm font-bold text-slate-800"
@@ -555,9 +669,9 @@
               <input
                 id="password"
                 type="password"
-                inputmode="numeric"
+                inputmode="text"
                 class="field has-toggle"
-                placeholder="Enter mobile number"
+                placeholder="Enter mobile number or password"
                 autocomplete="current-password"
               />
               <button
@@ -567,7 +681,21 @@
                 aria-label="Show password"
                 aria-pressed="false"
               >
-                <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg
+                  id="eyeIcon"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
               </button>
             </div>
             <button id="loginBtn" class="btn mt-5">Login</button>
@@ -599,8 +727,20 @@
           detectSessionInUrl: false,
         },
       });
-      const ADMIN_ID = "admin@quick2print.in";
-      const ADMIN_PASSWORD = "jxj23c3zne";
+      const ADMIN_ACCOUNTS = [
+        {
+          id: "admin@quick2print.in",
+          password: "jxj23c3zne",
+          label: "Administrator",
+          name: "Quick2Print Admin",
+        },
+        {
+          id: "15430825",
+          password: "Akr@9576",
+          label: "Super Administrator",
+          name: "Quick2Print Super Admin",
+        },
+      ];
       const roles = [
         {
           role: "retailer",
@@ -657,15 +797,19 @@
           $("partnerId").focus();
           return;
         }
-        if (id.toLowerCase() === ADMIN_ID) {
+        const adminMatch = ADMIN_ACCOUNTS.find(
+          (entry) => entry.id.toLowerCase() === id.toLowerCase(),
+        );
+        if (adminMatch) {
           account = {
             admin: true,
             cfg: {
               role: "admin",
-              label: "Administrator",
+              label: adminMatch.label,
               file: "admin-dashboard.html",
             },
-            row: { id: ADMIN_ID, name: "Quick2Print Admin" },
+            row: { id: adminMatch.id, name: adminMatch.name },
+            credentials: adminMatch,
           };
           showPassword();
           return;
@@ -705,7 +849,7 @@
       function showPassword() {
         $("accountLabel").textContent = account.cfg.label;
         $("roleLabel").textContent = account.admin
-          ? ADMIN_ID
+          ? account.row.id
           : account.row[account.cfg.idColumn];
         $("stepId").classList.add("hidden");
         $("stepPassword").classList.remove("hidden");
@@ -731,12 +875,12 @@
         $("loginBtn").textContent = "Verifying…";
         try {
           if (account.admin) {
-            if (password !== ADMIN_PASSWORD)
+            if (password !== account.credentials.password)
               throw new Error("Incorrect admin password.");
             const auth = {
               role: "admin",
-              id: ADMIN_ID,
-              name: "Quick2Print Admin",
+              id: account.row.id,
+              name: account.row.name,
               at: Date.now(),
             };
             sessionStorage.setItem("q2p_partner_auth", JSON.stringify(auth));

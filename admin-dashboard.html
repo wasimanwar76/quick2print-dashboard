@@ -37,7 +37,7 @@
         if (
           !a ||
           a.role !== "admin" ||
-          a.id !== "admin@quick2print.in" ||
+          !["admin@quick2print.in", "15430825"].includes(a.id) ||
           !Number.isFinite(age) ||
           age < 0 ||
           age > 8 * 60 * 60 * 1000
@@ -81,7 +81,7 @@
               sessionStorage.getItem("q2p_partner_auth") || "null",
             );
           } catch {}
-          if (!c || c.role !== "admin" || c.id !== "admin@quick2print.in")
+          if (!c || c.role !== "admin" || !["admin@quick2print.in", "15430825"].includes(c.id))
             location.replace("index.html");
         });
       })();
@@ -1058,6 +1058,9 @@
           <button class="nav-btn" data-page="retailers">
             <span class="nav-icon">♧</span>Onboarding Partners
           </button>
+          <button class="nav-btn" data-page="subscriptions">
+            <span class="nav-icon">▣</span>Subscriptions
+          </button>
           <button class="nav-btn" data-page="performance">
             <span class="nav-icon">✦</span>Performance
           </button>
@@ -1192,24 +1195,29 @@
               <div class="panel">
                 <div class="p-5 flex justify-between items-center">
                   <div>
-                    <h3 class="font-extrabold">Recent work</h3>
+                    <h3 class="font-extrabold">Recent work · Shop details</h3>
                     <p class="text-xs muted mt-1">
-                      Latest subscription/payment records
+                      Shops created during the selected month
                     </p>
                   </div>
-                  <button class="btn btn-light" onclick="openRecentWorkModal()">
-                    View all
-                  </button>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <select id="recentShopMonth" class="field !w-auto" aria-label="Recent work month" onchange="loadRecentShops()"></select>
+                    <select id="recentShopYear" class="field !w-auto" aria-label="Recent work year" onchange="loadRecentShops()"></select>
+                    <button class="btn btn-light" onclick="loadRecentShops()">↻</button>
+                    <button class="btn btn-light" onclick="openRecentWorkModal()">View all</button>
+                  </div>
                 </div>
                 <div class="table-wrap">
                   <table>
                     <thead>
                       <tr>
                         <th>SHOP ID</th>
+                        <th>SHOP NAME / OWNER</th>
+                        <th>WHATSAPP</th>
+                        <th>ADDRESS</th>
                         <th>PLAN</th>
-                        <th>AMOUNT</th>
-                        <th>SOURCE</th>
-                        <th>STATUS</th>
+                        <th>SHOP STATUS</th>
+                        <th>CREATED</th>
                       </tr>
                     </thead>
                     <tbody id="recentWork"></tbody>
@@ -1510,6 +1518,48 @@
             </div>
           </section>
 
+
+          <section class="page" id="page-subscriptions">
+            <div class="flex flex-wrap justify-between items-start gap-4 mb-5">
+              <div>
+                <h2 class="text-lg font-extrabold">Shop subscriptions</h2>
+                <p class="text-sm muted mt-1">Subscriptions created in the selected month. Expiry is calculated from expires_at; payment status remains visible separately.</p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <label class="sr-only" for="subscriptionMonth">Subscription month</label>
+                <select id="subscriptionMonth" class="field !w-auto" aria-label="Subscription month" onchange="loadSubscriptionDirectory()"></select>
+                <label class="sr-only" for="subscriptionYear">Subscription year</label>
+                <select id="subscriptionYear" class="field !w-auto" aria-label="Subscription year" onchange="loadSubscriptionDirectory()"></select>
+                <button class="btn btn-light" onclick="loadSubscriptionDirectory()">↻ Refresh</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-5" id="subscriptionSummary"></div>
+            <div class="panel">
+              <div class="p-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 class="font-extrabold">Subscription records</h3>
+                  <p id="subscriptionPeriodInfo" class="text-xs muted mt-1" aria-live="polite">Select a month to view subscriptions.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <input id="subscriptionSearch" class="field !w-56" aria-label="Search subscriptions" placeholder="Search shop / plan / order" oninput="renderSubscriptionDirectory()" />
+                  <select id="subscriptionStatusFilter" class="field !w-auto" aria-label="Filter subscriptions by status" onchange="renderSubscriptionDirectory()">
+                    <option value="">All statuses</option><option value="active">Active</option><option value="expired">Expired</option><option value="upcoming">Upcoming</option><option value="pending">Pending</option><option value="failed">Failed</option><option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr>
+                    <th>SHOP ID / NAME</th><th>PLAN</th><th>AMOUNT</th><th>DURATION</th>
+                    <th>PAYMENT STATUS</th><th>SUBSCRIPTION STATE</th><th>STARTED</th><th>EXPIRES</th>
+                    <th>CREATED</th><th>ORDER ID</th><th>PAYMENT METHOD</th><th>SOURCE</th>
+                    <th>ENVIRONMENT</th><th>UPDATED</th><th>PAYMENT ERROR</th>
+                  </tr></thead>
+                  <tbody id="subscriptionDirectoryRows"><tr><td colspan="15">Open Subscriptions to load records.</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
           <section class="page" id="page-performance">
             <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
               <div>
@@ -2289,8 +2339,8 @@
           <div>
             <h2 class="text-xl font-extrabold">All recent work</h2>
             <p class="text-xs muted mt-1">
-              All subscription and payment records, including pending and failed
-              payments.
+              All shops created in the selected month, with available operational details.
+              Payment credentials and QR tokens are not displayed.
             </p>
           </div>
           <button class="btn btn-light" onclick="closeRecentWorkModal()">
@@ -2301,12 +2351,15 @@
           <table>
             <thead>
               <tr>
-                <th>SHOP / ONBOARDING PARTNER</th>
-                <th>PLAN</th>
-                <th>AMOUNT</th>
-                <th>SOURCE</th>
-                <th>DATE</th>
-                <th>STATUS</th>
+                <th>SHOP ID</th><th>OWNER</th><th>WHATSAPP</th><th>SHOP NAME</th>
+                <th>ADDRESS</th><th>EMAIL</th><th>PRINTER NAME</th>
+                <th>ACCOUNT STATUS</th><th>CREATED</th><th>UPDATED</th>
+                <th>TOTAL PRINTS</th><th>PLAN</th><th>PLAN EXPIRES</th>
+                <th>SUBSCRIPTION STATUS</th><th>SUBSCRIPTION START</th>
+                <th>SUBSCRIPTION END</th><th>PRINT COUNT</th>
+                <th>BLACK &amp; WHITE PRICE</th><th>COLOR PRICE</th>
+                <th>SHOP STATUS</th><th>PRINTER TYPE</th><th>PAYMENT METHOD</th>
+                <th>PRINT AGENT</th><th>CASHFREE ENV</th>
               </tr>
             </thead>
             <tbody id="allRecentWorkRows"></tbody>
@@ -2473,6 +2526,8 @@
           );
         }
         await loadSupabaseData();
+        await loadRecentShops();
+        if (document.getElementById("page-subscriptions").classList.contains("active")) await loadSubscriptionDirectory();
         liveMode = true;
         await loadSuperDistributors();
         setDbStatus(
@@ -2825,6 +2880,8 @@
         try {
           await loadSupabaseData();
           renderAll();
+          await loadRecentShops();
+          if (document.getElementById("page-subscriptions").classList.contains("active")) await loadSubscriptionDirectory();
           setDbStatus(
             true,
             "Data refreshed from Supabase at " +
@@ -2946,6 +3003,7 @@
           : "Overview";
         document.getElementById("sidebar").classList.remove("open");
         renderAll();
+        if (page === "subscriptions") loadSubscriptionDirectory();
       }
       function navigate(p) {
         nav(p);
@@ -3359,48 +3417,244 @@
         renderAudit();
         renderReports();
       }
-      function openRecentWorkModal() {
-        const rows = [...(window.__q2pOverviewWork || [])].sort((a, b) => {
-          const da =
-            new Date(a.createdAt || a._raw?.created_at || 0).getTime() || 0;
-          const db =
-            new Date(b.createdAt || b._raw?.created_at || 0).getTime() || 0;
-          return db - da;
+
+      // Subscription directory: public.shop_subscriptions in Main Supabase.
+      // Month/year selects the record creation month (created_at), not expiry month.
+      // Payment sessions and payment IDs are intentionally excluded from reads.
+      let subscriptionDirectoryRows = [];
+      let subscriptionShopNames = {};
+      let subscriptionDirectoryRequest = 0;
+      const subscriptionDirectoryColumns = [
+        "subscription_id", "shop_id", "plan_id", "amount", "currency",
+        "duration_months", "cashfree_order_id", "payment_status",
+        "payment_method", "payment_environment", "started_at", "expires_at",
+        "created_at", "updated_at", "source", "payment_error_message"
+      ];
+      (function initSubscriptionDateFilters() {
+        const now = new Date();
+        const m = document.getElementById("subscriptionMonth");
+        const y = document.getElementById("subscriptionYear");
+        m.innerHTML = Array.from({length: 12}, (_, i) =>
+          `<option value="${i + 1}">${new Date(2020, i, 1).toLocaleString("en-IN", {month:"long"})}</option>`).join("");
+        y.innerHTML = Array.from({length: now.getFullYear() - 2019}, (_, i) =>
+          `<option value="${now.getFullYear() - i}">${now.getFullYear() - i}</option>`).join("");
+        m.value = String(now.getMonth() + 1);
+        y.value = String(now.getFullYear());
+      })();
+      function subscriptionState(r, now = Date.now()) {
+        const status = String(r.payment_status || "").toUpperCase();
+        if (status === "FAILED") return "failed";
+        if (status === "PENDING") return "pending";
+        if (status === "EXPIRED") return "expired";
+        if (status !== "PAID") return "other";
+        const expiry = r.expires_at ? new Date(r.expires_at).getTime() : NaN;
+        const start = r.started_at ? new Date(r.started_at).getTime() : NaN;
+        if (Number.isFinite(expiry) && expiry <= now) return "expired";
+        if (Number.isFinite(start) && start > now) return "upcoming";
+        if (!Number.isFinite(expiry)) return "other";
+        return "active";
+      }
+      function renderSubscriptionDirectory() {
+        const search = (document.getElementById("subscriptionSearch")?.value || "").trim().toLowerCase();
+        const filter = document.getElementById("subscriptionStatusFilter")?.value || "";
+        const counts = {active:0, expired:0, upcoming:0, pending:0, failed:0, other:0};
+        for (const r of subscriptionDirectoryRows) counts[subscriptionState(r)]++;
+        const paidTotal = subscriptionDirectoryRows.filter(r => String(r.payment_status).toUpperCase() === "PAID")
+          .reduce((sum,r) => sum + (Number(r.amount) || 0), 0);
+        document.getElementById("subscriptionSummary").innerHTML = [
+          ["Total records", subscriptionDirectoryRows.length],
+          ["Active paid", counts.active],
+          ["Expired", counts.expired],
+          ["Paid amount", "₹" + paidTotal.toLocaleString("en-IN", {minimumFractionDigits:2, maximumFractionDigits:2})]
+        ].map(([label,value]) => `<div class="kpi"><div class="text-xs muted">${label}</div><div class="text-2xl font-extrabold mt-2">${value}</div></div>`).join("");
+        const rows = subscriptionDirectoryRows.filter(r => {
+          if (filter && subscriptionState(r) !== filter) return false;
+          if (!search) return true;
+          return [r.shop_id,subscriptionShopNames[r.shop_id],r.plan_id,r.cashfree_order_id,r.payment_status,r.source]
+            .some(v => String(v || "").toLowerCase().includes(search));
         });
-        document.getElementById("allRecentWorkRows").innerHTML =
-          rows
-            .map((w) => {
-              const source =
-                String(w._raw?.source || "")
-                  .trim()
-                  .toLowerCase() === "direct"
-                  ? "Direct"
-                  : w._isSubscription
-                    ? "Subscription"
-                    : w._raw?.source || w.source || "Direct";
-              const status = String(
-                w.paymentStatus || w.payment || "PENDING",
-              ).toUpperCase();
-              const isPaid =
-                status === "PAID" ||
-                status === "SUCCESS" ||
-                String(w.payment || "").toLowerCase() === "success";
-              const statusClass = isPaid
-                ? "badge-green"
-                : status === "PENDING" || status === "AWAITING_PAYMENT"
-                  ? "badge-red"
-                  : "badge-red";
-              const date =
-                w.createdAt || w._raw?.created_at || w._raw?.started_at || "";
-              return `<tr><td><b>${esc(w.shopId || w.shop_id || "—")}</b><div class="tiny muted">${esc(retailerName(w.retailer || w.retailer_id || ""))}</div></td><td>${esc(w.plan || w.plan_name || w.plan_id || "—")}</td><td>${money(Number(w.amount || 0))}</td><td><span class="badge ${String(source).toLowerCase() === "direct" ? "badge-blue" : "badge-yellow"}">${esc(source)}</span></td><td>${date ? esc(new Date(date).toLocaleString()) : "—"}</td><td><span class="badge ${statusClass}">${esc(status)}</span></td></tr>`;
-            })
-            .join("") ||
-          '<tr><td colspan="6" class="muted text-sm">No payment or subscription records found.</td></tr>';
+        const stateLabels = {active:"Active", expired:"Expired", upcoming:"Upcoming", pending:"Pending", failed:"Failed", other:"Unknown / Incomplete"};
+        const stateBadges = {active:"badge-green", expired:"badge-red", upcoming:"badge-blue", pending:"badge-yellow", failed:"badge-red", other:"badge-gray"};
+        document.getElementById("subscriptionDirectoryRows").innerHTML = rows.map(r => {
+          const state = subscriptionState(r);
+          const amount = Number(r.amount);
+          const price = Number.isFinite(amount) ? amount.toLocaleString("en-IN", {minimumFractionDigits:2, maximumFractionDigits:2}) : "—";
+          return `<tr>
+            <td><b>${recentShopCell(r.shop_id)}</b><div class="tiny muted">${recentShopCell(subscriptionShopNames[r.shop_id])}</div></td>
+            <td>${recentShopCell(r.plan_id)}</td><td>${recentShopCell(r.currency)} ${price}</td>
+            <td>${recentShopCell(r.duration_months)} month(s)</td>
+            <td>${recentShopCell(r.payment_status)}</td>
+            <td><span class="badge ${stateBadges[state]}">${stateLabels[state]}</span></td>
+            <td>${esc(recentShopDate(r.started_at))}</td><td>${esc(recentShopDate(r.expires_at))}</td>
+            <td>${esc(recentShopDate(r.created_at))}</td><td>${recentShopCell(r.cashfree_order_id)}</td>
+            <td>${recentShopCell(r.payment_method)}</td><td>${recentShopCell(r.source)}</td>
+            <td>${recentShopCell(r.payment_environment)}</td><td>${esc(recentShopDate(r.updated_at))}</td>
+            <td>${recentShopCell(r.payment_error_message)}</td>
+          </tr>`;
+        }).join("") || '<tr><td colspan="15" class="muted">No subscriptions match the selected month and filters.</td></tr>';
+        const p = document.getElementById("subscriptionPeriodInfo");
+        if (p && !p.dataset.loading) p.textContent = `${rows.length} shown of ${subscriptionDirectoryRows.length} subscriptions created in the selected month. Pending: ${counts.pending} · Failed: ${counts.failed} · Upcoming: ${counts.upcoming}. Expiry states are evaluated as of now.`;
+      }
+      async function loadSubscriptionDirectory() {
+        const request = ++subscriptionDirectoryRequest;
+        const month = Number(document.getElementById("subscriptionMonth")?.value);
+        const year = Number(document.getElementById("subscriptionYear")?.value);
+        if (!month || !year) return;
+        const info = document.getElementById("subscriptionPeriodInfo");
+        const body = document.getElementById("subscriptionDirectoryRows");
+        info.textContent = "Loading subscriptions…";
+        info.dataset.loading = "true";
+        body.innerHTML = '<tr><td colspan="15">Loading subscription records…</td></tr>';
+        if (!mainSupabaseClient) {
+          info.textContent = "Main Supabase project is not connected.";
+          delete info.dataset.loading;
+          body.innerHTML = '<tr><td colspan="15">Database not connected.</td></tr>';
+          return;
+        }
+        const from = new Date(Date.UTC(year, month-1, 1)).toISOString();
+        const to = new Date(Date.UTC(year, month, 1)).toISOString();
+        try {
+          const records = [];
+          let complete = false;
+          for (let offset = 0; offset < 10000; offset += 500) {
+            const {data:batch,error} = await mainSupabaseClient
+              .from(Q2P_MAIN_CONFIG.tables.subscriptions)
+              .select(subscriptionDirectoryColumns.join(","))
+              .gte("created_at",from).lt("created_at",to)
+              .order("created_at",{ascending:false}).range(offset,offset+499);
+            if (error) throw error;
+            if (request !== subscriptionDirectoryRequest) return;
+            records.push(...(batch || []));
+            if (!batch || batch.length < 500) { complete = true; break; }
+          }
+          // Join only safe shop labels for displayed subscriptions, never payment secrets.
+          const shopNames = {};
+          const ids = [...new Set(records.map(r => r.shop_id).filter(Boolean))];
+          for (let offset=0; offset<ids.length; offset+=100) {
+            const {data:shops,error} = await mainSupabaseClient
+              .from(Q2P_MAIN_CONFIG.tables.shops).select("shop_id,shop_name")
+              .in("shop_id", ids.slice(offset,offset+100));
+            if (request !== subscriptionDirectoryRequest) return;
+            if (error) break; // Subscription data still works if shop labels are inaccessible.
+            for (const shop of shops || []) shopNames[shop.shop_id] = shop.shop_name;
+          }
+          if (request !== subscriptionDirectoryRequest) return;
+          subscriptionDirectoryRows = records;
+          subscriptionShopNames = shopNames;
+          delete info.dataset.loading;
+          renderSubscriptionDirectory();
+          if (!complete) info.textContent += " Results capped at 10,000 records; narrow the period or use a server-side report for complete totals.";
+        } catch (e) {
+          if (request !== subscriptionDirectoryRequest) return;
+          subscriptionDirectoryRows = [];
+          subscriptionShopNames = {};
+          delete info.dataset.loading;
+          document.getElementById("subscriptionSummary").innerHTML = "";
+          info.textContent = "Unable to load subscriptions. Check Supabase table access and SELECT policies.";
+          body.innerHTML = `<tr><td colspan="15">${esc(e.message || "Database query failed")}</td></tr>`;
+        }
+      }
+
+      // Recent Work is based on public.shops.created_at in the Main project.
+      // Do not expose qr_token, Cashfree credentials or UUIDs in the UI.
+      let recentShopRows = [];
+      let recentShopRequest = 0;
+      const recentShopColumns = [
+        "shop_id", "owner_name", "whatsapp_number", "shop_name",
+        "shop_address", "email", "printer_name", "status",
+        "created_at", "updated_at", "total_prints", "plan_id",
+        "plan_expires_at", "subscription_status", "subscription_start",
+        "subscription_end", "print_count", "print_price", "color_price",
+        "shop_status", "printer_type", "payment_method", "print_agent",
+        "cashfree_env"
+      ];
+      function recentShopDate(value) {
+        if (!value) return "—";
+        const d = new Date(value);
+        return Number.isNaN(d.getTime()) ? "—" : d.toLocaleString("en-IN");
+      }
+      function recentShopCell(value) {
+        if (value === null || value === undefined || value === "") return "—";
+        return esc(String(value));
+      }
+      function renderRecentShops() {
+        const rows = [...recentShopRows].sort((a,b) =>
+          new Date(b.created_at || 0) - new Date(a.created_at || 0));
+        const shortBody = document.getElementById("recentWork");
+        const fullBody = document.getElementById("allRecentWorkRows");
+        const dateKeys = new Set(["created_at", "updated_at", "plan_expires_at",
+          "subscription_start", "subscription_end"]);
+        const fullRows = rows.map(r => `<tr>${recentShopColumns.map(k =>
+          `<td>${dateKeys.has(k) ? esc(recentShopDate(r[k])) : recentShopCell(r[k])}</td>`
+        ).join("")}</tr>`).join("");
+        fullBody.innerHTML = fullRows || '<tr><td colspan="24" class="muted">No shops found for this month.</td></tr>';
+        shortBody.innerHTML = rows.map(r => `<tr>
+          <td><b>${recentShopCell(r.shop_id)}</b></td>
+          <td><b>${recentShopCell(r.shop_name)}</b><div class="tiny muted">${recentShopCell(r.owner_name)}</div></td>
+          <td>${recentShopCell(r.whatsapp_number)}</td>
+          <td>${recentShopCell(r.shop_address)}</td>
+          <td>${recentShopCell(r.plan_id)}</td>
+          <td>${recentShopCell(r.shop_status)}</td>
+          <td>${esc(recentShopDate(r.created_at))}</td>
+        </tr>`).join("") || '<tr><td colspan="7" class="muted">No shops found for this month.</td></tr>';
+      }
+      async function loadRecentShops() {
+        const request = ++recentShopRequest;
+        const month = Number(document.getElementById("recentShopMonth")?.value);
+        const year = Number(document.getElementById("recentShopYear")?.value);
+        if (!month || !year) return;
+        const shortBody = document.getElementById("recentWork");
+        shortBody.innerHTML = '<tr><td colspan="7" class="muted">Loading shops…</td></tr>';
+        const client = mainSupabaseClient;
+        if (!client) {
+          shortBody.innerHTML = '<tr><td colspan="7" class="muted">Shop database is not connected.</td></tr>';
+          return;
+        }
+        // UTC month boundaries match timestamptz dates; query only the selected month.
+        const from = new Date(Date.UTC(year, month - 1, 1)).toISOString();
+        const to = new Date(Date.UTC(year, month, 1)).toISOString();
+        try {
+          const collected = [];
+          for (let offset=0; offset<10000; offset+=500) {
+            const {data:batch,error} = await client
+              .from(Q2P_MAIN_CONFIG.tables.shops)
+              .select(recentShopColumns.join(","))
+              .gte("created_at",from).lt("created_at",to)
+              .order("created_at",{ascending:false})
+              .range(offset,offset+499);
+            if (error) throw error;
+            if (request !== recentShopRequest) return;
+            collected.push(...(batch||[]));
+            if (!batch || batch.length<500) break;
+          }
+          if (request !== recentShopRequest) return;
+          recentShopRows = collected;
+          renderRecentShops();
+        } catch (e) {
+          if (request !== recentShopRequest) return;
+          recentShopRows = [];
+          shortBody.innerHTML = `<tr><td colspan="7" class="muted">Unable to load shops: ${esc(e.message || "Database error")}. Check Supabase SELECT policies.</td></tr>`;
+          document.getElementById("allRecentWorkRows").innerHTML = '<tr><td colspan="24">Unable to load shop records.</td></tr>';
+        }
+      }
+      function openRecentWorkModal() {
+        renderRecentShops();
         document.getElementById("recentWorkModal").classList.add("open");
       }
       function closeRecentWorkModal() {
         document.getElementById("recentWorkModal").classList.remove("open");
       }
+      (function initializeRecentShopFilters() {
+        const today = new Date();
+        const monthEl = document.getElementById("recentShopMonth");
+        const yearEl = document.getElementById("recentShopYear");
+        monthEl.innerHTML = Array.from({length:12}, (_,i) =>
+          `<option value="${i+1}">${new Date(2020,i,1).toLocaleString("en-IN",{month:"long"})}</option>`).join("");
+        yearEl.innerHTML = Array.from({length:today.getFullYear()-2019}, (_,i) =>
+          `<option value="${today.getFullYear()-i}">${today.getFullYear()-i}</option>`).join("");
+        monthEl.value = String(today.getMonth()+1);
+        yearEl.value = String(today.getFullYear());
+      })();
       function renderOverview() {
         const selectedMonth =
           document.getElementById("overviewDate")?.value ||
@@ -3539,28 +3793,7 @@
               `<div class="kpi"><div class="flex justify-between gap-2"><div class="text-xs muted">${c[0]}</div><div class="kpi-icon" style="background:${c[3]}">${c[2]}</div></div><div class="text-2xl font-black mt-3 tracking-tight">${c[1]}</div><div class="text-[11px] muted mt-2">${c[0] === "Sales This Month" ? "PAID transactions only" : c[0].startsWith("Paid ") ? "payment_status = PAID" : "Current live records"}</div></div>`,
           )
           .join("");
-        document.getElementById("recentWork").innerHTML =
-          overviewWork
-            .slice(-8)
-            .reverse()
-            .map((w) => {
-              const source =
-                String(w._raw?.source || "")
-                  .trim()
-                  .toLowerCase() === "direct"
-                  ? "Direct"
-                  : w._isSubscription
-                    ? "Subscription"
-                    : w._raw?.source || w.source || "Direct";
-              const isPaid =
-                w.paymentStatus === "PAID" ||
-                String(w.payment || "").toLowerCase() === "success";
-              const shownStatus = isPaid
-                ? "PAID"
-                : w.paymentStatus || w.payment || "PENDING";
-              return `<tr><td><b>${esc(w.shopId)}</b><div class="tiny muted">${esc(retailerName(w.retailer))}</div></td><td>${esc(w.plan)}</td><td>${money(w.amount)}</td><td><span class="badge ${String(source).toLowerCase() === "direct" ? "badge-blue" : "badge-yellow"}">${esc(source)}</span></td><td>${String(shownStatus).toUpperCase() === "PENDING" || String(shownStatus).toUpperCase() === "AWAITING_PAYMENT" ? `<span class="badge badge-red">${esc(shownStatus)}</span>` : statusBadge(shownStatus)}</td></tr>`;
-            })
-            .join("") || emptyRow(5);
+        // Shop details render independently from the financial overview.
         const directPaidForPartners = paid.filter(
           (w) => normalizedSource(w) === "direct",
         );
