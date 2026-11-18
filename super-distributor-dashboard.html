@@ -2026,7 +2026,7 @@
                   x.super_distributor_name ||
                   x.super_distributor_code ||
                   id;
-                return `<option value="${esc(id)}">${esc(name)} — ${esc(x.super_distributor_code || id)}</option>`;
+                return `<option value="${esc(id)}" data-code="${esc(x.super_distributor_code || "")}">${esc(name)} — ${esc(x.super_distributor_code || id)}</option>`;
               })
               .join("");
             msg("Loaded " + data.length + " Super Distributor account(s).");
@@ -2045,7 +2045,21 @@
           async () => {
             try {
               if (!sb) configureClient();
-              superId = $("superSelect").value;
+              const selected = $("superSelect").selectedOptions[0];
+              const loggedInId = String(window.q2pLoggedIn?.id || "")
+                .trim()
+                .toLowerCase();
+              if (
+                !selected ||
+                !loggedInId ||
+                (selected.value.toLowerCase() !== loggedInId &&
+                  (selected.dataset.code || "").toLowerCase() !== loggedInId)
+              ) {
+                throw new Error(
+                  "Account mismatch. Please log in with your own Super Distributor ID.",
+                );
+              }
+              superId = selected.value;
               if (!superId)
                 throw new Error(
                   "Load accounts and select a Super Distributor first.",
@@ -2342,10 +2356,24 @@
             await loadAccounts();
             const sel = $("superSelect");
             if (sel.value || sel.options.length > 1) {
-              // Prefer the account that matches the logged-in session, else the first one.
-              const me = window.q2pLoggedIn && String(window.q2pLoggedIn.id);
-              const i = [...sel.options].findIndex((o) => o.value === me);
-              sel.selectedIndex = i >= 0 ? i : 0;
+              // The login stores the public super_distributor_code (SD-...),
+              // while the account dropdown uses the database UUID as its value.
+              // Never fall back to the first account: that would open another
+              // super distributor's dashboard after a valid login.
+              const me = String(window.q2pLoggedIn?.id || "")
+                .trim()
+                .toLowerCase();
+              const i = [...sel.options].findIndex(
+                (o) =>
+                  o.value.toLowerCase() === me ||
+                  (o.dataset.code || "").toLowerCase() === me,
+              );
+              if (i < 0) {
+                throw new Error(
+                  "Your logged-in Super Distributor account was not found. Contact administrator.",
+                );
+              }
+              sel.selectedIndex = i;
               await connect({ preventDefault() {} });
             }
           } catch (err) {
