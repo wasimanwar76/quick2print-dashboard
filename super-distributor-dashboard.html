@@ -1117,6 +1117,15 @@
           scroll-behavior: auto !important;
         }
       }
+
+      /* UI terminology only: internal retailer identifiers remain unchanged. */
+      body:has(#page-retailers.active) #pageTitle {
+        font-size: 0;
+      }
+      body:has(#page-retailers.active) #pageTitle::after {
+        content: "My Onboarding Partners";
+        font-size: clamp(21px, 2.6vw, 27px);
+      }
     </style>
   </head>
 
@@ -1252,7 +1261,7 @@
             <i data-lucide="network"></i><span>My Distributors</span>
           </button>
           <button class="nav" data-page="retailers">
-            <i data-lucide="store"></i><span>My Retailers</span>
+            <i data-lucide="store"></i><span>My Onboarding Partners</span>
           </button>
           <button class="nav" data-page="activity">
             <i data-lucide="activity"></i><span>Network Activity</span>
@@ -1318,9 +1327,9 @@
               <div>
                 <h2>Welcome back, <span id="welcomeName">Partner</span></h2>
                 <p>
-                  Manage your distributor and retailer network, follow verified
-                  subscription activations, and track commission as it lands in
-                  your ledger.
+                  Manage your distributor and onboarding partner network, follow
+                  verified subscription activations, and track commission as it
+                  lands in your ledger.
                 </p>
               </div>
               <div class="hero-actions">
@@ -1340,7 +1349,7 @@
                 >
                   <span class="btn-spinner"></span
                   ><i data-lucide="store" class="btn-icon"></i
-                  ><span class="btn-label">New Retailer</span>
+                  ><span class="btn-label">New Onboarding Partner</span>
                 </button>
               </div>
               <div class="ink" aria-hidden="true">
@@ -1357,9 +1366,11 @@
                 <small>Assigned under your network</small>
               </div>
               <div class="card kpi" style="--c: var(--blue)">
-                <div class="lbl2">My Retailers <i data-lucide="store"></i></div>
+                <div class="lbl2">
+                  My Onboarding Partners <i data-lucide="store"></i>
+                </div>
                 <div id="kpiRetail" class="stat">—</div>
-                <small>Direct and distributor retailers</small>
+                <small>Direct and distributor onboarding partners</small>
               </div>
               <div class="card kpi" style="--c: var(--mag)">
                 <div class="lbl2">
@@ -1410,7 +1421,7 @@
                     <div id="kpiRevenue">₹0.00</div>
                   </div>
                   <div class="mini">
-                    <span>Active retailers</span>
+                    <span>Active onboarding partners</span>
                     <div id="kpiActiveRetail">0</div>
                   </div>
                 </div>
@@ -1445,7 +1456,7 @@
                 <button class="action row" data-create="retailer" type="button">
                   <div class="ic y"><i data-lucide="store"></i></div>
                   <div>
-                    <b>Create Retailer</b>
+                    <b>Create Onboarding Partner</b>
                     <p>
                       Register a print shop under one of your active
                       distributors.
@@ -1496,7 +1507,7 @@
                     <tr>
                       <th>Distributor</th>
                       <th>Code / ID</th>
-                      <th>Retailers</th>
+                      <th>Onboarding Partners</th>
                       <th>Status</th>
                       <th>Created</th>
                     </tr>
@@ -1515,14 +1526,15 @@
           <section class="page" id="page-retailers">
             <div class="sec-head">
               <div>
-                <h2>My Retailers</h2>
+                <h2>My Onboarding Partners</h2>
                 <p class="muted">
-                  Retailers linked directly to you or through your distributors.
+                  Onboarding Partners linked directly to you or through your
+                  distributors.
                 </p>
               </div>
               <div class="tools">
                 <label class="search"
-                  ><span class="sr">Search retailers</span
+                  ><span class="sr">Search onboarding partners</span
                   ><i data-lucide="search"></i>
                   <input
                     id="retailSearch"
@@ -1538,7 +1550,7 @@
                 >
                   <span class="btn-spinner"></span
                   ><i data-lucide="plus" class="btn-icon"></i
-                  ><span class="btn-label">Create retailer</span>
+                  ><span class="btn-label">Create onboarding partner</span>
                 </button>
               </div>
             </div>
@@ -1547,8 +1559,8 @@
                 <table>
                   <thead>
                     <tr>
-                      <th>Retailer</th>
-                      <th>Retailer ID</th>
+                      <th>Onboarding Partner</th>
+                      <th>Onboarding Partner ID</th>
                       <th>Distributor</th>
                       <th>Status</th>
                       <th>Created</th>
@@ -1570,7 +1582,7 @@
               <div>
                 <h2>Network Activity &amp; Work Completed</h2>
                 <p class="muted">
-                  Paid subscriptions attributed to your retailers and
+                  Paid subscriptions attributed to your onboarding partners and
                   distributors.
                 </p>
               </div>
@@ -1600,7 +1612,7 @@
                       <th>Plan</th>
                       <th>Amount</th>
                       <th>Payment status</th>
-                      <th>Retailer / Distributor</th>
+                      <th>Onboarding Partner / Distributor</th>
                     </tr>
                   </thead>
                   <tbody id="activityRows">
