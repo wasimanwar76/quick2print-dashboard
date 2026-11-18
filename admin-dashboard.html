@@ -1058,6 +1058,7 @@
           <button class="nav-btn" data-page="retailers">
             <span class="nav-icon">♧</span>Onboarding Partners
           </button>
+          <button class="nav-btn" data-page="shops-details"><span class="nav-icon">▤</span>Shops Details</button>
           <button class="nav-btn" data-page="subscriptions">
             <span class="nav-icon">▣</span>Subscriptions
           </button>
@@ -1191,39 +1192,7 @@
                 <div class="chart-box"><canvas id="planChart"></canvas></div>
               </div>
             </div>
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-5">
-              <div class="panel">
-                <div class="p-5 flex justify-between items-center">
-                  <div>
-                    <h3 class="font-extrabold">Recent work · Shop details</h3>
-                    <p class="text-xs muted mt-1">
-                      Shops created during the selected month
-                    </p>
-                  </div>
-                  <div class="flex flex-wrap items-center gap-2">
-                    <select id="recentShopMonth" class="field !w-auto" aria-label="Recent work month" onchange="loadRecentShops()"></select>
-                    <select id="recentShopYear" class="field !w-auto" aria-label="Recent work year" onchange="loadRecentShops()"></select>
-                    <button class="btn btn-light" onclick="loadRecentShops()">↻</button>
-                    <button class="btn btn-light" onclick="openRecentWorkModal()">View all</button>
-                  </div>
-                </div>
-                <div class="table-wrap">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>SHOP ID</th>
-                        <th>SHOP NAME / OWNER</th>
-                        <th>WHATSAPP</th>
-                        <th>ADDRESS</th>
-                        <th>PLAN</th>
-                        <th>SHOP STATUS</th>
-                        <th>CREATED</th>
-                      </tr>
-                    </thead>
-                    <tbody id="recentWork"></tbody>
-                  </table>
-                </div>
-              </div>
+            <div class="grid grid-cols-1 gap-4 mt-5">
               <div class="panel">
                 <div class="p-5 flex justify-between items-center">
                   <div>
@@ -1519,6 +1488,43 @@
           </section>
 
 
+          <section class="page" id="page-shops-details">
+            <div class="mb-5"><h2 class="text-lg font-extrabold">Shops Details</h2><p class="text-sm muted mt-1">Select a month and year, inspect a shop, edit saved information, and view its subscription purchase history.</p></div>
+            <div class="grid grid-cols-1">
+              <div class="panel">
+                <div class="p-5 flex justify-between items-center">
+                  <div>
+                    <h3 class="font-extrabold">Shops Details</h3>
+                    <p class="text-xs muted mt-1">
+                      Shops created during the selected month · Select View / Edit to inspect a shop
+                    </p>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <select id="recentShopMonth" class="field !w-auto" aria-label="Recent work month" onchange="loadRecentShops()"></select>
+                    <select id="recentShopYear" class="field !w-auto" aria-label="Recent work year" onchange="loadRecentShops()"></select>
+                    <button class="btn btn-light" onclick="loadRecentShops()">↻</button>
+                    <button class="btn btn-light" onclick="openRecentWorkModal()">View all</button>
+                  </div>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>SHOP ID</th>
+                        <th>SHOP NAME / OWNER</th>
+                        <th>WHATSAPP</th>
+                        <th>ADDRESS</th>
+                        <th>PLAN</th>
+                        <th>SHOP STATUS</th>
+                        <th>CREATED</th><th>ACTIONS</th>
+                      </tr>
+                    </thead>
+                    <tbody id="recentWork"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
           <section class="page" id="page-subscriptions">
             <div class="flex flex-wrap justify-between items-start gap-4 mb-5">
               <div>
@@ -2368,6 +2374,29 @@
       </div>
     </div>
 
+
+    <div id="shopDetailsModal" class="modal-backdrop" style="z-index:11000" onclick="if(event.target===this)closeShopDetails()">
+      <div class="modal" style="width:min(920px,96vw);max-height:90vh;overflow:auto">
+        <div class="flex justify-between items-start gap-3 mb-4">
+          <div><h2 class="text-xl font-extrabold" id="shopDetailsHeading">Shop details</h2><p class="text-xs muted mt-1" id="shopDetailsSubheading"></p></div>
+          <button class="btn btn-light" type="button" onclick="closeShopDetails()">✕ Close</button>
+        </div>
+        <div class="mb-5"><h3 class="font-extrabold mb-2">Saved shop information</h3><div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm" id="shopDetailsReadOnly"></div></div>
+        <div class="panel p-4 mb-5">
+          <h3 class="font-extrabold mb-2">Edit shop details</h3>
+          <p class="text-xs muted mb-3">Existing saved values are prefilled. Only editable shop fields are changed; IDs, QR tokens and payment credentials are protected.</p>
+          <form id="shopDetailsEditForm" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div id="shopEditableFields" class="contents"></div>
+            <div class="sm:col-span-2 flex flex-wrap items-center justify-end gap-2"><span class="text-sm muted mr-auto" id="shopEditMessage" role="status"></span><button type="submit" class="btn btn-primary" id="shopEditSave">Save changes</button></div>
+          </form>
+        </div>
+        <div class="panel p-4">
+          <div class="flex flex-wrap justify-between items-center gap-2 mb-3"><h3 class="font-extrabold">Subscription purchases</h3><button class="btn btn-light" type="button" onclick="loadShopPurchaseHistory()">↻ Refresh</button></div>
+          <div id="shopPurchaseSummary" class="text-sm muted mb-3">Loading purchase details…</div>
+          <div class="table-wrap"><table><thead><tr><th>PLAN</th><th>AMOUNT</th><th>DURATION</th><th>PAYMENT</th><th>STATE</th><th>STARTED</th><th>EXPIRES</th><th>PURCHASED</th><th>ORDER ID</th></tr></thead><tbody id="shopPurchaseRows"><tr><td colspan="9">Loading…</td></tr></tbody></table></div>
+        </div>
+      </div>
+    </div>
     <script>
       // No localStorage cache keys are used for business records or table names.
       const defaultData = {
@@ -3004,6 +3033,7 @@
         document.getElementById("sidebar").classList.remove("open");
         renderAll();
         if (page === "subscriptions") loadSubscriptionDirectory();
+        if (page === "shops-details") loadRecentShops();
       }
       function navigate(p) {
         nav(p);
@@ -3596,7 +3626,8 @@
           <td>${recentShopCell(r.plan_id)}</td>
           <td>${recentShopCell(r.shop_status)}</td>
           <td>${esc(recentShopDate(r.created_at))}</td>
-        </tr>`).join("") || '<tr><td colspan="7" class="muted">No shops found for this month.</td></tr>';
+          <td><button type="button" class="btn btn-light" data-shop-id="${esc(r.shop_id)}" onclick="openShopDetails(this.dataset.shopId)">View / Edit</button></td>
+        </tr>`).join("") || '<tr><td colspan="8" class="muted">No shops found for this month.</td></tr>';
       }
       async function loadRecentShops() {
         const request = ++recentShopRequest;
@@ -3604,10 +3635,10 @@
         const year = Number(document.getElementById("recentShopYear")?.value);
         if (!month || !year) return;
         const shortBody = document.getElementById("recentWork");
-        shortBody.innerHTML = '<tr><td colspan="7" class="muted">Loading shops…</td></tr>';
+        shortBody.innerHTML = '<tr><td colspan="8" class="muted">Loading shops…</td></tr>';
         const client = mainSupabaseClient;
         if (!client) {
-          shortBody.innerHTML = '<tr><td colspan="7" class="muted">Shop database is not connected.</td></tr>';
+          shortBody.innerHTML = '<tr><td colspan="8" class="muted">Shop database is not connected.</td></tr>';
           return;
         }
         // UTC month boundaries match timestamptz dates; query only the selected month.
@@ -3655,6 +3686,124 @@
         monthEl.value = String(today.getMonth()+1);
         yearEl.value = String(today.getFullYear());
       })();
+
+      // Shop editor: use a strict allowlist and never expose payment secrets or QR tokens.
+      const shopEditorFields = [
+        ["owner_name","Owner name","text"],["shop_name","Shop name","text"],
+        ["whatsapp_number","WhatsApp number","text"],["shop_address","Shop address","text"],
+        ["email","Email","email"],["printer_name","Printer name","text"],
+        ["status","Account status","select",["active","inactive","suspended"]],
+        ["shop_status","Shop status","select",["online","low_ink","out_of_paper","offline"]],
+        ["printer_type","Printer type","text"],
+        ["payment_method","Payment method","text"],
+        ["print_price","B&W print price","number"],["color_price","Color print price","number"],
+        ["print_agent","Print agent","checkbox"]
+      ];
+      let selectedShopId = null;
+      let shopDetailsRequest = 0;
+      const shopInformationLabels = {
+        shop_id:"Shop ID", owner_name:"Owner", shop_name:"Shop name", whatsapp_number:"WhatsApp",
+        shop_address:"Address", email:"Email", printer_name:"Printer", status:"Account status",
+        shop_status:"Shop status", printer_type:"Printer type", payment_method:"Payment method",
+        plan_id:"Current plan", subscription_status:"Subscription status", subscription_start:"Subscription start",
+        subscription_end:"Subscription end", plan_expires_at:"Plan expires", total_prints:"Total prints",
+        print_count:"Print count", print_price:"B&W price", color_price:"Color price",
+        print_agent:"Print agent", created_at:"Created", updated_at:"Updated"
+      };
+      function shopInfoCard(row) {
+        const dates = new Set(["subscription_start","subscription_end","plan_expires_at","created_at","updated_at"]);
+        return Object.entries(shopInformationLabels).map(([key,label]) => {
+          const value = dates.has(key) ? recentShopDate(row[key]) : (typeof row[key]==="boolean" ? (row[key]?"Yes":"No") : (row[key] ?? "—"));
+          return `<div class="p-3 bg-slate-50 rounded-xl min-w-0"><div class="tiny muted">${esc(label)}</div><div class="font-bold break-words">${esc(String(value))}</div></div>`;
+        }).join("");
+      }
+      function renderShopEditor(row) {
+        document.getElementById("shopDetailsHeading").textContent = row.shop_name || "Shop details";
+        document.getElementById("shopDetailsSubheading").textContent = "Shop ID: " + row.shop_id;
+        document.getElementById("shopDetailsReadOnly").innerHTML = shopInfoCard(row);
+        document.getElementById("shopEditMessage").textContent = "";
+        document.getElementById("shopEditableFields").innerHTML = shopEditorFields.map(([key,label,type,options]) => {
+          const v = row[key];
+          if (type === "checkbox") return `<label class="flex gap-2 items-center"><input name="${key}" type="checkbox" ${v ? "checked" : ""} /> ${esc(label)}</label>`;
+          if (type === "select") return `<label>${esc(label)}<select class="field" name="${key}">${[...new Set([...(options||[]), ...(v&&!options.includes(v)?[v]:[])])].map(opt => `<option value="${esc(opt)}" ${v===opt?"selected":""}>${esc(opt)}</option>`).join("")}</select></label>`;
+          return `<label>${esc(label)}<input class="field" name="${key}" type="${type}" ${type==="number"?'step="0.01" min="0"':''} value="${esc(String(v ?? ""))}" ${["owner_name","shop_name","whatsapp_number","shop_address"].includes(key)?"required":""} /></label>`;
+        }).join("");
+      }
+      async function openShopDetails(id) {
+        const row = recentShopRows.find(r => r.shop_id === id);
+        if (!row) {toast("Shop not found in this month. Refresh the list.");return;}
+        selectedShopId = id;
+        document.getElementById("shopDetailsModal").classList.add("open");
+        renderShopEditor(row);
+        await loadShopPurchaseHistory();
+      }
+      function closeShopDetails() {
+        selectedShopId = null;
+        ++shopDetailsRequest;
+        document.getElementById("shopDetailsModal").classList.remove("open");
+      }
+      async function loadShopPurchaseHistory() {
+        const id = selectedShopId;
+        const request = ++shopDetailsRequest;
+        if (!id) return;
+        const summary = document.getElementById("shopPurchaseSummary");
+        const body = document.getElementById("shopPurchaseRows");
+        summary.textContent = "Loading subscriptions for " + id + "…";
+        body.innerHTML = '<tr><td colspan="9">Loading…</td></tr>';
+        if (!mainSupabaseClient) { summary.textContent="Database not connected";body.innerHTML='<tr><td colspan="9">Connect Supabase to view subscriptions.</td></tr>';return; }
+        try {
+          const records=[];
+          for(let offset=0;offset<10000;offset+=500) {
+            const {data,error}=await mainSupabaseClient.from(Q2P_MAIN_CONFIG.tables.subscriptions)
+              .select("shop_id,plan_id,amount,currency,duration_months,payment_status,started_at,expires_at,created_at,cashfree_order_id")
+              .eq("shop_id",id).order("created_at",{ascending:false}).range(offset,offset+499);
+            if(error)throw error;
+            if(request!==shopDetailsRequest)return;
+            records.push(...(data||[]));
+            if(!data||data.length<500)break;
+          }
+          const paid=records.filter(r=>String(r.payment_status).toUpperCase()==="PAID");
+          const paidTotal=paid.reduce((sum,r)=>sum+(Number(r.amount)||0),0);
+          const formatAmount=r=>(r.currency||"INR")+" "+Number(r.amount||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
+          summary.textContent=`${records.length} subscription records · ${paid.length} paid purchase(s) · Total paid: INR ${paidTotal.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}`+(records.length===10000?" · Results capped at 10,000":"");
+          body.innerHTML=records.map(r=>`<tr><td>${recentShopCell(r.plan_id)}</td><td>${esc(formatAmount(r))}</td><td>${recentShopCell(r.duration_months)} months</td><td>${recentShopCell(r.payment_status)}</td><td>${esc(subscriptionState(r))}</td><td>${esc(recentShopDate(r.started_at))}</td><td>${esc(recentShopDate(r.expires_at))}</td><td>${esc(recentShopDate(r.created_at))}</td><td>${recentShopCell(r.cashfree_order_id)}</td></tr>`).join("")||'<tr><td colspan="9">No subscription purchases recorded for this shop.</td></tr>';
+        } catch(e) {
+          if(request!==shopDetailsRequest)return;
+          summary.textContent="Unable to load subscription history";
+          body.innerHTML=`<tr><td colspan="9">${esc(e.message||"Check Supabase SELECT permissions")}</td></tr>`;
+        }
+      }
+      document.getElementById("shopDetailsEditForm").addEventListener("submit",async function(e){
+        e.preventDefault();
+        if(!selectedShopId||!mainSupabaseClient)return;
+        const id=selectedShopId;
+        const fd=new FormData(this);
+        const payload={};
+        for(const [key,label,type] of shopEditorFields) {
+          if(type==="checkbox")payload[key]=fd.has(key);
+          else if(type==="number") {
+            const raw=String(fd.get(key)||"").trim();
+            payload[key]=raw===""?(key==="print_price"?NaN:null):Number(raw);
+            if(payload[key]!==null&&(!Number.isFinite(payload[key])||payload[key]<0)){document.getElementById("shopEditMessage").textContent="Enter a valid non-negative price.";return;}
+          } else payload[key]=String(fd.get(key)||"").trim()||null;
+        }
+        for(const k of ["owner_name","shop_name","whatsapp_number","shop_address"]){if(!payload[k]){document.getElementById("shopEditMessage").textContent="Fill all required fields.";return;}}
+        const button=document.getElementById("shopEditSave");
+        button.disabled=true;
+        document.getElementById("shopEditMessage").textContent="Saving…";
+        try {
+          const {data,error}=await mainSupabaseClient.from(Q2P_MAIN_CONFIG.tables.shops)
+            .update(payload).eq("shop_id",id).select(recentShopColumns.join(",")).maybeSingle();
+          if(error)throw error;
+          if(!data)throw new Error("No shop was updated. Check UPDATE/SELECT policies.");
+          const i=recentShopRows.findIndex(r=>r.shop_id===id);
+          if(i>=0)recentShopRows[i]=data;
+          renderRecentShops();renderShopEditor(data);
+          document.getElementById("shopEditMessage").textContent="Changes saved successfully.";
+          toast("Shop details updated.");
+        }catch(err){document.getElementById("shopEditMessage").textContent="Save failed: "+(err.message||"Database error");}
+        finally{button.disabled=false;}
+      });
       function renderOverview() {
         const selectedMonth =
           document.getElementById("overviewDate")?.value ||
