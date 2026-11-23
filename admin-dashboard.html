@@ -1193,6 +1193,7 @@
           <span class="nav-icon">♧</span>Onboarding Partners
         </button>
         <button class="nav-btn" data-page="shops-details"><span class="nav-icon">▤</span>Shops Details</button>
+        <button class="nav-btn" data-page="print-orders"><span class="nav-icon">▧</span>Print Orders</button>
         <button class="nav-btn" data-page="subscriptions">
           <span class="nav-icon">▣</span>Subscriptions
         </button>
@@ -1600,6 +1601,103 @@
                   <tbody id="recentWork"></tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        </section>
+
+
+        <section class="page" id="page-print-orders">
+          <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
+            <div>
+              <h2 class="text-lg font-extrabold">Print Orders & Shop Usage</h2>
+              <p class="text-sm muted mt-1">Monthly print jobs per shop, subscription limits and expiry. Counts are
+                based on print_jobs records.</p>
+            </div>
+            <button class="btn btn-primary" onclick="loadPrintOrders()">↻ Refresh</button>
+          </div>
+          <div class="panel p-4 mb-4">
+            <div class="flex flex-wrap items-end gap-3">
+              <div><label for="poMonth">Month</label><select class="field" id="poMonth"
+                  onchange="loadPrintOrders()"></select></div>
+              <div><label for="poYear">Year</label><select class="field" id="poYear"
+                  onchange="loadPrintOrders()"></select></div>
+              <div class="flex-1" style="min-width:220px"><label for="poSearch">Search shop, owner, mobile, plan,
+                  job</label><input id="poSearch" class="field" placeholder="Search print orders..."
+                  oninput="renderPrintOrders()"></div>
+              <div><label for="poStatus">Job status</label><select id="poStatus" class="field"
+                  onchange="renderPrintOrders()">
+                  <option value="">All statuses</option>
+                  <option>awaiting_payment</option>
+                  <option>pending</option>
+                  <option>printing</option>
+                  <option>completed</option>
+                  <option>failed</option>
+                  <option>cancelled</option>
+                </select></div>
+              <button class="btn btn-light" onclick="exportPrintOrdersCSV()">⇩ Export CSV</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4" id="poStats"></div>
+          <div class="panel mb-4">
+            <div class="p-4">
+              <h3 class="font-extrabold">Monthly shop printing summary</h3>
+              <p id="poMessage" class="tiny muted mt-1" role="status">Select Print Orders to load records.</p>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>SHOP / OWNER</th>
+                    <th>PLAN / STATUS</th>
+                    <th>SUBSCRIPTION EXPIRY</th>
+                    <th>JOBS THIS MONTH</th>
+                    <th>COMPLETED</th>
+                    <th>PRINT COPIES</th>
+                    <th>EST. SHEETS</th>
+                    <th>USED / LIMIT</th>
+                    <th>REMAINING</th>
+                    <th>DETAILS</th>
+                  </tr>
+                </thead>
+                <tbody id="poShopRows">
+                  <tr>
+                    <td colspan="10">Loading…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="p-4 flex justify-between items-center gap-2">
+              <div>
+                <h3 class="font-extrabold">Individual print jobs</h3>
+                <p class="tiny muted">Select a shop above to filter its jobs. Counts include every status; completed is
+                  shown separately.</p>
+              </div><button class="btn btn-light" onclick="poSelectedShop='';renderPrintOrders()">Show all
+                shops</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>CREATED</th>
+                    <th>SHOP</th>
+                    <th>FILE</th>
+                    <th>ORDER ID</th>
+                    <th>STATUS</th>
+                    <th>PAGES</th>
+                    <th>COPIES</th>
+                    <th>COLOR</th>
+                    <th>PAPER</th>
+                    <th>SIZE</th>
+                  </tr>
+                </thead>
+                <tbody id="poJobRows">
+                  <tr>
+                    <td colspan="10">No records loaded.</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </section>
@@ -3074,6 +3172,7 @@
       if (page === "subscriptions") loadSubscriptionDirectory();
       if (page === "shops-details") loadRecentShops();
       if (page === "support") loadSupportTickets();
+      if (page === "print-orders") loadPrintOrders();
     }
     function navigate(p) {
       nav(p);
@@ -5752,6 +5851,116 @@
         );
       }
     })();
+
+
+    // Print orders: read-only reporting from the main project. No local storage or DB writes.
+    let poJobs = [], poShops = [], poPlans = [], poSelectedShop = '', poRequest = 0, poTruncated = false, poError = '';
+    (function initPrintOrderDates() {
+      const now = new Date();
+      const month = document.getElementById('poMonth'), year = document.getElementById('poYear');
+      for (let i = 0; i < 12; i++) { const o = document.createElement('option'); o.value = String(i + 1); o.textContent = new Date(2024, i, 1).toLocaleString('en-IN', { month: 'long' }); month.appendChild(o); }
+      month.value = String(now.getMonth() + 1);
+      for (let y = now.getFullYear(); y >= 2020; y--) { const o = document.createElement('option'); o.value = String(y); o.textContent = y; year.appendChild(o); }
+    })();
+    const poNumber = v => Number.isFinite(Number(v)) ? Number(v) : 0;
+    const poDate = v => { if (!v) return '—'; const d = new Date(v); return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString('en-IN'); };
+    const poEsc = v => esc(v === null || v === undefined || v === '' ? '—' : String(v));
+    const poLimit = (shop, plan) => {
+      for (const value of [shop.max_prints_per_year, plan?.max_prints_per_year, shop.print_limit, plan?.print_limit]) {
+        if (value !== undefined && value !== null && value !== '' && Number.isFinite(Number(value))) return Number(value);
+      }
+      return null;
+    };
+    async function poReadAll(client, table, select, query, limit = 10000) {
+      let out = [];
+      for (let offset = 0; offset < limit; offset += 500) {
+        let q = client.from(table).select(select).range(offset, Math.min(offset + 499, limit - 1));
+        if (query) q = query(q);
+        const { data, error } = await q;
+        if (error) throw error;
+        out.push(...(data || []));
+        if (!data || data.length < 500) break;
+      }
+      return out;
+    }
+    async function loadPrintOrders() {
+      const request = ++poRequest, msg = document.getElementById('poMessage');
+      msg.textContent = 'Loading monthly print jobs and shop subscriptions…';
+      document.getElementById('poShopRows').innerHTML = '<tr><td colspan="10">Loading…</td></tr>';
+      document.getElementById('poJobRows').innerHTML = '<tr><td colspan="10">Loading…</td></tr>';
+      poSelectedShop = ''; poError = ''; poTruncated = false;
+      try {
+        const client = supportClient();
+        const m = Number(document.getElementById('poMonth').value), y = Number(document.getElementById('poYear').value);
+        const from = new Date(Date.UTC(y, m - 1, 1)).toISOString(), to = new Date(Date.UTC(y, m, 1)).toISOString();
+        const jobs = await poReadAll(client, 'print_jobs', 'job_id,order_id,shop_id,original_filename,mime_type,file_size,page_count,copies,color_type,paper_size,status,created_at', q => q.gte('created_at', from).lt('created_at', to).order('created_at', { ascending: false }));
+        if (request !== poRequest) return;
+        const shops = await poReadAll(client, 'shops', '*', q => q.order('created_at', { ascending: false }));
+        if (request !== poRequest) return;
+        let plans = [];
+        try { plans = await poReadAll(client, 'plans', '*'); } catch (e) { console.warn('Plan metadata unavailable:', e.message); }
+        if (request !== poRequest) return;
+        poJobs = jobs; poShops = shops; poPlans = plans; poTruncated = jobs.length >= 10000 || shops.length >= 10000;
+        renderPrintOrders();
+      } catch (e) {
+        if (request !== poRequest) return;
+        poJobs = []; poShops = []; poPlans = []; poError = e.message || 'Database error';
+        msg.textContent = 'Unable to load print orders: ' + poError + '. Check SELECT permissions on print_jobs and shops.';
+        document.getElementById('poShopRows').innerHTML = '<tr><td colspan="10">' + poEsc(poError) + '</td></tr>';
+        document.getElementById('poJobRows').innerHTML = '<tr><td colspan="10">Could not load records.</td></tr>';
+        document.getElementById('poStats').innerHTML = '';
+      }
+    }
+    function poFiltered() {
+      const search = document.getElementById('poSearch').value.trim().toLowerCase(), status = document.getElementById('poStatus').value;
+      const shops = new Map(poShops.map(s => [String(s.shop_id), s]));
+      const plans = new Map(poPlans.map(p => [String(p.plan_id ?? p.id), p]));
+      const jobs = poJobs.filter(j => {
+        if (status && j.status !== status) return false;
+        const shop = shops.get(String(j.shop_id)) || {}, plan = plans.get(String(shop.plan_id)) || {};
+        return !search || [j.shop_id, j.job_id, j.order_id, j.original_filename, j.status, shop.shop_name, shop.owner_name, shop.whatsapp_number, shop.plan_id, plan.name].some(v => String(v ?? '').toLowerCase().includes(search));
+      });
+      return { jobs, shops, plans };
+    }
+    function renderPrintOrders() {
+      if (poError) return;
+      const { jobs, shops, plans } = poFiltered(), grouped = new Map();
+      // Include every registered shop in the monthly summary, including shops with zero jobs.
+      const search = document.getElementById('poSearch').value.trim().toLowerCase();
+      for (const shop of poShops) {
+        const plan = plans.get(String(shop.plan_id)) || {};
+        if (!search || [shop.shop_id, shop.shop_name, shop.owner_name, shop.whatsapp_number, shop.plan_id, plan.name].some(v => String(v ?? '').toLowerCase().includes(search))) grouped.set(String(shop.shop_id), { shop, jobs: [] });
+      }
+      for (const job of jobs) {
+        const id = String(job.shop_id);
+        if (!grouped.has(id)) grouped.set(id, { shop: shops.get(id) || { shop_id: id }, jobs: [] });
+        grouped.get(id).jobs.push(job);
+      }
+      const list = [...grouped.values()].sort((a, b) => b.jobs.length - a.jobs.length || String(a.shop.shop_name || a.shop.shop_id).localeCompare(String(b.shop.shop_name || b.shop.shop_id)));
+      const completed = jobs.filter(j => j.status === 'completed');
+      const cards = [['Shops with jobs', new Set(jobs.map(j => j.shop_id)).size], ['Monthly jobs', jobs.length], ['Completed jobs', completed.length], ['Completed copies', completed.reduce((n, j) => n + poNumber(j.copies), 0)]];
+      document.getElementById('poStats').innerHTML = cards.map(([label, value]) => `<div class="kpi"><div class="tiny muted">${label}</div><div class="text-2xl font-extrabold mt-2">${value.toLocaleString('en-IN')}</div></div>`).join('');
+      document.getElementById('poMessage').textContent = `${list.length} shops · ${jobs.length} matching jobs · ${new Date().toLocaleTimeString('en-IN')}${poTruncated ? ' · WARNING: query capped at 10,000 rows; totals may be incomplete.' : ''}. Usage limits use shop/plan metadata when available.`;
+      document.getElementById('poShopRows').innerHTML = list.map(({ shop, jobs: rows }) => {
+        const plan = plans.get(String(shop.plan_id)) || {};
+        const limit = poLimit(shop, plan), used = shop.total_prints ?? shop.print_count;
+        const remaining = limit === null || used === undefined || used === null ? '—' : Math.max(0, limit - poNumber(used)).toLocaleString('en-IN');
+        const expiry = shop.subscription_end || shop.plan_expires_at || shop.subscription_expires_at;
+        const copies = rows.filter(j => j.status === 'completed').reduce((n, j) => n + poNumber(j.copies), 0);
+        const sheets = rows.filter(j => j.status === 'completed').reduce((n, j) => n + poNumber(j.page_count) * poNumber(j.copies), 0);
+        const status = shop.subscription_status || '—';
+        return `<tr><td><b>${poEsc(shop.shop_name || shop.shop_id)}</b><div class="tiny muted">${poEsc(shop.shop_id)} · ${poEsc(shop.owner_name)}</div><div class="tiny muted">${poEsc(shop.whatsapp_number)}</div></td><td>${poEsc(plan.name || shop.plan_id)}<div class="tiny muted">${poEsc(status)}</div></td><td>${poEsc(poDate(expiry))}</td><td><b>${rows.length}</b></td><td>${rows.filter(j => j.status === 'completed').length}</td><td>${copies}</td><td>${sheets}</td><td>${used == null ? '—' : poEsc(used)} / ${limit === null ? 'Unlimited / unknown' : poEsc(limit)}</td><td><b>${remaining}</b></td><td><button class="btn btn-light" data-id="${poEsc(shop.shop_id)}" onclick="poSelectedShop=this.dataset.id;renderPrintOrders()">View jobs</button></td></tr>`;
+      }).join('') || '<tr><td colspan="10">No matching shops.</td></tr>';
+      const visible = poSelectedShop ? jobs.filter(j => String(j.shop_id) === poSelectedShop) : jobs;
+      document.getElementById('poJobRows').innerHTML = visible.map(j => `<tr><td>${poEsc(poDate(j.created_at))}</td><td>${poEsc(shops.get(String(j.shop_id))?.shop_name || j.shop_id)}</td><td title="${poEsc(j.original_filename)}">${poEsc(j.original_filename)}</td><td><span class="tiny">${poEsc(j.order_id)}</span></td><td><span class="badge ${j.status === 'completed' ? 'badge-green' : j.status === 'failed' ? 'badge-red' : 'badge-blue'}">${poEsc(j.status)}</span></td><td>${poEsc(j.page_count)}</td><td>${poEsc(j.copies)}</td><td>${poEsc(j.color_type)}</td><td>${poEsc(j.paper_size)}</td><td>${(poNumber(j.file_size) / 1024).toFixed(1)} KB</td></tr>`).join('') || '<tr><td colspan="10">No matching print jobs.</td></tr>';
+    }
+    function exportPrintOrdersCSV() {
+      const { jobs } = poFiltered();
+      const fields = ['created_at', 'job_id', 'order_id', 'shop_id', 'original_filename', 'status', 'page_count', 'copies', 'color_type', 'paper_size', 'file_size'];
+      const csv = [fields.join(','), ...jobs.map(j => fields.map(k => '"' + String(j[k] ?? '').replace(/"/g, '""') + '"').join(','))].join('\r\n');
+      const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+      const a = document.createElement('a'); a.href = url; a.download = 'quick2print-print-orders-' + document.getElementById('poYear').value + '-' + document.getElementById('poMonth').value + '.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
 
     // Support tickets belong to the main project, not the partner dashboard project.
     let supportTickets = [], supportSelectedTicket = null, supportLoading = false;
