@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Quick2Print | Cost calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: #f1f5f9;
+            color: #142438;
+            font: 15px/1.5 system-ui, sans-serif
+        }
+
+        main {
+            max-width: 1150px;
+            margin: auto;
+            padding: 24px
+        }
+
+        header {
+            margin: 20px 0 28px
+        }
+
+        h1 {
+            font-size: 32px;
+            margin: 4px 0
+        }
+
+        h2 {
+            font-size: 20px;
+            margin: 0 0 18px
+        }
+
+        p {
+            margin: 6px 0
+        }
+
+        .muted,
+        small {
+            color: #64748b
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid #dbe3ec;
+            border-radius: 18px;
+            padding: 24px;
+            margin-bottom: 16px
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center
+        }
+
+        label {
+            font-weight: 650
+        }
+
+        output {
+            font-weight: 750;
+            color: #087b83
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: #087b83;
+            margin: 16px 0 4px
+        }
+
+        .field {
+            margin-bottom: 24px
+        }
+
+        .ticks {
+            display: flex;
+            justify-content: space-between;
+            color: #64748b;
+            font-size: 12px
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            background: white;
+            color: inherit;
+            margin-top: 8px
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px
+        }
+
+        .metric {
+            padding: 15px;
+            background: #f1f5f9;
+            border-radius: 10px
+        }
+
+        .metric b {
+            display: block;
+            font-size: 23px
+        }
+
+        .total {
+            background: #10233f;
+            color: white
+        }
+
+        .total small {
+            color: #cbd5e1
+        }
+
+        .big {
+            font-size: 40px;
+            font-weight: 800;
+            letter-spacing: -1px
+        }
+
+        .line {
+            padding: 10px 0;
+            border-bottom: 1px solid #dbe3ec
+        }
+
+        button {
+            border: 1px solid #cbd5e1;
+            background: white;
+            color: #142438;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer
+        }
+
+        a {
+            color: #087b83
+        }
+
+        @media(max-width:540px) {
+            main {
+                padding: 14px
+            }
+
+            .panel {
+                padding: 18px
+            }
+
+            .grid {
+                grid-template-columns: 1fr 1fr
+            }
+
+            .big {
+                font-size: 34px
+            }
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #dbe3ec;
+            vertical-align: top
+        }
+
+        th {
+            background: #f1f5f9
+        }
+
+        td:nth-child(2),
+        td:nth-child(3) {
+            white-space: nowrap
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <header>
+            <div class="text-teal-700 font-bold tracking-widest text-xs">QUICK2PRINT / CLOUD PLANNER</div>
+            <h1>Printing cost calculator · V7 · Server configurations</h1>
+            <p class="muted">Move the sliders to estimate your monthly server and storage bill.</p>
+        </header>
+        <section class="panel">
+            <h2>01 · Printing volume</h2>
+            <div class="field">
+                <div class="row"><label for="pages">Printed pages per month</label><output id="pagesOut"></output></div>
+                <input id="pages" type="range" min="1000" max="100000" step="1000" value="100000">
+                <div class="ticks"><span>1,000</span><span>50,000</span><span>1 lakh</span></div>
+                <div class="row" style="margin-top:12px;flex-wrap:wrap"><button
+                        onclick="preset(10000)">10k</button><button onclick="preset(25000)">25k</button><button
+                        onclick="preset(50000)">50k</button><button onclick="preset(100000)">1 lakh</button></div>
+            </div>
+            <div class="field">
+                <div class="row"><label for="ppj">Average pages per print job</label><output id="ppjOut"></output></div>
+                <input id="ppj" type="range" min="1" max="20" value="5">
+                <div class="ticks"><span>1 page</span><span>20 pages</span></div>
+            </div>
+            <div class="field">
+                <div class="row"><label for="mb">Average document size</label><output id="mbOut"></output></div><input
+                    id="mb" type="range" min="0.5" max="25" step="0.5" value="5">
+                <div class="ticks"><span>0.5 MB</span><span>25 MB</span></div>
+            </div>
+            <div class="field">
+                <div class="row"><label for="ret">Document retention</label><output id="retOut"></output></div><input
+                    id="ret" type="range" min="1" max="30" value="2">
+                <div class="ticks"><span>1 day</span><span>30 days</span></div>
+            </div>
+            <div class="grid">
+                <div class="metric"><small>Print jobs / month</small><b id="jobs"></b></div>
+                <div class="metric"><small>Downloads / month</small><b id="traffic"></b></div>
+                <div class="metric"><small>Average stored data</small><b id="stored"></b></div>
+                <div class="metric"><small>Pages / day</small><b id="daily"></b></div>
+            </div>
+        </section>
+        <section class="panel">
+            <h2>02 · Choose infrastructure</h2><label for="server">Supabase plan — backend, database, auth &
+                storage</label><select id="server"></select>
+            <p id="spec" class="muted"></p>
+            <p class="muted">All backend services remain on Supabase. A rented VPS is optional and serves frontend files
+                only.</p>
+            <div id="quota" style="padding:12px;background:#f1f5f9;border-radius:8px;margin-top:12px"></div><label
+                for="hosting" style="margin-top:18px;display:block">HTML website deployment / frontend hosting (20
+                options)</label><select id="hosting"></select>
+            <p id="hostspec" class="muted"></p>
+            <p><label><input type="checkbox" id="renewMode"> Estimate using renewal price where published</label></p>
+            <label for="hostBudget" style="margin-top:18px;display:block">Override website hosting budget (₹/month,
+                optional)</label><input id="hostBudget" type="number" min="0" step="0.01"
+                placeholder="Use selected estimate"
+                style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"><label for="domain"
+                style="margin-top:18px;display:block">Domain budget (₹ per year, before tax)</label><input id="domain"
+                type="number" min="0" value="1000"
+                style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px">
+            <div class="grid" style="margin-top:20px">
+                <div><label for="fx">Planning exchange rate (₹/$)</label><input id="fx" type="number" min="1" value="95"
+                        style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></div>
+                <div><label for="tax">Estimated tax (%)</label><input id="tax" type="number" min="0" max="100"
+                        value="18" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></div>
+            </div>
+        </section>
+        <section class="panel total"><small>ESTIMATED MONTHLY INFRASTRUCTURE COST</small>
+            <div class="big" id="total"></div>
+            <div id="annual"></div>
+            <p><small id="perpage"></small></p>
+        </section>
+        <section class="panel">
+            <h2>03 · Cost breakdown</h2>
+            <div id="lines"></div>
+            <p class="muted" style="margin-top:16px">Planning estimates, not live quotes. Assumes one uploaded document
+                and one download per job, evenly distributed usage over 30 days, 1 GB other Supabase egress, and no
+                retries. Assumes uncached downloads. Excludes frontend usage overages, payment fees, printing supplies,
+                additional compute, database/auth/function overages and taxes beyond the selected rate. Free plan excess
+                is not billed as an overage: upgrade or reduce usage. Pro overage estimates assume spend cap is
+                disabled. For upfront offers the annual estimate is an annualized expense, not the cash due at checkout.
+                Frontend traffic is separate from print-document downloads. Page volume alone does not establish server
+                capacity; load testing is required.</p>
+            <p><a href="https://aws.amazon.com/lightsail/pricing/">AWS pricing</a> · <a
+                    href="https://supabase.com/pricing">Supabase pricing</a> · <a
+                    href="https://pages.cloudflare.com/">Cloudflare Pages</a> · <a
+                    href="https://www.netlify.com/pricing/">Netlify</a> · <a
+                    href="https://vercel.com/pricing">Vercel</a></p>
+        </section>
+        <section class="panel">
+            <h2>04 · Deploy your HTML website</h2>
+            <p><b>Recommended: Cloudflare Pages</b></p>
+            <p>1. Put index.html, CSS and JavaScript in a folder.</p>
+            <p>2. Open the Cloudflare dashboard → Workers &amp; Pages → create a Pages project.</p>
+            <p>3. Upload the folder or connect your Git repository; no build command is needed for plain HTML.</p>
+            <p>4. Deploy, then connect your custom domain and HTTPS.</p>
+            <p><b>Shared hosting:</b> upload your frontend files into public_html using hPanel or cPanel; enable SSL and
+                connect DNS.</p>
+            <p><b>Rented VPS:</b> install Ubuntu LTS, Nginx and a TLS certificate; upload files to the web root,
+                configure DNS, restrict firewall to required ports, patch regularly and set up backups.</p>
+            <p class="muted">Keep payment secrets and Supabase service-role keys on the backend, never in HTML or
+                browser JavaScript. Compile Tailwind for production rather than using its browser development CDN.</p>
+            <p><a href="https://developers.cloudflare.com/pages/get-started/direct-upload/">Official deployment
+                    guide</a></p>
+        </section>
+        <section class="panel">
+            <h2>05 · Compare all providers</h2>
+            <p class="muted">Provider pricing snapshot: 24 November 2026. INR prices are native offers or converted USD
+                list prices at your editable planning rate. Promotions require advance payment; renewal and taxes may
+                differ. A dash means not confirmed, not free. Shared hosting CPU/RAM are account limits, not dedicated
+                hardware. Verify region and checkout terms.</p>
+            <div id="compare"></div>
+        </section>
+    </main>
+    <script>const H = [["Cloudflare Pages", 0, "Managed static CDN; no assigned CPU/RAM; HTTPS and Git/direct upload. Free tier limits apply.", "https://pages.cloudflare.com/", "INR", null, 0, "Static CDN"], ["Hostinger Premium", 139, "1 CPU cores (account limit), 2 GB RAM, 20 GB SSD; Unmetered, fair use; hPanel, SSL, managed server; no root. Indian region subject to availability.", "https://www.hostinger.com/in/web-hosting", "INR", 449, 48, "Shared hosting"], ["Hostinger Unlimited", 199, "2 CPU cores (account limit), 3 GB RAM, 50 GB NVMe; Unmetered, fair use; hPanel, SSL, managed server; no root. Indian region subject to availability.", "https://www.hostinger.com/in/web-hosting", "INR", 649, 48, "Shared hosting"], ["Hostinger Cloud Startup", 599, "4 CPU cores (account limit), 4 GB RAM, 100 GB NVMe; Check plan limits; hPanel, SSL, managed server; no root. Indian region subject to availability.", "https://www.hostinger.com/in/web-hosting", "INR", 1599, 48, "Managed cloud"], ["Hostinger KVM 1", 599, "1 vCPU, 4 GB RAM, 50 GB NVMe, 4 TB transfer; AMD EPYC, 1 Gbps port, weekly backups, firewall, dedicated IP, root; self-managed Ubuntu/Nginx.", "https://www.hostinger.com/in/vps-hosting", "INR", 999, 24, "Rented VPS"], ["Hostinger KVM 2", 779, "2 vCPU, 8 GB RAM, 100 GB NVMe, 8 TB transfer; AMD EPYC, 1 Gbps port, weekly backups, firewall, dedicated IP, root; self-managed Ubuntu/Nginx.", "https://www.hostinger.com/in/vps-hosting", "INR", 1199, 24, "Rented VPS"], ["Hostinger KVM 4", 1099, "4 vCPU, 16 GB RAM, 200 GB NVMe, 16 TB transfer; AMD EPYC, 1 Gbps port, weekly backups, firewall, dedicated IP, root; self-managed Ubuntu/Nginx.", "https://www.hostinger.com/in/vps-hosting", "INR", 2399, 24, "Rented VPS"], ["Hostinger KVM 8", 2199, "8 vCPU, 32 GB RAM, 400 GB NVMe, 32 TB transfer; AMD EPYC, 1 Gbps port, weekly backups, firewall, dedicated IP, root; self-managed Ubuntu/Nginx.", "https://www.hostinger.com/in/vps-hosting", "INR", 4399, 24, "Rented VPS"], ["BigRock Standard", 69, "Check plan; CPU/RAM not confirmed; cPanel, SSL; check transfer limits and offer term at checkout.", "https://www.bigrock.in/web-hosting", "INR", 409, 0, "Shared hosting"], ["BigRock Business", 99, "25 GB NVMe; CPU/RAM not confirmed; cPanel, SSL; check transfer limits and offer term at checkout.", "https://www.bigrock.in/web-hosting", "INR", 649, 0, "Shared hosting"], ["BigRock Pro", 125, "50 GB NVMe; CPU/RAM not confirmed; cPanel, SSL; check transfer limits and offer term at checkout.", "https://www.bigrock.in/web-hosting", "INR", 759, 0, "Shared hosting"], ["AWS Lightsail Nano", 5, "2 vCPU (burstable), 0.5 GB RAM, 20 GB SSD, 1 TB standard transfer allowance (Mumbai lower; verify region); Linux, IPv4, SSH/root; self-managed Nginx.", "https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-bundles.html", "USD", null, 0, "Rented VPS"], ["AWS Lightsail Micro", 7, "2 vCPU (burstable), 1 GB RAM, 40 GB SSD, 2 TB standard transfer allowance (Mumbai lower; verify region); Linux, IPv4, SSH/root; self-managed Nginx.", "https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-bundles.html", "USD", null, 0, "Rented VPS"], ["AWS Lightsail Small", 12, "2 vCPU (burstable), 2 GB RAM, 60 GB SSD, 3 TB standard transfer allowance (Mumbai lower; verify region); Linux, IPv4, SSH/root; self-managed Nginx.", "https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-bundles.html", "USD", null, 0, "Rented VPS"], ["AWS Lightsail Medium", 24, "2 vCPU (burstable), 4 GB RAM, 80 GB SSD, 4 TB standard transfer allowance (Mumbai lower; verify region); Linux, IPv4, SSH/root; self-managed Nginx.", "https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-bundles.html", "USD", null, 0, "Rented VPS"], ["DigitalOcean Basic 512 MiB", 4, "1 shared vCPU, 0.5 GiB RAM, 10 GiB SSD, 500 GiB transfer; Linux, root, public IPv4; Bangalore availability varies by size.", "https://www.digitalocean.com/pricing/droplets", "USD", null, 0, "Rented VPS / shared CPU"], ["DigitalOcean Basic 1 GiB", 6, "1 shared vCPU, 1 GiB RAM, 25 GiB SSD, 1000 GiB transfer; Linux, root, public IPv4; Bangalore availability varies by size.", "https://www.digitalocean.com/pricing/droplets", "USD", null, 0, "Rented VPS / shared CPU"], ["DigitalOcean Basic 2 GiB", 12, "1 shared vCPU, 2 GiB RAM, 50 GiB SSD, 2000 GiB transfer; Linux, root, public IPv4; Bangalore availability varies by size.", "https://www.digitalocean.com/pricing/droplets", "USD", null, 0, "Rented VPS / shared CPU"], ["DigitalOcean Basic 2 GiB / 2 CPU", 18, "2 shared vCPU, 2 GiB RAM, 60 GiB SSD, 3000 GiB transfer; Linux, root, public IPv4; Bangalore availability varies by size.", "https://www.digitalocean.com/pricing/droplets", "USD", null, 0, "Rented VPS / shared CPU"], ["Vercel Pro", 20, "Managed static CDN, HTTPS; no fixed CPU/RAM for static assets; per-seat and usage charges may apply. Verify current pricing.", "https://vercel.com/pricing", "USD", null, 0, "Static CDN"]]; const B = [['Supabase Free', 0, 1, 5, 0.5, 50000, 500000], ['Supabase Pro', 25, 100, 250, 8, 100000, 2000000]]; const $ = x => document.getElementById(x), n = x => Math.max(0, Number($(x).value) || 0), fmt = x => x.toLocaleString('en-IN', { maximumFractionDigits: 2 }), money = x => x.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }); const hp = (r, fx) => r[1] * (r[4] === 'USD' ? fx : 1); for (const [id, data] of [['server', B], ['hosting', H]]) $(id).innerHTML = data.map((r, i) => `<option value="${i}">${r[0]} · ${id === 'hosting' ? money(hp(r, 95)) : money(r[1] * 95)}/month estimate</option>`).join(''); $('server').value = 1; $('hosting').value = 1; function preset(x) { $('pages').value = x; calc() } function calc() { let pages = n('pages'), ppj = n('ppj'), mb = n('mb'), ret = n('ret'), jobs = Math.ceil(pages / ppj), gb = jobs * mb / 1000, stored = gb * ret / 30, egress = gb + 1, fx = n('fx'), bi = Number($('server').value), plan = B[bi], host = H[Number($('hosting').value)], over = stored > plan[2] || egress > plan[3]; for (const [id, v] of Object.entries({ pagesOut: fmt(pages) + ' pages', ppjOut: ppj, mbOut: mb + ' MB', retOut: ret + ' days', jobs: fmt(jobs), traffic: fmt(gb) + ' GB', stored: fmt(stored) + ' GB', daily: fmt(Math.round(pages / 30)) })) $(id).textContent = v; Array.from($('hosting').options).forEach((o, i) => o.textContent = H[i][0] + ' · ' + money(hp(H[i], fx)) + '/month'); $('spec').textContent = `${plan[4]} GB database · ${fmt(plan[5])} monthly active users · ${fmt(plan[6])} Edge Function calls included`; $('hostspec').innerHTML = host[7] + ' · ' + host[2] + '<br>Offer/base: ' + money(hp(host, fx)) + '/mo · Renewal: ' + (host[5] == null ? 'check current rate' : money(host[5]) + '/mo') + ' · Upfront: ' + (host[6] ? money(hp(host, fx) * host[6]) + ' for ' + host[6] + ' months (before tax)' : 'check billing terms') + ' <a href="' + host[3] + '" target="_blank" rel="noopener">Official pricing / details</a>'; $('quota').innerHTML = `<b>${!bi && over ? 'Free quota exceeded — upgrade to Pro' : over ? 'Pro allowance exceeded — possible usage charges' : 'Within modeled storage and egress allowances'}</b><p>Storage: ${fmt(stored)} / ${plan[2]} GB</p><progress style="width:100%" value="${Math.min(stored, plan[2])}" max="${plan[2]}"></progress><p>Uncached egress: ${fmt(egress)} / ${plan[3]} GB</p><progress style="width:100%" value="${Math.min(egress, plan[3])}" max="${plan[3]}"></progress>`; let rows = [['Website — ' + host[0], ($('hostBudget').value === '' ? ($('renewMode').checked && host[5] != null ? host[5] : hp(host, fx)) : n('hostBudget'))], ['Domain (monthly equivalent)', n('domain') / 12], ['Supabase — ' + plan[0] + ' (all services)', plan[1] * fx], ['Storage overage', bi ? Math.max(0, stored - plan[2]) * .0213 * fx : 0], ['Uncached egress overage', bi ? Math.max(0, egress - plan[3]) * .09 * fx : 0]]; let subtotal = rows.reduce((s, r) => s + r[1], 0), tax = subtotal * n('tax') / 100, total = subtotal + tax; rows.push(['Estimated tax', tax]); $('total').textContent = host[0] === 'GitHub Pages' ? 'Demo only' : !bi && over ? 'Upgrade required' : money(total); $('annual').textContent = !bi && over ? 'Free plan cannot support modeled usage' : money(total * 12) + ' / year'; $('perpage').textContent = !bi && over ? 'Select Pro for a usable estimate' : '₹' + (total / pages).toFixed(3) + ' infrastructure cost per printed page'; $('lines').innerHTML = rows.map(r => `<div class="row line"><span>${r[0]}</span><b>${money(r[1])}</b></div>`).join(''); $('compare').innerHTML = `<h3>Supabase plans</h3><div style="overflow-x:auto"><table><tr><th>Allowance</th><th>Free</th><th>Pro</th></tr>${[['Base monthly', money(0), money(25 * fx)], ['File storage', '1 GB', '100 GB'], ['Uncached egress', '5 GB', '250 GB'], ['Cached egress (separate)', '5 GB', '250 GB'], ['Database', '500 MB', '8 GB'], ['Monthly active users', '50,000', '100,000'], ['Edge Functions', '500,000', '2 million'], ['Backups', 'Not included', 'Daily, 7 days'], ['Inactivity pause', 'After 1 week', 'No inactivity pause']].map(r => '<tr>' + r.map(v => '<td>' + v + '</td>').join('') + '</tr>').join('')}</table></div><p><a href="https://supabase.com/pricing">Official Supabase pricing</a></p><h3>HTML hosting (${H.length} options)</h3><div style="overflow-x:auto"><table><tr><th>Provider / type</th><th>Offer / base per month</th><th>Renewal per month</th><th>Upfront before tax</th><th>Configuration</th></tr>${H.map(r => `<tr><td><a href="${r[3]}">${r[0]}</a><br><small>${r[7]}</small></td><td>${money(hp(r, fx))}</td><td>${r[5] == null ? "Check rate" : money(r[5])}</td><td>${r[6] ? money(hp(r, fx) * r[6]) + " / " + r[6] + " mo" : "Check terms"}</td><td>${r[2]}</td></tr>`).join('')}</table></div>`; } document.querySelectorAll('input,select').forEach(e => e.addEventListener('input', calc)); calc();</script>
+</body>
+
+</html>
